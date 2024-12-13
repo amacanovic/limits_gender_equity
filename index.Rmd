@@ -84,6 +84,8 @@ main text and the Online SI of the following paper:
 
 **Macanovic, A., Hofstra, B. (2024). "Limits to Gender Equity in Science Communication".**
 
+Companion website can be accessed [here](https://amacanovic.github.io/limits_gender_equity/).
+
 The scripts used to generate the results in the paper can be found in the top
 menu under the section *"Analyses and Results"*.
 
