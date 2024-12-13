@@ -1,0 +1,3648 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Ana Macanovic" />
+
+<meta name="date" content="2024-07-24" />
+
+<title>Preparation: News source classification and other functions</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+<link rel="stylesheet" href="tweaks.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a>
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="index.html">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-menu-hamburger"></span>
+     
+    DPM preparation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="NARCIS_collection.html">NARCIS data scrape</a>
+    </li>
+    <li>
+      <a href="OpenAlex_Altmetric_data_download.html">Open Alex and Altmetric data download</a>
+    </li>
+    <li>
+      <a href="Gender_inference.html">Gender inference</a>
+    </li>
+    <li>
+      <a href="Grant_parsing.html">Grant parsing</a>
+    </li>
+    <li>
+      <a href="Printed_news_preparation.html">Printed news preparation</a>
+    </li>
+    <li>
+      <a href="Online_news_preparation.html">Online news preparation</a>
+    </li>
+    <li>
+      <a href="Data_coverage.html">NARCIS and OA database comparison</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-tasks"></span>
+     
+    DPM Panel Dataset
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Panel_data_compilation.html">Panel dataset preparation</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-ok-sign"></span>
+     
+    Analyses and Results
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_main.html">Main analyses</a>
+    </li>
+    <li>
+      <a href="Supplement_data_information.html">SI S1 Dataset information</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental.html">SI S2-S4 Additional results</a>
+    </li>
+    <li>
+      <a href="News_classification_other_functions.html">Resources and functions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    Robustness checks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_robustness_ols.html">Main linear models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_ols_log.html">Main linear models - log-transformed</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_poisson.html">Poisson models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_logit.html">Logistic models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_fe_re.html">Fixed and random effect models</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/amacanovic/dutch_media_profs">
+    <span class="fab fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Preparation: News source classification and
+other functions</h1>
+<h4 class="author">Ana Macanovic</h4>
+<h4 class="date">2024-07-24</h4>
+
+</div>
+
+
+<p>This script shows the content of .R files we use to classify types of
+printed and online news sources. Additionally, it shows the source code
+of all custom functions used in our analyses.</p>
+<div id="news-source-classification" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> News source
+classification</h1>
+<p>Printed news classification criteria. In the main analyses,
+everything but<br />
+“national_news_nl”, “regional_news_nl”, and “high_profile_int” is
+classified as “other”.</p>
+<p>These categories match those describe in main text as follows:</p>
+<ol style="list-style-type: decimal">
+<li>national_news_nl: National news (NL)</li>
+<li>regional_news_nl: Regional news (NL)</li>
+<li>high_profile_int: International news</li>
+<li>rest: Other sources</li>
+</ol>
+<pre class="r"><code>national_news_nl &lt;- c(
+  &quot;De Telegraaf&quot;,
+  &quot;De Telegraaf.nl&quot;,
+  &quot;Algemeen Dagblad&quot;,
+  &quot;AD/Algemeen Dagblad.nl&quot;,
+  &quot;AD/Algemeen Dagblad&quot;,
+  &quot;Metro&quot;,
+  &quot;Metro (NL)&quot;,
+  &quot;De Volkskrant&quot;,
+  &quot;De Volkskrant.nl&quot;,
+  &quot;de Volkskrant (Abstract) / MD Info&quot;,
+  &quot;de Volkskrant (Abstract) / MD Info&quot;,
+  &quot;De Telegraaf (Abstract) / MD Info&quot;,
+  &quot;NRC Handelsblad&quot;,
+  &quot;Trouw&quot;,
+  &quot;Trouw.nl&quot;,
+  &quot;Reformatorisch Dagblad&quot;,
+  &quot;Nederlands Dagblad&quot;,
+  &quot;NRC Next&quot;,
+  &quot;NRC&quot;,
+  &quot;NRC.NEXT&quot;,
+  &quot;NRC.nl&quot;,
+  &quot;WebNews - Dutch&quot;,
+  &quot;Metronieuws.nl&quot;,
+  &quot;Spits&quot;
+)
+
+finance_news &lt;- c(
+  &quot;Het Financieele Dagblad&quot;,
+  &quot;Het Financieele Dagblad (Abstract)/MD Info&quot;,
+  &quot;FD.nl&quot;,
+  &quot;Het Financieele Dagblad (Abstract)/MD Info&quot;,
+  &quot;AFR Online&quot;,
+  &quot;American Banking and Market News&quot;,
+  &quot;Australian Financial Review&quot;,
+  &quot;Briefing.com&quot;,
+  &quot;FEM Business&quot;,
+  &quot;Fem de Week&quot;,
+  &quot;Financial Buzz&quot;,
+  &quot;NRC Handelsblad (Abstract) / MD Info&quot;,
+  &quot;National Post (f/k/a The Financial Post) (Canada)&quot;,
+  &quot;QUOTE&quot;,
+  &quot;Quote&quot;,
+  &quot;Quotenet&quot;,
+  &quot;The Associated Press&quot;,
+  &quot;Business Wire&quot;
+)
+
+aggregators &lt;- c(
+  &quot;Africa News&quot;,
+  &quot;Agence France Presse -- English&quot;,
+  &quot;Associated Press State &amp; Local&quot;,
+  &quot;Associated Press Financial Wire&quot;,
+  &quot;Canadian Press&quot;,
+  &quot;Canwest News Service&quot;,
+  &quot;Asian News International (ANI)&quot;,
+  &quot;Associated Press International&quot;,
+  &quot;Associated Press Online&quot;,
+  &quot;CountryWatch Reviews&quot;,
+  &quot;GlobeNewswire - EnglishGlobeNewswire - English&quot;,
+  &quot;Hindustan Times&quot;,
+  &quot;Impact Financial News&quot;,
+  &quot;Global English (Middle East and North Africa Financial Network)&quot;,
+  &quot;Global Round Up - ADRs and Depository Receipts&quot;,
+  &quot;Global Round Up - Bullish and Bearish Signals&quot;,
+  &quot;India Education Diary&quot;,
+  &quot;India Engineering news&quot;,
+  &quot;India Pharma News&quot;,
+  &quot;Indian Health care news&quot;,
+  &quot;Industry SnapShot&quot;,
+  &quot;MENAFN - Business &amp; Finance News (English)&quot;,
+  &quot;MENAFN - Press Releases (English)&quot;,
+  &quot;Market News Publishing&quot;,
+  &quot;MarketLine NewsWire (Formerly Datamonitor)&quot;,
+  &quot;Marketwired&quot;,
+  &quot;PR Newswire US&quot;,
+  &quot;Pivotal Sources&quot;,
+  &quot;Plus Patent News&quot;,
+  &quot;Postmedia Breaking News&quot;,
+  &quot;Press Association&quot;,
+  &quot;Press Association Mediapoint&quot;,
+  &quot;TVEyes - BBC 1 Scotland&quot;,
+  &quot;TVEyes - BBC Radio 4&quot;,
+  &quot;TVEyes - BBC Radio 5 Live&quot;,
+  &quot;TVEyes - ITV 1 London&quot;,
+  &quot;Tenders Monitor Africa-Asia&quot;,
+  &quot;Tendersbiz&quot;,
+  &quot;The Associated Press State &amp; Local Wire&quot;,
+  &quot;The Canadian Press (CP)&quot;,
+  &quot;The Canadian Press(CP)&quot;,
+  &quot;Thomson Reuters ONE&quot;,
+  &quot;Trends&quot;,
+  &quot;UPI&quot;,
+  &quot;US States News&quot;,
+  &quot;united Press International&quot;,
+  &quot;WebNews - Academic&quot;,
+  &quot;WebNews - English&quot;,
+  &quot;News Bites - Private Companies&quot;,
+  &quot;News Bites - People in Business&quot;,
+  &quot;News Bites - Benelux: Netherlands&quot;,
+  &quot;News Bites - Nordic: Denmark&quot;,
+  &quot;OzEquities News Bites (Australia)&quot;,
+  &quot;Australian Company News Bites - Stock Report&quot;,
+  &quot;News Bites - Western Europe: Spain&quot;,
+  &quot;News Bites - Western Europe : Germany&quot;,
+  &quot;News Bites - Western Europe&quot;,
+  &quot;News Bites - Western Europe: Switzerland&quot;,
+  &quot;News Bites - Nordic: Sweden&quot;,
+  &quot;Plus Company Updates(PCU)&quot;,
+  &quot;Targeted News Service&quot;, 
+  &quot;US Fed News&quot;,
+  &quot;States News Service&quot;,
+  &quot;US Official News&quot;,
+  &quot;PR Newswire&quot;, 
+  &quot;M2 PressWIRE&quot;, 
+  &quot;Premium Official News&quot;,
+  &quot;European Union News&quot;, 
+  &quot;TendersInfo&quot;, 
+  &quot;Impact News Service&quot;,
+  &quot;GlobeNewswire&quot;,
+  &quot;PR Newswire Europe&quot;,
+  &quot;PR.com&quot;,
+  &quot;ENP Newswire&quot;,
+  &quot;FinancialWire&quot;,
+  &quot;Mena Report&quot;,
+  &quot;Australian Government News&quot;,
+  &quot;London Stock Exchange Aggregated Regulatory News Service (ARNS)&quot;,
+  &quot;Congressional Documents and Publications&quot;,
+  &quot;FD (Fair Disclosure) Wire&quot;,
+  &quot;University Wire&quot;
+  )
+
+local_int &lt;- c(
+  &quot;Bangor Daily News (Maine)&quot;,
+  &quot;DAILY MAIL (London)&quot;,
+  &quot;Belfast Telegraph&quot;,
+  &quot;Belfast Telegraph Online&quot;,
+  &quot;Burger with Relish&quot;,
+  &quot;Canberra Times (Australia)&quot;,
+  &quot;Charleston Daily Mail (West Virginia)&quot;,
+  &quot;Charleston Gazette (West Virginia)&quot;,
+  &quot;Chicago Daily Herald&quot;,
+  &quot;Christian Science Monitor (Boston, MA)&quot;,
+  &quot;Dayton Daily News (Ohio)&quot;,
+  &quot;Deseret Morning News (Salt Lake City)&quot;,
+  &quot;Edmonton Journal (Alberta)&quot;,
+  &quot;Hamilton Spectator (Ontario, Canada)&quot;,
+  &quot;Manchester Evening News&quot;,
+  &quot;Ottawa Citizen&quot;,
+  &quot;Pittsburgh Post-Gazette (Pennsylvania)&quot;,
+  &quot;Racing Post&quot;,
+  &quot;Richmond Times Dispatch (Virginia)&quot;,
+  &quot;Right Vision News&quot;,
+  &quot;Spokesman Review (Spokane, WA)&quot;,
+  &quot;St. Louis Post-Dispatch (Missouri)&quot;,
+  &quot;St. Petersburg Times (Florida)&quot;,
+  &quot;Star Tribune (Minneapolis, MN)&quot;,
+  &quot;Sydney Morning Herald (Australia)&quot;,
+  &quot;Telegraph Herald (Dubuque, IA)&quot;,
+  &quot;The Age (Melbourne, Australia)&quot;,
+  &quot;The Atlanta Journal and Constitution&quot;,
+  &quot;The Atlanta Journal-Constitution&quot;,
+  &quot;The Bismarck Tribune&quot;,
+  &quot;The Calgary Herald (Alberta)&quot;,
+  &quot;The Gazette (Montreal)&quot;,
+  &quot;The Herald (Glasgow)&quot;,
+  &quot;The Leader-Post (Regina, Saskatchewan)&quot;,
+  &quot;The Philadelphia Inquirer&quot;,
+  &quot;The Press (Christchurch, New Zealand)&quot;,
+  &quot;The Record (Kitchener-Waterloo, Ontario)&quot;,
+  &quot;The Salt Lake Tribune&quot;,
+  &quot;The Tampa Tribune (Florida)&quot;,
+  &quot;The Vancouver Sun (British Columbia)&quot;,
+  &quot;Times Colonist (Victoria, British Columbia)&quot;,
+  &quot;Wisconsin State Journal (Madison, Wisconsin)&quot;,
+  &quot;thespec.com&quot;
+)
+
+other_int &lt;- c(
+  &quot;The Times of India (TOI)&quot;,
+  &quot;China Daily&quot;,
+  &quot;CE Noticias Financieras English&quot;,
+  &quot;Daily Mirror&quot;,
+  &quot;Daily Record&quot;,
+  &quot;De Morgen.be&quot;,
+  &quot;Eurasia Review&quot;,
+  &quot;Express Online&quot;,
+  &quot;Irish Independent&quot;,
+  &quot;South China Morning Post&quot;,
+  &quot;Thai News Service&quot;,
+  &quot;The Australian&quot;,
+  &quot;The Christian Science Monitor&quot;,
+  &quot;The Irish Times&quot;,
+  &quot;The New Zealand Herald&quot;,
+  &quot;The Star (South Africa)&quot;,
+  &quot;The Straits Times (Singapore)&quot;,
+  &quot;The Sun (England)&quot;,
+  &quot;mirror.co.uk&quot;
+)
+
+regional_news_nl &lt;- c(
+  &quot;Rijn en Gouwe&quot;,
+  &quot;De Dordtenaar&quot;,
+  &quot;De Gooi- en Eemlander.nl&quot;,
+  &quot;De Krant van West-Vlaanderen&quot;,
+  &quot;Dagblad Flevoland&quot;,
+  &quot;Almere Vandaag&quot;,
+  &quot;Alphen.cc&quot;,
+  &quot;De Limburger&quot;,
+  &quot;Gelderlander&quot;,
+  &quot;De Twentsche Courant Tubantia&quot;,
+  &quot;De Gelderlander&quot;,
+  &quot;De Gelderlander.nl&quot;,
+  &quot;Stentor&quot;,
+  &quot;Noordhollands Dagblad&quot;,
+  &quot;Dagblad van het Noorden&quot;,
+  &quot;Brabants Dagblad&quot;,
+  &quot;BN/DeStem&quot;,
+  &quot;BN De Stem.nl&quot;,
+  &quot;Tubantia&quot;,
+  &quot;Tubantia.nl&quot;,
+  &quot;Eindhovens Dagblad&quot;,
+  &quot;BN De Stem&quot;,
+  &quot;Leeuwarder Courant&quot;,
+  &quot;Het Parool&quot;,
+  &quot;Het Parool.nl&quot;,
+  &quot;Provinciale Zeeuwse Courant&quot;,
+  &quot;Haarlems Dagblad&quot;,
+  &quot;Leidsch Dagblad&quot;,
+  &quot;De Gooi- en Eemlander&quot;,
+  &quot;Nieuwsblad Noordoost-Friesland&quot;,
+  &quot;Steenwijker Courant&quot;,
+  &quot;Friesch Dagblad&quot;,
+  &quot;AD/Haagsche Courant&quot;,
+  &quot;AD/Rotterdams Dagblad&quot;,
+  &quot;AD/Utrechts Nieuwsblad&quot;,
+  &quot;Noordhollands Dagblad&quot;,
+  &quot;AD/Groene Hart&quot;,
+  &quot;AD/De Dordtenaar&quot;,
+  &quot;AD/Amersfoortse Courant&quot;,
+  &quot;AD/Rivierenland&quot;,
+  &quot;Limburgs Dagblad&quot;,
+  &quot;Brabants Dagblad.nl&quot;,
+  &quot;Eindhovens Dagblad.nl&quot;,
+  &quot;De Stentor.nl&quot;,
+  &quot;De Stentor&quot;,
+  &quot;De Stentor/Zwolse Courant&quot;,
+  &quot;De Stentor/Gelders Dagblad&quot;,
+  &quot;De Stentor/Zutphens Dagblad&quot;,
+  &quot;De Stentor/Nieuw Kamper Dagblad&quot;,
+  &quot;De Stentor/Dagblad Flevoland&quot;,
+  &quot;De Stentor/Veluws Dagblad&quot;,
+  &quot;De Stentor/Deventer Dagblad&quot;,
+  &quot;Dagblad Tubantia/Twentsche Courant&quot;,
+  &quot;de limburger.nl&quot;,
+  &quot;De Stentor/Apeldoornse Courant&quot;,
+  &quot;DAGBLAD VAN HET NOORDEN&quot;,
+  &quot;De Stentor/Sallands Dagblad&quot;,
+  &quot;De Stentor/ Deventer Dagblad&quot;,
+  &quot;De Stentor/Gelders Dagblad&quot;,
+  &quot;De Stentor/Zutphens Dagblad&quot;,
+  &quot;De Stentor/Zwolse Courant&quot;,
+  &quot;De Groene Amsterdammer&quot;,
+  &quot;De Stentor/Apeldoornse Courant&quot;,
+  &quot;De Stentor/Dagblad Flevoland&quot;,
+  &quot;Dagblad van het Noorden.nl&quot;,
+  &quot;Noordhollands Dagblad.nl&quot;,
+  &quot;De Stentor/Deventer Dagblad&quot;,
+  &quot;Rotterdams Dagblad&quot;,
+  &quot;Friesch Dagblad&quot;,
+  &quot;Haarlems Dagblad.nl&quot;,
+  &quot;Meppeler Courant&quot;,
+  &quot;IJmuider Courant.nl&quot;,
+  &quot;Dagblad voor Zuidwest-Nederland&quot;,
+  &quot;Zwolse Courant&quot;,
+  &quot;Ijmuider Courant&quot;,
+  &quot;Leidsch Dagblad.nl&quot;,
+  &quot;Utrechts Nieuwsblad&quot;,
+  &quot;Haagsche Courant&quot;,
+  &quot;Leeuwarder Courant.nl&quot;,
+  &quot;De Stentor/Nieuw Kamper Dagblad&quot;,
+  &quot;Amersfoortse Courant&quot;,
+  &quot;Goudsche Courant&quot;,
+  &quot;Friesch Dagblad.nl&quot;,
+  &quot;Dagblad Rivierenland&quot;,
+  &quot;PZC.nl&quot;,
+  &quot;Woerdense Courant&quot;,
+  &quot;Goudse post&quot;,
+  &quot;Tubantia.nl&quot;,
+  &quot;nu.nl&quot;,
+  &quot;Voorburgse Courant&quot;,
+  &quot;De Stad Wageningen&quot;,
+  &quot;De Stem&quot;,
+  &quot;Knack Magazine&quot;,
+  &quot;IJmuider Courant&quot;,
+  &quot;De Brug Nijmegen&quot;)
+
+professional_pub &lt;- c(
+  &quot;De Accountant&quot;,
+  &quot;Accountant&quot;,
+  &quot;Cobouw&quot;,
+  &quot;Contify Life Science News&quot;,
+  &quot;Boerderij&quot;,
+  &quot;Logistiek&quot;,
+  &quot;Psychologie Magazine&quot;,
+  &quot;Boerderij Vandaag&quot;,
+  &quot;Nieuwsblad Transport&quot;,
+  &quot;Vrij Nederland&quot;,
+  &quot;Food &amp; Agri business&quot;,
+  &quot;Pakblad&quot;,
+  &quot;Nieuwsblad Transport&quot;,
+  &quot;restaurantonline.co.uk&quot;,
+  &quot;Groenten en Fruit&quot;,
+  &quot;Pluimveehouderij&quot;,
+  &quot;Logistiek Krant&quot;,
+  &quot;Nieuwe Oogst&quot;,
+  &quot;Opzij&quot;
+  )
+
+science_pub &lt;- c(
+  &quot;Elsevier&quot;,
+  &quot;Elsevier Weekblad&quot;,
+  &quot;Journal Of Marketing&quot;,
+  &quot;Journal of Marketing Research&quot;,
+  &quot;Medical Xpress&quot;,
+  &quot;New Scientist&quot;,
+  &quot;Pharma &amp; Healthcare Monitor Worldwide&quot;,
+  &quot;Phys.org - Science and Technology News&quot;,
+  &quot;Space Daily&quot;,
+  &quot;The Chronicle of Higher Education&quot;
+)
+
+high_profile_int &lt;- c(
+  &quot;The Times Higher Education Supplement&quot;,
+  &quot;Financial Times (London, England)&quot;,
+  &quot;The New York Times&quot;, 
+  &quot;The Times (London)&quot;,
+  &quot;MailOnline&quot;,
+  &quot;Guardian.com&quot;,
+  &quot;The Guardian - Final Edition&quot;,
+  &quot;Guardian Weekly&quot;,
+  &quot;FT.com&quot;,
+  &quot;FT.com Headlines&quot;,
+  &quot;The Toronto Star&quot;,
+  &quot;thetimes.co.uk&quot;,
+  &quot;Xinhua General News Service&quot;,
+  &quot;The Guardian (London)&quot;,
+  &quot;The International Herald Tribune&quot;,
+  &quot;The Guardian&quot;,
+  &quot;CNN Wire&quot;,
+  &quot;telegraph.co.uk&quot;,
+  &quot;The Daily Telegraph (London)&quot;,
+  &quot;The Independent (United Kingdom)&quot;,
+  &quot;The Independent (London)&quot;,
+  &quot;The Guardian(London)&quot;,
+  &quot;Independent.co.uk&quot;,
+  &quot;CNN.com&quot;,
+  &quot;The Sunday Times (London)&quot;,
+  &quot;NEW YORK TIMES&quot;,
+  &quot;The New York Times - International Edition&quot;,
+  &quot;The Times&quot;,
+  &quot;USA TODAY&quot;)</code></pre>
+<p>Online news classification criteria are as follows:</p>
+<pre class="r"><code># business, tech, finance
+att_news_finance &lt;- c(
+  &quot;Yahoo! Finance USA&quot;,
+  &quot;Forbes&quot;,
+  &quot;Business Insider&quot;,
+  &quot;Finanz Nachrichten&quot;,
+  &quot;World Economic Forum&quot;,
+  &quot;MarketScreener&quot;,
+  &quot;Ticker Tech&quot;,
+  &quot;Business Standard&quot;,
+  &quot;Global Advisors&quot;,
+  &quot;Business Insider Australia &quot;,
+  &quot;Business Insider India&quot;,
+  &quot;Tech Times&quot;,
+  &quot;International Business Times&quot;,
+  &quot;Daily Journal&quot;,
+  &quot;NRC Handelsblad&quot;,
+  &quot;Ariva&quot;,
+  &quot;ProfitQuotes.com&quot;,
+  &quot;Business Insider Singapore&quot;,
+  &quot;Finanzen.ch&quot;,
+  &quot;Seeking Alpha&quot;,
+  &quot;Eco Business&quot;,
+  &quot;Business Insider Nederland&quot;,
+  &quot;Fast Company&quot;,
+  &quot;Business Insider Malaysia&quot;,
+  &quot;NASDAQ&quot;,
+  &quot;VB Profiles&quot;,
+  &quot;EconoTimes&quot;,
+  &quot;Stockwatch&quot;,
+  &quot;Business Insider UK&quot;,
+  &quot;Bloomberg&quot;,
+  &quot;Harvard Business Review &quot;,
+  &quot;Finanzen&quot;,
+  &quot;Wall Street Online Denmark&quot;,
+  &quot;Minyanville: Finance &quot;,
+  &quot;International Business Times (UK)&quot;,
+  &quot;The Street&quot;,
+  &quot;Knowledia&quot;)
+
+
+# resources for medial professionals
+att_news_medical &lt;- c(
+  &quot;MedicalXpress&quot;,
+  &quot;Medscape&quot;,
+  &quot;MedPage Today&quot;,
+  &quot;Alzforum&quot;,
+  &quot;The Medical News&quot;,
+  &quot;Medical News Today&quot;,
+  &quot;Medical Health News&quot;,
+  &quot;Health Medicinet&quot;,
+  &quot;Health Reporter&quot;,
+  &quot;Physician&#39;s Briefing&quot;,
+  &quot;Pediatric News &quot;,
+  &quot;Drugs.com&quot;,
+  &quot;Medindia&quot;,
+  &quot;Deutsches Ärzteblatt&quot;,
+  &quot;Healio.com&quot;,
+  &quot;Doc Wire News&quot;,
+  &quot;Doctors Lounge&quot;,
+  &quot;OncLive&quot;,
+  &quot;Health Canal&quot;,
+  &quot;2 Minute Medicine &quot;,
+  &quot;PLoS Medicine&quot;,
+  &quot;AJMC&quot;,
+  &quot;ecancer&quot;,
+  &quot;Medical Daily&quot;,
+  &quot;CN-Healthcare&quot;,
+  &quot;Cancer Network&quot;,
+  &quot;Health Day &quot;,
+  &quot;medwireNews&quot;,
+  &quot;The ASCO Post&quot;,
+  &quot;Stat News&quot;,
+  &quot;Pharmastar Italy&quot;,
+  &quot;Physician&#39;s Weekly&quot;,
+  &quot;Pourquoi Docteur &quot;,
+  &quot;MyNeuroNews&quot;,
+  &quot;Fight Aging!&quot;,
+  &quot;Pharmacy Times&quot;,
+  &quot;TCTMD&quot;,
+  &quot;Everyday Health&quot;,
+  &quot;Medicinenet&quot;,
+  &quot;Clinical Advisor&quot;,
+  &quot;VBIO&quot;,
+  &quot;Renal &amp; Urology News&quot;,
+  &quot;PharmiWeb&quot;,
+  &quot;Laboratory Equipment &quot;,
+  &quot;Neurology Advisor &quot;,
+  &quot;Centre for Disease Research and Policy&quot;,
+  &quot;HCP Live&quot;,
+  &quot;Arzte Zeitung &quot;,
+  &quot;Pharmazeutische Zeitung&quot;,
+  &quot;Medisch Contact &quot;,
+  &quot;Diagnostic and Interventional Cardiology&quot;,
+  &quot;nutraingredients.com&quot;,
+  &quot;Pharmaceutical Journal&quot;,
+  &quot;Endocrinology Advisor&quot;,
+  &quot;Cancer Therapy Advisor&quot;,
+  &quot;Thelimbic&quot;,
+  &quot;Cardiovascular Business&quot;,
+  &quot;Madrid &quot;,
+  &quot;Infection Control Today&quot;,
+  &quot;PM 360&quot;,
+  &quot;Rheumatology Advisor&quot;,
+  &quot;WooDZog.com&quot;,
+  &quot;Oncology Nurse Advisor &quot;,
+  &quot;Medportal&quot;
+)
+
+# popular science
+att_news_pop_sci &lt;- c(
+  &quot;National Geographic&quot;,
+  &quot;Medium US&quot;,
+  &quot;Gizmodo&quot;,
+  &quot;Gizmodo Australia&quot;,
+  &quot;Discover Magazine&quot;,
+  &quot;Big Think&quot;,
+  &quot;Nature&quot;,
+  &quot;Popmech&quot;,
+  &quot;Smithsonian Magazine&quot;,
+  &quot;Arstechnica&quot;,
+  &quot;AskByGeeks&quot;,
+  &quot;redOrbit&quot;,
+  &quot;Healthline &quot;,
+  &quot;Eat This, Not That!&quot;,
+  &quot;elementy.ru&quot;,
+  &quot;New Atlas&quot;,
+  &quot;wissenschaft.de&quot;,
+  &quot;COSMOS magazine&quot;,
+  &quot;Space.com&quot;,
+  &quot;Science World Report&quot;,
+  &quot;Psych Central&quot;,
+  &quot;R&amp;D&quot;,
+  &quot;WebMD News&quot;,
+  &quot;Focus.it&quot;,
+  &quot;Illustreret Videnskab&quot;,
+  &quot;TMCnet.com&quot;,
+  &quot;Australasian Science&quot;,
+  &quot;Care2&quot;,
+  &quot;Psychology Today&quot;,
+  &quot;Interesting Engineering&quot;,
+  &quot;Muy Interesante&quot;,
+  &quot;Qrius&quot;,
+  &quot;EarthSky&quot;,
+  &quot;Galileonet&quot;,
+  &quot;Gizmodo UK&quot;,
+  &quot;Scientias &quot;,
+  &quot;Reader&#39;s Digest&quot;,
+  &quot;Galileu&quot;,
+  &quot;Nutra Ingredients USA&quot;,
+  &quot;Earth&quot;,
+  &quot;Scientific American&quot;,
+  &quot;Popular Science&quot;,
+  &quot;The Science Times, United States&quot;,
+  &quot;Forskning.se&quot;,
+  &quot;Gizmodo India&quot;)
+
+# general news aggregation portals - often intended for journalists
+att_news_aggregator &lt;- c(
+  &quot;Big News Network&quot;,
+  &quot;Alert Breaking News - US&quot;,
+  &quot;Benzinga&quot;,
+  &quot;PR Newswire&quot;,
+  &quot;Business Wire&quot;,
+  &quot;UPI.com&quot;,
+  &quot;EX BULLETIN&quot;,
+  &quot;NewsBeezer&quot;,
+  &quot;True Viral News&quot;,
+  &quot;Today Headline&quot;,
+  &quot;Pressfrom&quot;,
+  &quot;News Azi&quot;,
+  &quot;Verve times&quot;,
+  &quot;Biz Wire Express&quot;,
+  &quot;Spoke&quot;,
+  &quot;Noodls&quot;,
+  &quot;Inside Headline&quot;,
+  &quot;journalbreak.Com&quot;,
+  &quot;PressNewsAgency&quot;,
+  &quot;World Today News&quot;,
+  &quot;7th Space Family Portal&quot;,
+  &quot;awsforwp&quot;,
+  &quot;Futurity&quot;,
+  &quot;GlobeNewswire&quot;,
+  &quot;Rocket News&quot;,
+  &quot;Le Lézard&quot;,
+  &quot;Crwe World&quot;,
+  &quot;My droll&quot;,
+  &quot;PR Newswire UK&quot;,
+  &quot;Day To News.com&quot;,
+  &quot;Express Informer&quot;,
+  &quot; TechNewsBoy&quot;,
+  &quot;Tek Deeps&quot;,
+  &quot;World News Network&quot;,
+  &quot;Headlines &amp; Global News&quot;,
+  &quot;PressReleasePoint&quot;,
+  &quot;Germanic.News&quot;)
+
+# science news aggregation portals - often intended for journalists
+att_news_sci_aggregator &lt;- c(
+  &quot;EurekAlert!&quot;,
+  &quot;AlphaGalileo&quot;,
+  &quot;Jotup&quot;,
+  &quot;Paperity&quot;,
+  &quot;Tech Register&quot;,
+  &quot;Science Daily&quot;,
+  &quot;Informationsdienst Wissenschaft&quot;,
+  &quot;Phys.org&quot;
+)
+
+# scientific news portals - mainly aimed at scientists
+att_news_sci_portal &lt;- c(
+  &quot;ScienMag&quot;,
+  &quot;Bioportfolio&quot;,
+  &quot;Newswise&quot;,
+  &quot;Technology Networks&quot;,
+  &quot;Science Alert&quot;,
+  &quot;Spektrum&quot;,
+  &quot;Biospace&quot;,
+  &quot;Nanowerk&quot;,
+  &quot;Science Newsline&quot;,
+  &quot;LabRoots&quot;,
+  &quot;Innovations Report&quot;,
+  &quot;Bioengineer.org&quot;,
+  &quot;Sciencenewsnet.in&quot;,
+  &quot;Technology.org&quot;,
+  &quot;Genomeweb&quot;,
+  &quot;The Scientist Magazine&quot;,
+  &quot;Nature Asia &quot;,
+  &quot;New Scientist&quot;,
+  &quot;Bionity&quot;,
+  &quot;Space Daily&quot;,
+  &quot;Futura-Sciences&quot;,
+  &quot;Science News&quot;,
+  &quot;Iflscience&quot;,
+  &quot;USNews.com&quot;,
+  &quot;ChemistryViews&quot;,
+  &quot;Sci-News&quot;,
+  &quot;Science/AAAS&quot;,
+  &quot;Galaxy Concerns&quot;,
+  &quot;Jura Forum&quot;,
+  &quot;Sky Nightly &quot;,
+  &quot;Mongabay&quot;,
+  &quot;Naked Science&quot;,
+  &quot;Today Topics &quot;,
+  &quot;Sciences et Avenir&quot;,
+  &quot;Agencia SINC&quot;,
+  &quot;Le Scienze&quot;,
+  &quot;Azocleantech.com&quot;,
+  &quot;Carbon Brief&quot;,
+  &quot;The National Interest&quot;,
+  &quot;LiveScience&quot;,
+  &quot;Engineers Online &quot;,
+  &quot;physicsworld.com&quot;,
+  &quot;Lab Manager &quot;,
+  &quot;GEN&quot;,
+  &quot;Nature World News&quot;,
+  &quot;Scinexx&quot;,
+  &quot;American Physical Society - Physics &quot;,
+  &quot;HAL Archives-Ouvertes&quot;,
+  &quot;Earth &amp; Space Science News&quot;,
+  &quot;Ebiotrade&quot;,
+  &quot;Tech Xplore&quot;,
+  &quot;APA&quot;,
+  &quot;My Science&quot;,
+  &quot;Chemical &amp; Engineering News&quot;,
+  &quot;BioTech Gate&quot;,
+  &quot;Cancer Cell International&quot;,
+  &quot;Canaltech&quot;,
+  &quot;The Free Library&quot;,
+  &quot;Green Report (Italy)&quot;,
+  &quot;The Lancet&quot;,
+  &quot;The University of New Orleans Public Radio &quot;,
+  &quot;AZO Life Sciences&quot;,
+  &quot;pro-physik.de&quot;,
+  &quot;Environmental News Network&quot;,
+  &quot;forskning.no&quot;,
+  &quot;Scicasts&quot;,
+  &quot;e! Science News&quot;,
+  &quot;Globalresearch&quot;,
+  &quot;Azom.com&quot;,
+  &quot;SeedQuest&quot;,
+  &quot;NCYT - Noticias de la Ciencia y la Technologia&quot;,
+  &quot;Advanced Science News&quot;,
+  &quot;Azonano&quot;,
+  &quot;ThriveGlobal&quot;)
+
+# general interest news outlets - national
+att_news_general &lt;- c(
+  &quot;Yahoo! News&quot;,
+  &quot;The Conversation&quot;,
+  &quot;MSN&quot;,
+  &quot;Foreign Affairs New Zealand&quot;,
+  &quot;Newsbreak&quot;,
+  &quot;Mirage News&quot;,
+  &quot;Yahoo!&quot;,
+  &quot;Daily Mail&quot;,
+  &quot;BBC News&quot;,
+  &quot;The Guardian&quot;,
+  &quot;Scitech Daily&quot;,
+  &quot;Swift Telecast&quot;,
+  &quot;Inverse&quot;,
+  &quot;New York Times&quot;,
+  &quot;Nouvelles du monde&quot;,
+  &quot;Times of India&quot;,
+  &quot;CNN News&quot;,
+  &quot;Nachrichten Welt&quot;,
+  &quot;Huffington Post&quot;,
+  &quot;Morning Star&quot;,
+  &quot;infosurhoy&quot;,
+  &quot;DNYUZ&quot;,
+  &quot;Vice&quot;,
+  &quot;The Epoch Times&quot;,
+  &quot;Devdiscourse&quot;,
+  &quot;The Independent&quot;,
+  &quot;Google News&quot;,
+  &quot;Washington Post&quot;,
+  &quot;El País&quot;,
+  &quot;Sign of the Times&quot;,
+  &quot;Digital Journal&quot;,
+  &quot;The Raw Story&quot;,
+  &quot;Long Room&quot;,
+  &quot;Newsweek&quot;,
+  &quot;Salon&quot;,
+  &quot;SPIEGEL ONLINE&quot;,
+  &quot;The Atlantic&quot;,
+  &quot;Breitbart News Network&quot;,
+  &quot;ABC.net.au&quot;,
+  &quot;Eurasia Review&quot;,
+  &quot;The Express&quot;,
+  &quot;Channel News Asia CNA&quot;,
+  &quot;Espanol.news&quot;,
+  &quot;Scroll India &quot;,
+  &quot;Sydney Morning Herald&quot;,
+  &quot;de Volkskrant&quot;,
+  &quot;Paperblog&quot;,
+  &quot;The Evening Telegraph&quot;,
+  &quot;La Vanguardia&quot;,
+  &quot;Free Mail South Africa&quot;,
+  &quot;ANI News&quot;,
+  &quot;FOX News&quot;,
+  &quot;Vox.com&quot;,
+  &quot;Daily Magazine&quot;,
+  &quot;РИА Новости&quot;,
+  &quot;Wired.com&quot;,
+  &quot;Der Standard&quot;,
+  &quot;ORF.at&quot;,
+  &quot;The Hindustan Times&quot;,
+  &quot;The Wire&quot;,
+  &quot;CanIndia&quot;,
+  &quot;Die Welt&quot;,
+  &quot;Slate France&quot;,
+  &quot;Hareetz &quot;,
+  &quot;newsmax.com&quot;,
+  &quot;RT Network&quot;,
+  &quot;TIME Magazine&quot;,
+  &quot;New Zealand Herald&quot;,
+  &quot;IOL&quot;,
+  &quot;Latest Nigerian News&quot;,
+  &quot;The Siasat Daily&quot;,
+  &quot;World News SBS&quot;,
+  &quot;Bustle&quot;,
+  &quot;CNET&quot;,
+  &quot;CBC&quot;,
+  &quot;Europa Press&quot;,
+  &quot;NBC News&quot;,
+  &quot;The Tribune&quot;,
+  &quot;South Africa Today&quot;,
+  &quot;Helsingin Sanomat&quot;,
+  &quot;NPR&quot;,
+  &quot;Heise&quot;,
+  &quot;Alternet&quot;,
+  &quot;TODAY&quot;,
+  &quot;The Hindu&quot;,
+  &quot;Le Monde&quot;,
+  &quot;Illuminati Press&quot;,
+  &quot;CTV News&quot;,
+  &quot;ABC.es&quot;,
+  &quot;Sputnik News&quot;,
+  &quot;AP News&quot;,
+  &quot;USA Today&quot;,
+  &quot;New York Post&quot;,
+  &quot;La Repubblica&quot;,
+  &quot;Firstpost&quot;,
+  &quot;The Telegraph (UK)&quot;,
+  &quot;The Hill&quot;,
+  &quot;Gazeta.ru&quot;,
+  &quot;Lenta.ru&quot;,
+  &quot;Fanpage&quot;,
+  &quot;De Morgen&quot;,
+  &quot;Der Tagesspiegel&quot;,
+  &quot;The Straits Times&quot;,
+  &quot;Yahoo! News India&quot;,
+  &quot;Frankfurter Allgemeine&quot;,
+  &quot;The Malay Mail Online&quot;,
+  &quot;Terra (Spain)&quot;,
+  &quot;AOL&quot;,
+  &quot;LaSexta&quot;,
+  &quot;AOL (UK)&quot;,
+  &quot;La Nueva España&quot;,
+  &quot;Publico&quot;,
+  &quot;Men&#39;s Health&quot;,
+  &quot;The Herald&quot;,
+  &quot;CBS News&quot;,
+  &quot;NU&quot;,
+  &quot;Top Santé&quot;,
+  &quot;ABC desevilla&quot;,
+  &quot;El Periodico - ES&quot;,
+  &quot;Wheels24&quot;,
+  &quot;Zee News (India)&quot;,
+  &quot;The Week (India)&quot;,
+  &quot;Free &quot;,
+  &quot;Herald Sun&quot;,
+  &quot;PBS&quot;,
+  &quot;Women&#39;s Health&quot;,
+  &quot;Daily Maverick &quot;,
+  &quot;Metro UK&quot;,
+  &quot;Neue Zürcher Zeitung (NZZ)&quot;,
+  &quot;Health24&quot;,
+  &quot;Sohu News&quot;,
+  &quot;Yle.fi&quot;,
+  &quot;NuevoPeriodico&quot;,
+  &quot;Newslanes&quot;,
+  &quot;Outlook India&quot;,
+  &quot;Quartz&quot;)
+
+# general interest news outlets - local
+att_news_general_local &lt;- c(
+  &quot;Arizona Daily Star&quot;,
+  &quot;Dispatch-Argus&quot;,
+  &quot;Lincoln Journal Star&quot;,
+  &quot;Seattle Post-Intelligencer&quot;,
+  &quot;WFMZ-TV 69&quot;,
+  &quot;New Kerala&quot;,
+  &quot;St. Louis Post-Dispatch&quot;,
+  &quot;AllAfrica&quot;,
+  &quot;Idaho Press&quot;,
+  &quot;New Canaan Advertiser&quot;,
+  &quot;The Bismarck Tribune&quot;,
+  &quot;Today UK News&quot;,
+  &quot;Billings Gazette&quot;,
+  &quot;SFGate&quot;,
+  &quot;infobae&quot;,
+  &quot;San Antonio Express-News&quot;,
+  &quot;Dailyhunt&quot;,
+  &quot;Houston Chronicle&quot;,
+  &quot;Latestly&quot;,
+  &quot;The Darien Times&quot;,
+  &quot;Shelton Herald&quot;,
+  &quot;Hawaii News Now&quot;,
+  &quot;NBC12&quot;,
+  &quot;WALB&quot;,
+  &quot;Wave 3 News&quot;,
+  &quot;The Buffalo News&quot;,
+  &quot;The Print&quot;,
+  &quot;KAIT-TV&quot;,
+  &quot;Northwest Indiana Times&quot;,
+  &quot;Rapid City Journal&quot;,
+  &quot;ZAP&quot;,
+  &quot;14 News&quot;,
+  &quot;Independent Record&quot;,
+  &quot;WDAM - TV&quot;,
+  &quot;South Carolina News Now&quot;,
+  &quot;KLTV&quot;,
+  &quot;WSFA &quot;,
+  &quot;Winona Daily News&quot;,
+  &quot;WLOX&quot;,
+  &quot;Beatrice Daily Sun&quot;,
+  &quot;Columbus Telegram&quot;,
+  &quot;tdn.com&quot;,
+  &quot;WTVM&quot;,
+  &quot;The Indian Express&quot;,
+  &quot;Stuff.co.nz&quot;,
+  &quot;The Southern Illinoisan&quot;,
+  &quot;FOCUS Online&quot;,
+  &quot;MPR&quot;,
+  &quot;Missoulian&quot;,
+  &quot;Western Australia Today&quot;,
+  &quot;goskagit.com&quot;,
+  &quot;KPLC 7 News&quot;,
+  &quot;Brisbane Times&quot;,
+  &quot;The Age&quot;,
+  &quot;WMBF News&quot;,
+  &quot;WFLX Fox 29&quot;,
+  &quot;KSLA News 12&quot;,
+  &quot;WBOC 16&quot;,
+  &quot;KRQE&quot;,
+  &quot;Fairfield Citizen&quot;,
+  &quot;WISTV&quot;,
+  &quot;2 News&quot;,
+  &quot;Bozeman Daily Chronicle&quot;,
+  &quot;WFMJ&quot;,
+  &quot;The Bellingham Herald&quot;,
+  &quot;Gazette-Times&quot;,
+  &quot;KCBD&quot;,
+  &quot;News Channel 10&quot;,
+  &quot;News Channel&quot;,
+  &quot;CBS8&quot;,
+  &quot;KTRE&quot;,
+  &quot;KULR 8&quot;,
+  &quot;KXLY &quot;,
+  &quot;Kuam&quot;,
+  &quot;Lexington Herald Leader&quot;,
+  &quot;Sun Herald&quot;,
+  &quot;KHQ&quot;,
+  &quot;Fox 19&quot;,
+  &quot;WAND 17&quot;,
+  &quot;NewsOn6&quot;,
+  &quot;Star Tribune&quot;,
+  &quot;KOAMNewsNow.com&quot;,
+  &quot;Fox 8 WVUE&quot;,
+  &quot;The Charlotte Observer&quot;,
+  &quot;WTOL&quot;,
+  &quot;Belleville News-Democrat &quot;,
+  &quot;News Tribune&quot;,
+  &quot;NewsWest9&quot;,
+  &quot;The Wichita Eagle&quot;,
+  &quot;ABC 7 News KSWO&quot;,
+  &quot;Deccan Chronicle&quot;,
+  &quot;KLKN-TV Eyewitness News&quot;,
+  &quot;News 9&quot;,
+  &quot;The Sentinel (Pennsylvania)&quot;,
+  &quot;Idaho Statements&quot;,
+  &quot;abc8news&quot;,
+  &quot;Raleigh News and Observer &quot;,
+  &quot;Star-Telegram&quot;,
+  &quot;Cleveland 19&quot;,
+  &quot;Los Angeles Times&quot;,
+  &quot;News Channel 6&quot;,
+  &quot;CHANNEL 3000&quot;,
+  &quot;News Channel 11 wjhl.com&quot;,
+  &quot;Tri-City Herald&quot;,
+  &quot;Mississippi News Now &quot;,
+  &quot;Ledger-Enquirer&quot;,
+  &quot;WMC Action News 5&quot;,
+  &quot;ABC27&quot;,
+  &quot;Your Basin&quot;,
+  &quot;The Telegraph (Georgia)&quot;,
+  &quot;WTOC&quot;,
+  &quot;Bakersfield&quot;,
+  &quot;The Island Packet&quot;,
+  &quot;Bradenton Herald&quot;,
+  &quot;KOIN 6&quot;,
+  &quot;WAFB 9&quot;,
+  &quot;The Canberra Times&quot;,
+  &quot;WGN9&quot;,
+  &quot;Wjtv.com&quot;,
+  &quot;The Olympian&quot;,
+  &quot;KPBS&quot;,
+  &quot;Informnny&quot;,
+  &quot;Myrtle Beach&quot;,
+  &quot;The Fresno Bee&quot;,
+  &quot;Philly.com&quot;,
+  &quot;WBOY&quot;,
+  &quot;KTEP El Paso&quot;,
+  &quot;Kansas City Star&quot;,
+  &quot;Everything Lubbock&quot;,
+  &quot;CIProud.com&quot;,
+  &quot;Count on News 2&quot;,
+  &quot;Centre Daily Times&quot;,
+  &quot;FOX31 Denver KDVR-TV&quot;,
+  &quot;KVIA&quot;,
+  &quot;48 WAFF&quot;,
+  &quot;WRCB- TV&quot;,
+  &quot;MyTwinTiers.com&quot;,
+  &quot;NBC Right Now KNDU 25&quot;,
+  &quot;Erie News Now&quot;,
+  &quot;KRWG TV/FM&quot;,
+  &quot;KTEN&quot;,
+  &quot;Tri States Public Radio&quot;,
+  &quot;WCBE &quot;,
+  &quot;Iowa Public Radio&quot;,
+  &quot;Texomashomepage.com&quot;,
+  &quot;WFRV&quot;,
+  &quot;La Voz Digital&quot;,
+  &quot;YourErie.com&quot;,
+  &quot;WCAX&quot;,
+  &quot;KUNM&quot;,
+  &quot;Merced Sun-Star&quot;,
+  &quot;Fox 14 News&quot;,
+  &quot;Daijiworld.com&quot;,
+  &quot;Kxan&quot;,
+  &quot;TriStateHomepage.com&quot;,
+  &quot;Northern Public Radio&quot;,
+  &quot;azfamily.com&quot;,
+  &quot;KFVE The Home Team&quot;,
+  &quot;Weather herald&quot;,
+  &quot;Wlns.com&quot;,
+  &quot;Kansas Public Radio&quot;,
+  &quot;KX News&quot;,
+  &quot;Omaha Public Radio&quot;,
+  &quot;The Deccan Herald&quot;,
+  &quot;WVPE&quot;,
+  &quot;Arizona Public Radio&quot;,
+  &quot;Killeen Daily Herald&quot;,
+  &quot;News Channel 8 &quot;,
+  &quot;Winnipeg Free Press&quot;,
+  &quot;KUSI News&quot;,
+  &quot;Witchita&#39;s Public Radio&quot;,
+  &quot;Boise State Public Radio&quot;,
+  &quot;Radio Acadie&quot;,
+  &quot;WECT News 6&quot;,
+  &quot;KEYC News 12&quot;,
+  &quot;WXPR&quot;,
+  &quot;WBTW News13&quot;,
+  &quot;WUNC&quot;,
+  &quot;Interlochen Public Radio&quot;,
+  &quot;KBTX-TV&quot;,
+  &quot;ABC 6 News WLNE&quot;,
+  &quot;MyHighPlains.com&quot;,
+  &quot;WPRI 12 Eyewitness News&quot;,
+  &quot;A Koahnic Broadcast Station&quot;,
+  &quot;Central Coast Public Radio&quot;,
+  &quot;Faro de Vigo&quot;,
+  &quot;KCRG.com&quot;,
+  &quot;WSAV3&quot;,
+  &quot;Wyoming Public Radio&quot;,
+  &quot;Georgia Public Radio&quot;,
+  &quot;The Modesto Bee&quot;,
+  &quot;WJCT&quot;,
+  &quot;Northeastern Indiana Public Radio &quot;,
+  &quot;WVNS-TV&quot;,
+  &quot;The Daily Times&quot;,
+  &quot;WNCT9&quot;,
+  &quot;MyChamplainValley.com&quot;,
+  &quot;Irish Examiner&quot;,
+  &quot;KGET&quot;,
+  &quot;Myarklamiss.com&quot;,
+  &quot;North East Public Radio&quot;,
+  &quot;The Northern Echo&quot;,
+  &quot;FourStatesHomepage&quot;,
+  &quot;WTRF 7 News&quot;,
+  &quot;OZARKSFIRST.com&quot;,
+  &quot;WBRC&quot;,
+  &quot;Wales Online &quot;,
+  &quot;Diario de Mallorca&quot;,
+  &quot;Fox News 26&quot;)</code></pre>
+</div>
+<div id="other-functions" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Other functions</h1>
+<p>Below we list the source code of all functions we use in our
+analyses.</p>
+<pre class="r"><code>### This file stores all kinds of helper functions from our different scripts
+
+
+## check which packages need to be loaded/installed
+# adapted from Jochem Tolsma
+fpackage_check &lt;- function(packages) {
+  for (package in packages){
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE)
+      library(package, character.only = TRUE)
+    }
+  }
+}
+
+## retrieve professor NARCIS IDs based on their NARCIS publication data,
+## ORCID information, and name matching with OA results
+professor_identifier_retriever &lt;- function(narcis_id,
+                                           pub_data,
+                                           prof_data){
+  
+  # set all the identifiers to NA
+  oa_ids_pubs &lt;- NA
+  oa_ids_names &lt;- NA
+  oa_ids_orcid &lt;- NA
+  prof_orcid &lt;- NA
+  prof_name &lt;- NA
+  prof_name_w_initials &lt;- NA
+  prof_name_w_initials_space &lt;- NA
+  prof_initials_wo_first_name &lt;- NA
+  prof_initials_wo_first_name_space &lt;- NA
+  prof_name_first_initials &lt;- NA
+  prof_name_first_initials_space &lt;- NA
+  prof_alternative_full_name &lt;- NA
+  
+  # get the professor&#39;s narcis id anad get their publications based on this
+  prof_pubs &lt;- filter(pub_data, profile_id == narcis_id)
+  
+  # get their name
+  prof_name_details &lt;- filter(prof_data, profile_id == narcis_id)
+  prof_orcid &lt;- prof_name_details$ORCID
+  prof_name &lt;- paste(prof_name_details$first, 
+                     prof_name_details$last)
+  
+  # get the name, initials, etc combinations
+  # convert the special characters
+  prof_name_details[, 4:11] &lt;- iconv(prof_name_details[, 4:11], to=&#39;ASCII//TRANSLIT&#39;)
+  
+  # get first/last name
+  prof_name &lt;- paste(
+    prof_name_details$first, 
+    prof_name_details$last)
+  prof_name &lt;- paste0(&quot;^&quot;,
+                      prof_name,
+                      &quot;$&quot;)
+  # get their initials, drop their name in the brackets
+  prof_initials &lt;- str_squish(str_split_i(prof_name_details$initialen, &quot;\\(&quot;, 1))
+  # but some profs might have a roepnaam which is not the name they use
+  # to sign their papers (the brackets will contain the roepnaam, but the
+  # initials will be containing the actual first name)
+  # get an additional option w/o the first name at all
+  prof_initials_wo_first_name &lt;- paste(str_split(prof_initials, &quot;\\.&quot;)[[1]], collapse = &quot;.&quot;)
+  # and space them out
+  prof_initials_wo_first_name_space &lt;- paste(str_split(prof_initials, &quot;\\.&quot;)[[1]], collapse = &quot;. &quot;)
+  
+  # get the initials
+  prof_initials &lt;- str_split(prof_initials, &quot;\\.&quot;)[[1]][-c(1, length(str_split(prof_initials, &quot;\\.&quot;)[[1]]))]
+  prof_initials_no_space &lt;- paste0(paste(prof_initials, collapse = &quot;.&quot;), &quot;.&quot;)
+  prof_initials_space &lt;- paste0(paste(prof_initials, collapse = &quot;. &quot;), &quot;.&quot;)
+  # professor first name, initials, last name
+  prof_name_w_initials &lt;-  tolower(paste(prof_name_details$first, 
+                                         prof_initials_no_space,
+                                         prof_name_details$last))
+  # tidy up
+  prof_name_w_initials &lt;- paste0(&quot;^&quot;, 
+                                 str_replace(str_replace(prof_name_w_initials, &quot; \\. &quot;, &quot; &quot;), &quot;\\.\\.&quot;, &quot; &quot;),
+                                 &quot;$&quot;)
+  
+  # professor first name, initials, last name, with spaces between the initials
+  prof_name_w_initials_space &lt;-  tolower(paste(
+    prof_name_details$first, 
+    prof_initials_space,
+    prof_name_details$last))
+  
+  # tidy up
+  prof_name_w_initials_space &lt;- paste0(&quot;^&quot;, 
+                                       str_replace(str_replace(prof_name_w_initials_space, &quot; \\. &quot;, &quot; &quot;), &quot;\\.\\.&quot;, &quot; &quot;),
+                                       &quot;$&quot;)
+  
+  # just the first letter of the name + initials
+  # with spacing
+  first_initials_space &lt;- paste(paste0(substring(prof_name_details$first, 1, 1), &quot;.&quot;),
+                                prof_initials_space)
+  
+  prof_name_first_initials_space &lt;- tolower(paste(first_initials_space, 
+                                                  prof_name_details$last))
+  # tidy up
+  prof_name_first_initials_space &lt;- paste0(&quot;^&quot;, 
+                                           str_replace(str_replace(prof_name_first_initials_space, &quot; \\. &quot;, &quot; &quot;), &quot;\\.\\.&quot;, &quot;.&quot;),
+                                           &quot;$&quot;)
+  
+  # w/o spacing
+  first_initials &lt;- str_remove_all(paste(paste0(substring(prof_name_details$first, 1, 1), 
+                                                &quot;.&quot;),
+                                         prof_initials_space), &quot; &quot;)
+  
+  prof_name_first_initials &lt;- tolower(paste(first_initials, 
+                                            prof_name_details$last))
+  
+  # tidy up
+  prof_name_first_initials &lt;- paste0(&quot;^&quot;, 
+                                     str_replace(str_replace(prof_name_first_initials, &quot; \\. &quot;, &quot; &quot;), &quot;\\.\\.&quot;, &quot; &quot;),
+                                     &quot;$&quot;)
+  
+  # for some professors, we manually find their actual name vs their roepnaam in NARCIS
+  ### redacted for privacy.
+  
+  # get the DOI list without the NAs
+  doi_list &lt;- prof_pubs$DOI[!is.na(prof_pubs$DOI)]
+  prof_alternative_full_name &lt;- NA
+  
+  # try to get the IDs
+  if (all(is.na(oa_ids_pubs))){
+    # if any DOIs in our list:
+    if (length(doi_list)&gt;0){
+      
+      # call OpenAlex to get their works based on the DOIs
+      # do it in batches (currently 25)
+      batch_size &lt;- 25
+      batches &lt;- ceiling(length(doi_list)/batch_size)
+      prof_works_oa &lt;- data.frame(matrix(NA, ncol = 16, nrow = 0))
+      begin_batch &lt;- 1
+      end_batch &lt;- batch_size
+      # initialize an empty data frame
+      prof_works_oa_batch &lt;- data.frame(matrix(NA, ncol = 16, nrow = 0))
+      # loop through the batches
+      for(i in 1:batches){
+        # get the first batch
+        # try, if error, just stop
+        try(
+          prof_works_oa_batch &lt;- oa_fetch(
+            entity = &quot;works&quot;,
+            doi = doi_list[begin_batch:end_batch]), 
+          silent = TRUE
+        )
+        # when binding, some columns might not be there
+        # so to address that, check the columns
+        # if the new batch has less (but only after the first batch was processed, thus i &gt; 1)
+        if (i &gt; 1 &amp; length(which(!colnames(prof_works_oa) %in% colnames(prof_works_oa_batch))) &gt; 0){
+          # add the missing columns filled with NAs
+          prof_works_oa_batch[colnames(prof_works_oa)[which(! colnames(prof_works_oa) %in% colnames(prof_works_oa_batch))]] &lt;- NA
+          # rearrange the columns
+          prof_works_oa_batch &lt;- prof_works_oa_batch[colnames(prof_works_oa)]
+        }
+        # if the new batch has more (but only after the first batch was processed, thus i &gt; 1)
+        if (i &gt; 1 &amp; length(which(! colnames(prof_works_oa_batch) %in% colnames(prof_works_oa))) &gt; 0){
+          # add the missing columns filled with NAs
+          prof_works_oa[colnames(prof_works_oa_batch)[which(! colnames(prof_works_oa_batch) %in% colnames(prof_works_oa))]] &lt;- NA
+          # rearrange the columns
+          prof_works_oa &lt;- prof_works_oa[colnames(prof_works_oa_batch)]
+        }
+        
+        # bind to the rest
+        prof_works_oa &lt;- rbind(prof_works_oa,
+                               prof_works_oa_batch)
+        
+        # get the remaining batch size, and go to the end if less than batch size, 
+        # and go for another round if more than batch size
+        if (length(doi_list)-end_batch &lt;= batch_size){
+          end_batch &lt;- end_batch + length(doi_list)-end_batch
+        }else{
+          end_batch &lt;- end_batch + batch_size
+        }
+        # set the beginning to the beginning + batch size
+        begin_batch &lt;- begin_batch + batch_size
+      }
+      
+      # and now loop through the authors of these papers in OpenAlex to get info
+      # on the author ids OpenAlex has on them
+      prof_oaid_info &lt;- data.frame(matrix(NA, nrow = 0, ncol = 13))
+      # loop through the papers we retrieved, get the DOIs and author lists and try to match the
+      # author to those we miss
+      if (nrow(prof_works_oa) &gt; 0 &amp; !all(is.na(prof_works_oa))){
+        for (i in 1:nrow(prof_works_oa)){
+          author_info &lt;- c()
+          info &lt;- prof_works_oa[i, c(&quot;id&quot;,&quot;display_name&quot;, &quot;doi&quot;)]
+          doi_in_question &lt;- str_remove(info$doi, &quot;https://doi.org/&quot;)
+          # if found and one person
+          authors &lt;- prof_works_oa[i, &quot;author&quot;][[1]][[1]]
+          if (class(authors) != &quot;logical&quot;){
+            
+            # remove special characters
+            authors$au_display_name &lt;- iconv(authors$au_display_name, to=&#39;ASCII//TRANSLIT&#39;)
+            
+            # find the author with a matching name
+            authors$match &lt;- grepl(prof_name, tolower(authors$au_display_name))
+            # check with initials as well
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_name_w_initials, tolower(authors$au_display_name)),
+                                    authors$match)
+            # and spaced out initials
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_name_w_initials_space, tolower(authors$au_display_name)),
+                                    authors$match)
+            # and no first name, but only initials and also only spaced out initials
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_name_first_initials, tolower(authors$au_display_name)),
+                                    authors$match)
+            
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_name_first_initials_space, tolower(authors$au_display_name)),
+                                    authors$match)
+            
+            # if nothing still, initials without the first name
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_initials_wo_first_name, tolower(authors$au_display_name)),
+                                    authors$match)
+            
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_initials_wo_first_name_space, tolower(authors$au_display_name)),
+                                    authors$match)   
+            # and their alternative first name we manually correct for
+            authors$match &lt;- ifelse(authors$match == FALSE,
+                                    grepl(prof_alternative_full_name, tolower(authors$au_display_name)),
+                                    authors$match)   
+            
+            # fetch the author, if there is a match
+            author &lt;- filter(authors, match == TRUE)
+            
+            if (nrow(author) == 1){
+              # remove the &quot;match&quot; column
+              author_info &lt;- author[, -12]
+              # bind with the narcis ID for later
+              author_info$profile_id &lt;- narcis_id
+            }
+          }
+          
+          prof_oaid_info &lt;- rbind(prof_oaid_info,
+                                  author_info)
+        }
+        
+        # make sure the empty oa_id did not make it in here, because then we get stuck
+        # in an endless loop (or fetch things we do not want to, burdening the API)
+        if (nrow(prof_oaid_info) &gt; 0){
+          prof_oaid_info &lt;- filter(prof_oaid_info, au_id != &quot;https://openalex.org/A9999999999&quot;)
+          # get all oa ids of the author
+          oa_ids_pubs &lt;- as.character(unique(prof_oaid_info$au_id))
+        }
+      }
+    }
+  }
+  
+  # if no ID found:
+  if (all(is.na(oa_ids_orcid))){
+    # if no DOIs in our list, check if there is an ORCID we can use
+    prof_orcid &lt;- prof_name_details$ORCID
+    # if there&#39;s an orcid
+    if (!is.na(prof_orcid)){
+      # fetch professor info from ORCIDs
+      prof_info &lt;- oa_fetch(
+        entity = &quot;authors&quot;, 
+        orcid = prof_orcid)
+      
+      if (!is.null(prof_info)){
+        # make sure the no name ID is not in here
+        prof_info &lt;- filter(prof_info, 
+                            id != &quot;https://openalex.org/A9999999999&quot;)
+        # now retrieve OA IDs from this
+        oa_ids_orcid &lt;- as.character(unique(prof_info$id))
+      }
+    }
+  }
+  
+  # if oa_ids still NA
+  oa_ids_by_name &lt;- as.data.frame(matrix(NA, nrow = 0, ncol = 17))
+  if (all(is.na(oa_ids_names))){
+    # search by name
+    oa_au_result &lt;- oa_fetch(&quot;author&quot;,
+                             search = paste(prof_name_details$first, 
+                                            prof_name_details$achternaam),
+                             last_known_institution.country_code = &quot;NL&quot;)
+    
+    # if no results, try an alternative name if present
+    if(!is.null(nrow(oa_au_result)) &amp; !is.na(prof_alternative_full_name)){
+      oa_au_result &lt;- oa_fetch(&quot;author&quot;,
+                               search = prof_alternative_full_name,
+                               last_known_institution.country_code = &quot;NL&quot;)
+    }
+    # if still no results, try with extensive additional name displays:
+    
+    # if any results, see which names are an exact match
+    if(!is.null(nrow(oa_au_result))){
+      
+      oa_au_result$display_name &lt;- iconv(oa_au_result$display_name , to=&#39;ASCII//TRANSLIT&#39;)
+      
+      # find the author with a matching name
+      oa_au_result$match &lt;- grepl(prof_name, tolower(oa_au_result$display_name))
+      # check with initials as well
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_name_w_initials, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)
+      # and spaced out initials
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_name_w_initials_space, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)
+      # and no first name, but only initials and also only spaced out initials
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_name_first_initials, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)
+      
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_name_first_initials_space, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)
+      
+      # if nothing still, initials without the first name
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_initials_wo_first_name, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)
+      
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_initials_wo_first_name_space, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)   
+      # and their alternative first name we manually correct for
+      oa_au_result$match &lt;- ifelse(oa_au_result$match == FALSE,
+                                   grepl(prof_alternative_full_name, tolower(oa_au_result$display_name)),
+                                   oa_au_result$match)   
+      
+      oa_au_result &lt;- filter(oa_au_result, 
+                             ids != &quot;https://openalex.org/A9999999999&quot;)
+      # fetch the OA IDs if there is a match
+      prof_oa_ids &lt;- filter(oa_au_result, match == TRUE)
+      id_list &lt;- c()
+      
+      if (nrow(prof_oa_ids)&gt;0){
+        oa_ids_names &lt;- prof_oa_ids$ids
+        # if a list, only retain the OA IDs:
+        if(class(oa_ids_names) == &quot;list&quot;){
+          oa_ids_names &lt;- c()
+          for (j in 1:nrow(prof_oa_ids)){
+            id &lt;- prof_oa_ids$ids[[j]][&#39;openalex&#39;]
+            oa_ids_names &lt;- c(oa_ids_names, id)
+          }
+          oa_ids_names &lt;- unname(oa_ids_names)
+        }
+      }
+    }
+  }
+  # if still nothing
+  if (all(is.na(oa_ids_names))){
+    # try to find OA ID matches by looking at alternative OA name spellings as well
+    prof_name_details &lt;- filter(profs_full, profile_id == narcis_id)
+    
+    oa_au_result &lt;- oa_fetch(&quot;author&quot;,
+                             search = paste(prof_name_details$first, 
+                                            prof_name_details$achternaam))
+    
+    # unlist the results
+    if (!all(is.na(oa_au_result))){
+      display_name_ids &lt;- data.frame(matrix(NA, nrow = 0, ncol = 2))
+      for (j in 1:nrow(oa_au_result)){
+        display_names &lt;- unlist(oa_au_result$display_name_alternatives[j])
+        ids &lt;- unlist(oa_au_result$ids[j])[&#39;openalex&#39;]
+        row &lt;- cbind.data.frame(&quot;display_name&quot; = display_names,
+                                &quot;oa_id&quot; = ids)
+        rownames(row) &lt;- c()
+        display_name_ids &lt;- rbind(display_name_ids,
+                                  row, row.names = NULL)
+      }
+      
+      display_name_ids$display_name &lt;- iconv(display_name_ids$display_name , to=&#39;ASCII//TRANSLIT&#39;)
+      
+      # find the author with a matching name
+      display_name_ids$match &lt;- grepl(prof_name, tolower(display_name_ids$display_name))
+      # check with initials as well
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_name_w_initials, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)
+      # and spaced out initials
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_name_w_initials_space, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)
+      # and no first name, but only initials and also only spaced out initials
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_name_first_initials, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)
+      
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_name_first_initials_space, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)
+      
+      # if nothing still, initials without the first name
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_initials_wo_first_name, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)
+      
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_initials_wo_first_name_space, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match)   
+      # and their alternative first name we manually correct for
+      display_name_ids$match &lt;- ifelse(display_name_ids$match == FALSE,
+                                       grepl(prof_alternative_full_name, tolower(display_name_ids$display_name)),
+                                       display_name_ids$match) 
+      
+      # get the matches
+      display_name_ids &lt;- filter(display_name_ids,
+                                 match == TRUE)
+      
+      # extract
+      oa_ids_names &lt;- display_name_ids$oa_id
+    }
+  }
+  # bind into a list
+  prof_search_output &lt;- list()
+  prof_search_output[&#39;narcis_id&#39;] &lt;- narcis_id
+  prof_search_output[&#39;oa_ids_pubs&#39;] &lt;- list(oa_ids_pubs)  
+  prof_search_output[&#39;oa_ids_orcid&#39;] &lt;- list(oa_ids_orcid)
+  prof_search_output[&#39;oa_ids_names&#39;] &lt;- list(oa_ids_names)
+  return(prof_search_output)
+}
+
+
+## retrieve professor data based on their OpenAlex IDs
+
+professor_pub_info_retriever &lt;- function(prof_oa_ids,
+                                         narcis_id,
+                                         pub_data,
+                                         prof_data){
+  
+  # get the professor&#39;s narcis id and get their publications based on this
+  prof_pubs &lt;- filter(pub_data, profile_id == narcis_id)
+  
+  # get the professor&#39;s OA IDs list
+  oa_ids &lt;- filter(prof_oa_ids,
+                   profile_id == narcis_id)$oa_id
+  
+  # pull all the data related to these OA ids
+  # if ID found:
+  if (length(oa_ids)&gt;0){
+    # get all papers from OA using these ids:
+    prof_all_works_oa &lt;- oa_fetch(
+      entity = &quot;works&quot;, 
+      author.id = oa_ids)
+    
+    if (!all(is.na(prof_all_works_oa))){
+      
+      # deduplicate based on IDs
+      prof_all_works_oa$duplicate &lt;- duplicated(prof_all_works_oa[, c(&quot;id&quot;)])
+      prof_all_works_oa &lt;- filter(prof_all_works_oa,
+                                  duplicate == FALSE)
+      
+      # paste the OA ID and the Narcis ID
+      prof_all_works_oa$oa_id &lt;- paste(oa_ids, collapse = &quot;, &quot;)
+      prof_all_works_oa$profile_id &lt;- narcis_id
+      
+      
+      # unnest the authors of works
+      prof_all_works_oa_unlist &lt;- unnest(prof_all_works_oa, &quot;author&quot;)
+      # get the paper list for the profs themselves
+      prof_themselves &lt;- filter(prof_all_works_oa_unlist, au_id %in% oa_ids)
+      # and a list of their coauthors
+      coauthors &lt;- filter(prof_all_works_oa_unlist, ! au_id %in% oa_ids)
+      
+      
+      # unneest the professor&#39;s own publication data
+      prof_themselves &lt;- unnest(prof_themselves, &quot;counts_by_year&quot;, names_sep = &quot;_&quot;)
+      
+      prof_themselves_concepts &lt;- unnest(prof_themselves, &quot;concepts&quot;, names_sep = &quot;_&quot;)
+      
+      
+      # writing this out to a database
+      # professor grants
+      if (&quot;grants&quot; %in% colnames(prof_themselves)){
+        if (dbExistsTable(con, &quot;oa_prof_grants&quot;)){
+          # check fields in the existing table
+          fields &lt;- dbListFields(con, &quot;oa_prof_grants&quot;)
+          # if not all fields there
+          if(!all(fields %in% colnames(prof_themselves_grants))){
+            n_missing &lt;- which(!fields %in% colnames(prof_themselves_grants))
+            padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+            colnames(padding) &lt;- fields[which(!fields %in% colnames(prof_themselves_grants))]
+            prof_themselves_grants &lt;- bind_cols(prof_themselves_grants,
+                                                padding)
+            prof_themselves_grants &lt;- prof_themselves_grants[fields]
+          }
+          # only leave these fields in
+          prof_themselves_grants &lt;-  prof_themselves_grants %&gt;%
+            select(all_of(fields))
+          dbAppendTable(con, &quot;oa_prof_grants&quot;, prof_themselves_grants, row.names=NULL, append=TRUE)
+        }else{
+          prof_themselves_grants &lt;- prof_themselves_grants %&gt;%
+            select(-ids, -referenced_works, -related_works, -duplicate, -concepts)%&gt;%
+            filter(!is.na(au_id))
+          dbWriteTable(con, &quot;oa_prof_grants&quot;, prof_themselves_grants, row.names=FALSE, append=TRUE)
+        }
+      }
+      
+      
+      # professor publications
+      if (dbExistsTable(con, &quot;oa_prof_pubs&quot;)){
+        # check fields in the existing table
+        fields &lt;- dbListFields(con, &quot;oa_prof_pubs&quot;)
+        # if not all fields there
+        if(!all(fields %in% colnames(prof_themselves))){
+          n_missing &lt;- which(!fields %in% colnames(prof_themselves))
+          padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+          colnames(padding) &lt;- fields[which(!fields %in% colnames(prof_themselves))]
+          prof_themselves &lt;- bind_cols(prof_themselves,
+                                       padding)
+          prof_themselves &lt;- prof_themselves[fields]
+        }
+        # only leave these fields in
+        prof_themselves &lt;-  prof_themselves %&gt;%
+          select(all_of(fields))
+        
+        dbAppendTable(con, &quot;oa_prof_pubs&quot;, prof_themselves, row.names=NULL, append=TRUE)
+      }else{
+        prof_themselves &lt;- prof_themselves %&gt;%
+          select(-ids, -referenced_works, -related_works, -duplicate, -concepts, -grants)%&gt;%
+          filter(!is.na(au_id))
+        dbWriteTable(con, &quot;oa_prof_pubs&quot;, prof_themselves, row.names=FALSE, append=TRUE)
+      }
+      # professor concepts
+      if (dbExistsTable(con, &quot;oa_prof_concepts&quot;)){
+        # check fields in the existing table
+        fields &lt;- dbListFields(con, &quot;oa_prof_concepts&quot;)
+        # if not all fields there
+        if(!all(fields %in% colnames(prof_themselves_concepts))){
+          n_missing &lt;- which(!fields %in% colnames(prof_themselves_concepts))
+          padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+          colnames(padding) &lt;- fields[which(!fields %in% colnames(prof_themselves_concepts))]
+          prof_themselves_concepts &lt;- bind_cols(prof_themselves_concepts,
+                                                padding)
+          prof_themselves_concepts &lt;- prof_themselves_concepts[fields]
+        }
+        # only leave these fields in
+        prof_themselves_concepts &lt;-  prof_themselves_concepts %&gt;%
+          select(all_of(fields))
+        
+        dbAppendTable(con, &quot;oa_prof_concepts&quot;, prof_themselves_concepts, row.names=NULL, append=TRUE)
+      }else{
+        prof_themselves_concepts &lt;- prof_themselves_concepts %&gt;%
+          select(-ids, -referenced_works, -related_works, -duplicate, -grants)%&gt;%
+          filter(!is.na(au_id))
+        dbWriteTable(con, &quot;oa_prof_concepts&quot;, prof_themselves_concepts, row.names=FALSE, append=TRUE)
+      }
+      
+      # tidy up the dataframe on coauthors, if any info is there
+      if (!all(is.na((coauthors)))){
+        if (nrow(coauthors) &gt; 0){
+          # add the author id info just in case
+          coauthors$oa_id &lt;- paste(oa_ids, collapse = &quot;, &quot;)
+          coauthors$profile_id &lt;- narcis_id
+          
+          # professor coauthor info
+          if (dbExistsTable(con, &quot;oa_coauthor_info&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;oa_coauthor_info&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(coauthors))){
+              n_missing &lt;- which(!fields %in% colnames(coauthors))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(coauthors))]
+              coauthors &lt;- bind_cols(coauthors,
+                                     padding)
+              coauthors &lt;- coauthors[fields]
+            }
+            # only leave these fields in
+            coauthors &lt;-  coauthors %&gt;%
+              select(all_of(fields))
+            
+            dbAppendTable(con, &quot;oa_coauthor_info&quot;, coauthors, row.names=NULL, append=TRUE)
+          }else{
+            coauthors &lt;- coauthors %&gt;%
+              select(-concepts, -counts_by_year, -ids, 
+                     -referenced_works, -related_works, 
+                     -duplicate, -grants)%&gt;%
+              filter(!is.na(au_id))
+            dbWriteTable(con, &quot;oa_coauthor_info&quot;, coauthors, row.names=FALSE, append=TRUE)
+          }
+        }
+      }
+    }
+  }
+}
+
+
+## gender information from genderize.io
+genderize_io_function &lt;- function(name,
+                                  api_key = &quot;&quot;,
+                                  country_id = &quot;&quot;){
+  # call the api using the name
+  name_call &lt;- paste0(&quot;https://api.genderize.io?name=&quot;, name)
+  
+  # if country ID provided
+  if (country_id != &quot;&quot;){
+    name_call &lt;- paste0(name_call, &quot;&amp;country_id=&quot;, toupper(country_id))
+  }
+  # if API key provided
+  if (api_key !=&quot;&quot;){
+    name_call &lt;- paste0(name_call, &quot;&amp;apikey=&quot;, api_key, &quot;&quot;)
+  }
+  output &lt;- fromJSON(txt=name_call)
+  # if no gender predicted
+  if(is.null(output[[&quot;gender&quot;]])){
+    output[[&quot;gender&quot;]] &lt;- NA
+  }
+  output &lt;- data.frame(output)
+  return(output)
+}
+
+
+## altmetric explorer API calling function using the ORCID
+altmetric_api_orcid_caller &lt;- function(orcid,
+                                       api_secret,
+                                       api_key,
+                                       endpoint = c(&quot;research_outputs&quot;,
+                                                    &quot;attention&quot;,
+                                                    &quot;demographics&quot;,
+                                                    &quot;mentions&quot;,
+                                                    &quot;mention_sources&quot;,
+                                                    &quot;journals&quot;)){
+  if (! endpoint %in% c(&quot;research_outputs&quot;,
+                        &quot;attention&quot;,
+                        &quot;demographics&quot;,
+                        &quot;mentions&quot;,
+                        &quot;mention_sources&quot;,
+                        &quot;journals&quot;)){
+    stop(&#39;Please select one of the following endpoints: &quot;research_outputs&quot;, &quot;attention&quot;,
+    &quot;demographics&quot;, &quot;mentions&quot;,  &quot;mention_sources&quot;, &quot;journals&quot;&#39;)
+  }
+  
+  filter_pt1 &lt;- paste0(&#39;orcid|&#39;, orcid)
+  filter_pt2 &lt;- paste(filter_pt1, &quot;scope|all&quot;, sep = &quot;|&quot;)
+  #filters = &#39;orcid|0000-0003-0800-5271|scope|all&#39;
+  digest &lt;- hmac(api_secret, filter_pt2,
+                 algo = c(&quot;sha1&quot;),
+                 serialize = FALSE)
+  
+  
+  # build up the url by inserting an ORCID
+  if (endpoint == &quot;research_outputs&quot;){
+    url_pt1a &lt;- paste0(&quot;https://www.altmetric.com/explorer/api/research_outputs?digest=&quot;, digest)
+    url_pt1b &lt;- paste0(url_pt1a, &quot;&amp;filter%5Borcid%5D=&quot;)
+    url_pt1 &lt;- paste0(url_pt1b, orcid)
+  } else{
+    # for other endpoints, specify the end point
+    url_pt1a &lt;- &quot;https://www.altmetric.com/explorer/api/research_outputs/&quot;
+    url_pt1b &lt;- paste0(paste0(url_pt1a, endpoint), &quot;?digest=&quot;)
+    url_pt1c &lt;- paste0(url_pt1b, digest)
+    url_pt1d &lt;- paste0(url_pt1c, &quot;&amp;filter%5Borcid%5D=&quot;)
+    url_pt1 &lt;- paste0(url_pt1d, orcid)
+  }
+  # first, get the first page with a 100 results
+  url_pt2 &lt;- paste0(paste0(&quot;&amp;filter%5Bscope%5D=all&amp;key=&quot;, api_key), &quot;&amp;page%5Bnumber%5D=1&quot;)
+  
+  
+  url_build &lt;- paste0(url_pt1, url_pt2)
+  
+  # fetch the output
+  output &lt;- fromJSON(txt=url_build)
+  
+  # fetch the dataframe we need
+  dataframe_output &lt;- output$data
+  
+  # get the total number of results
+  results_total &lt;- output$meta$response$`total-results`
+  # since we get results by a 100, get the number of calls we need (minus the one we made)
+  calls_remaining &lt;- ceiling(results_total/25)-1
+  
+  # if more calls remaining, call the api again, getting the correponding pages:
+  if (calls_remaining &gt; 0){
+    for (call in seq_len(calls_remaining)){
+      # build the url for each next page
+      page &lt;- call + 1
+      url_pages &lt;- paste0(paste0(&quot;&amp;filter%5Bscope%5D=all&amp;key=&quot;, api_key), &quot;&amp;page%5Bnumber%5D=&quot;)
+      url_pages &lt;- paste0(url_pages, page)
+      url_build &lt;- paste0(url_pt1, url_pages)
+      page_output &lt;- fromJSON(txt=url_build)
+      dataframe_page_output &lt;- page_output$data
+      
+      dataframe_output &lt;- dataframe_output %&gt;%
+        dplyr::bind_rows(dataframe_page_output)
+    }
+  }
+  return(dataframe_output)
+}
+
+
+## Altmetric details API Retriever function (publication list with DOIs as input)
+
+altmetric_mention_retriever &lt;- function(api_key,
+                                        doi,
+                                        include_twitter = FALSE){
+  
+  # elements to make a url that calls the API to get mention data
+  doi_call_url &lt;- &quot;https://api.altmetric.com/v1/fetch/doi/&quot;
+  api_key_url &lt;- paste0(&quot;?key=&quot;, api_key)
+  exclude_twitter_url &lt;- &quot;&amp;exclude_sources=twitter&quot;
+  # get the doi without the url part
+  doi_url &lt;- str_remove(doi$doi[1], &quot;https://doi.org/&quot;)
+  # work id
+  work_id &lt;- doi$id[1]
+  # if there is a doi:
+  if (!is.na(doi_url)){
+    # make the url for the api call
+    api_call &lt;- paste(doi_call_url, doi_url, api_key_url, sep = &quot;&quot;)
+    
+    # exclude twitter? if so, add:
+    if (include_twitter == FALSE){
+      api_call &lt;- paste(api_call, exclude_twitter_url, sep = &quot;&quot;)
+    }
+    # empty DOI output object, in case try fails
+    doi_output &lt;- NA
+    # and call the api
+    try(doi_output &lt;- fromJSON(txt=api_call), silent = TRUE)
+    # now, check if this doi has any mentions in the media
+    if (&quot;posts&quot; %in% names(doi_output)){
+      mentions &lt;- doi_output[[&quot;posts&quot;]]
+      if (length(mentions)&gt;0){
+        # if news:
+        if (&quot;news&quot; %in% names(mentions)){
+          news &lt;- mentions[[&quot;news&quot;]]
+          news &lt;- unnest(news, author, names_sep = &quot;_&quot;)
+          news$id &lt;- work_id
+          if (dbExistsTable(con, &quot;altmetric_pub_att_news&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_news&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(news))){
+              n_missing &lt;- which(!fields %in% colnames(news))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(news))]
+              news &lt;- bind_cols(news,
+                                padding)
+              news &lt;- news[fields]
+            }
+            # only leave these fields in
+            news &lt;-  news %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_news&quot;, news, row.names=NULL, append=TRUE)
+          }else{
+            news &lt;- news %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;altmetric_pub_att_news&quot;, news, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;wikipedia&quot; %in% names(mentions)){
+          wiki &lt;- mentions[[&quot;wikipedia&quot;]]
+          wiki &lt;- unnest(wiki, author, names_sep = &quot;_&quot;)
+          wiki$id &lt;- work_id
+          
+          if (dbExistsTable(con, &quot;altmetric_pub_att_wiki&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_wiki&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(wiki))){
+              n_missing &lt;- which(!fields %in% colnames(wiki))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(wiki))]
+              wiki &lt;- bind_cols(wiki,
+                                padding)
+              wiki &lt;- wiki[fields]
+            }
+            # only leave these fields in
+            wiki &lt;-  wiki %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_wiki&quot;, wiki, row.names=NULL, append=TRUE)
+          }else{
+            wiki &lt;-  wiki %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;altmetric_pub_att_wiki&quot;, wiki, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;reddit&quot; %in% names(mentions)){
+          reddit &lt;- mentions[[&quot;reddit&quot;]]
+          reddit &lt;- unnest(reddit, author, names_sep = &quot;_&quot;)
+          reddit$id &lt;- work_id
+          
+          if (dbExistsTable(con, &quot;altmetric_pub_att_reddit&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_reddit&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(reddit))){
+              n_missing &lt;- which(!fields %in% colnames(reddit))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(reddit))]
+              reddit &lt;- bind_cols(reddit,
+                                  padding)
+              reddit &lt;- reddit[fields]
+            }
+            # only leave these fields in
+            reddit &lt;-  reddit %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_reddit&quot;, reddit, row.names=NULL, append=TRUE)
+          }else{
+            reddit &lt;-  reddit %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;altmetric_pub_att_reddit&quot;, reddit, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;blogs&quot; %in% names(mentions)){
+          blogs &lt;- mentions[[&quot;blogs&quot;]]
+          blogs &lt;- unnest(blogs, author, names_sep = &quot;_&quot;)
+          blogs$id &lt;- work_id
+          
+          if (dbExistsTable(con, &quot;altmetric_pub_att_blogs&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_blogs&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(blogs))){
+              n_missing &lt;- which(!fields %in% colnames(blogs))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(blogs))]
+              blogs &lt;- bind_cols(blogs,
+                                 padding)
+              blogs &lt;- blogs[fields]
+            }
+            # only leave these fields in
+            blogs &lt;-  blogs %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_blogs&quot;, blogs, row.names=NULL, append=TRUE)
+          }else{
+            blogs &lt;- blogs %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;altmetric_pub_att_blogs&quot;, blogs, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;policy&quot; %in% names(mentions)){
+          policy &lt;- mentions[[&quot;policy&quot;]]
+          policy &lt;- unnest(policy, source)
+          policy$id &lt;- work_id
+          if (&quot;author&quot; %in% colnames(policy)){
+            policy &lt;- unnest(policy, author)
+          }
+          
+          if (dbExistsTable(con, &quot;altmetric_pub_att_policy&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_policy&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(policy))){
+              n_missing &lt;- which(!fields %in% colnames(policy))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(policy))]
+              policy &lt;- bind_cols(policy,
+                                  padding)
+              policy &lt;- policy[fields]
+            }
+            # only leave these fields in
+            policy &lt;-  policy %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_policy&quot;, policy, row.names=NULL, append=TRUE)
+          }else{
+            policy &lt;- policy %&gt;%
+              select(-citation_ids, -collections)
+            dbWriteTable(con, &quot;altmetric_pub_att_policy&quot;, policy, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;twitter&quot; %in% names(mentions)){
+          twitter &lt;- mentions[[&quot;twitter&quot;]]
+          twitter &lt;- unnest(twitter, author)
+          twitter$id &lt;- work_id
+          if (dbExistsTable(con, &quot;altmetric_pub_att_twitter&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;altmetric_pub_att_twitter&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(twitter))){
+              n_missing &lt;- which(!fields %in% colnames(twitter))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(twitter))]
+              twitter &lt;- bind_cols(twitter,
+                                   padding)
+              twitter &lt;- twitter[fields]
+            }
+            # only leave these fields in
+            twitter &lt;-  twitter %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;altmetric_pub_att_twitter&quot;, twitter, row.names=NULL, append=TRUE)
+          }else{
+            twitter &lt;- twitter %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;altmetric_pub_att_twitter&quot;, twitter, row.names=FALSE, append=TRUE)
+          }
+        }
+      }
+    }
+  }
+}
+
+
+##  The same function, but for robustness checks
+altmetric_mention_retriever_rob &lt;- function(api_key,
+                                            doi,
+                                            include_twitter = FALSE){
+  
+  # elements to make a url that calls the API to get mention data
+  doi_call_url &lt;- &quot;https://api.altmetric.com/v1/fetch/doi/&quot;
+  api_key_url &lt;- paste0(&quot;?key=&quot;, api_key)
+  exclude_twitter_url &lt;- &quot;&amp;exclude_sources=twitter&quot;
+  # get the doi without the url part
+  doi_url &lt;- str_remove(doi$doi[1], &quot;https://doi.org/&quot;)
+  # work id
+  work_id &lt;- doi$id[1]
+  # if there is a doi:
+  if (!is.na(doi_url)){
+    # make the url for the api call
+    api_call &lt;- paste(doi_call_url, doi_url, api_key_url, sep = &quot;&quot;)
+    
+    # exclude twitter? if so, add:
+    if (include_twitter == FALSE){
+      api_call &lt;- paste(api_call, exclude_twitter_url, sep = &quot;&quot;)
+    }
+    # empty DOI output object, in case try fails
+    doi_output &lt;- NA
+    # and call the api
+    try(doi_output &lt;- fromJSON(txt=api_call), silent = TRUE)
+    # now, check if this doi has any mentions in the media
+    if (&quot;posts&quot; %in% names(doi_output)){
+      mentions &lt;- doi_output[[&quot;posts&quot;]]
+      if (length(mentions)&gt;0){
+        # if news:
+        if (&quot;news&quot; %in% names(mentions)){
+          news &lt;- mentions[[&quot;news&quot;]]
+          news &lt;- unnest(news, author, names_sep = &quot;_&quot;)
+          news$id &lt;- work_id
+          if (dbExistsTable(con, &quot;rob_altmetric_pub_att_news&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;rob_altmetric_pub_att_news&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(news))){
+              n_missing &lt;- which(!fields %in% colnames(news))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(news))]
+              news &lt;- bind_cols(news,
+                                padding)
+              news &lt;- news[fields]
+            }
+            # only leave these fields in
+            news &lt;-  news %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;rob_altmetric_pub_att_news&quot;, news, row.names=NULL, append=TRUE)
+          }else{
+            news &lt;- news %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;rob_altmetric_pub_att_news&quot;, news, row.names=FALSE, append=TRUE)
+          }
+        }
+        
+        if (&quot;blogs&quot; %in% names(mentions)){
+          blogs &lt;- mentions[[&quot;blogs&quot;]]
+          blogs &lt;- unnest(blogs, author, names_sep = &quot;_&quot;)
+          blogs$id &lt;- work_id
+          
+          if (dbExistsTable(con, &quot;rob_altmetric_pub_att_blogs&quot;)){
+            # check fields in the existing table
+            fields &lt;- dbListFields(con, &quot;rob_altmetric_pub_att_blogs&quot;)
+            # if not all fields there
+            if(!all(fields %in% colnames(blogs))){
+              n_missing &lt;- which(!fields %in% colnames(blogs))
+              padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+              colnames(padding) &lt;- fields[which(!fields %in% colnames(blogs))]
+              blogs &lt;- bind_cols(blogs,
+                                 padding)
+              blogs &lt;- blogs[fields]
+            }
+            # only leave these fields in
+            blogs &lt;-  blogs %&gt;%
+              select(all_of(fields))
+            dbAppendTable(con, &quot;rob_altmetric_pub_att_blogs&quot;, blogs, row.names=NULL, append=TRUE)
+          }else{
+            blogs &lt;- blogs %&gt;%
+              select(-citation_ids)
+            dbWriteTable(con, &quot;rob_altmetric_pub_att_blogs&quot;, blogs, row.names=FALSE, append=TRUE)
+          }
+        }
+      }
+    }
+  }
+}
+
+
+## Altmetric details API retriever - only for tweets (publication list with DOIs as input)
+altmetric_twitter_retriever &lt;- function(api_key,
+                                        publication_list){
+  
+  # elements to make a url that calls the API to get mention data
+  doi_call_url &lt;- &quot;https://api.altmetric.com/v1/fetch/doi/&quot;
+  api_key_url &lt;- paste0(&quot;?key=&quot;, api_key)
+  
+  # get the publication list
+  oa_pubs &lt;- publication_list
+  # generate a dataframe to hold the output
+  twitter_attention_df &lt;- data.frame(matrix(NA, ncol = 5, nrow = 0))
+  colnames(twitter_attention_df) &lt;- c(&quot;id&quot;,  &quot;license&quot;,
+                                      &quot;citation_ids&quot;, &quot;tweeter_id&quot;, &quot;tweet_id&quot;)
+  
+  # if not empty:
+  if (!all(is.na(oa_pubs))){
+    # loop, for each doi, and:
+    for (i in 1:nrow(oa_pubs)){
+      # get the doi without the url part
+      doi_url &lt;- str_remove(oa_pubs$doi[i], &quot;https://doi.org/&quot;)
+      # if there is a doi:
+      if (!is.na(doi_url)){
+        # make the url for the api call
+        api_call &lt;- paste(doi_call_url, doi_url, api_key_url, &quot;&amp;include_sources=twitter&quot;, sep=&quot;&quot;) 
+        
+        # empty DOI output object, in case try fails
+        doi_output &lt;- NA
+        # and call the api
+        try(doi_output &lt;- fromJSON(txt=api_call), silent = TRUE)
+        # now, check if this doi has any mentions in the media
+        if(!all(is.na(doi_output))){
+          if (&quot;posts&quot; %in% names(doi_output)){
+            if (&quot;twitter&quot; %in% names(doi_output[[&quot;posts&quot;]])){
+              tweet_info &lt;- doi_output[[&quot;posts&quot;]][[&quot;twitter&quot;]]
+              tweet_info &lt;- unnest(tweet_info, cols = c(citation_ids, author))
+              # combine this with relevant publication info
+              pub_info_combi &lt;- data.frame(oa_pubs[i, c(&quot;id&quot;)])
+              colnames(pub_info_combi) &lt;- &quot;id&quot;
+              tweet_info_full &lt;- bind_cols(pub_info_combi, tweet_info)
+              
+              # check if all relevant columns there, if not, pad
+              if(!all(colnames(twitter_attention_df) %in% colnames(tweet_info_full))){
+                n_missing &lt;- which(! colnames(twitter_attention_df) %in% colnames(tweet_info_full))
+                padding &lt;- data.frame(matrix(NA, ncol = length(n_missing), nrow=1))
+                colnames(padding) &lt;- colnames(twitter_attention_df)[which(!colnames(twitter_attention_df) %in% colnames(tweet_info_full))]
+                tweet_info_full &lt;- bind_cols(tweet_info_full,
+                                             padding)
+                tweet_info_full &lt;- tweet_info_full[colnames(twitter_attention_df)]
+              }
+              
+              
+              twitter_attention_df &lt;- rbind(twitter_attention_df,
+                                            tweet_info_full)
+            }
+          }
+        }
+      }
+    }
+    # return the list of mentions dataframe
+    return(twitter_attention_df)
+  }
+}
+
+
+## Compile coauthor panel and append it to the author panel per profile_id:
+coauthor_data_compiler &lt;- function(profile_id,
+                                   prof_panel,
+                                   prof_coauthor_matching,
+                                   prof_coauthor_panel,
+                                   prof_coauthor_info_w_gender){
+  
+  current_profile_id &lt;- profile_id
+  # get info on this prof
+  prof_panel &lt;- filter(prof_panel,
+                       profile_id == current_profile_id)
+  
+  # get into on this prof&#39;s coauthors only for the years in which they coauthored
+  prof_coauthors &lt;- filter(prof_coauthor_matching, 
+                           profile_id == current_profile_id &amp; publication_year &gt;= 1974)
+  # now, extract the statistics on these coauthors from out coauthor panel
+  prof_coauthor_data &lt;- filter(prof_coauthor_panel,
+                               id %in% prof_coauthors$au_id)
+  
+  # and select the relevant coauthors to check gender composition per paper
+  prof_coauthors_oa_gender &lt;- filter(prof_coauthor_info_w_gender,
+                                     profile_id == current_profile_id)
+  
+  # get coauthor_d + year variable to filter on
+  prof_coauthors$au_year &lt;- paste0(prof_coauthors$au_id, &quot;_&quot;, prof_coauthors$publication_year)
+  prof_coauthor_data$au_year &lt;- paste0(prof_coauthor_data$id, &quot;_&quot;, prof_coauthor_data$year)
+  
+  prof_coauthor_data_rel &lt;- filter(prof_coauthor_data,
+                                   au_year %in% prof_coauthors$au_year)
+  
+  # get yearly professor coauthor data breakdown
+  prof_coauthor_data_year &lt;- prof_coauthor_data_rel %&gt;%
+    group_by(year)%&gt;%
+    summarise_at(vars(count_pubs:coa_attn_twitter_by_total), sum, na.rm = TRUE)
+  
+  prof_coauthor_data_rel$gender &lt;- ifelse(is.na(prof_coauthor_data_rel$gender), 
+                                          &quot;unknown&quot;, 
+                                          prof_coauthor_data_rel$gender)
+  # gender breakdown
+  prof_coauthor_gender_breakdown &lt;- prof_coauthor_data_rel %&gt;%
+    group_by(gender, year)%&gt;%
+    summarise(n = n())%&gt;%
+    pivot_wider(names_from = gender, values_from = n)%&gt;%
+    replace(is.na(.), 0)
+  
+  if (!&quot;unknown&quot; %in% colnames(prof_coauthor_gender_breakdown)){
+    prof_coauthor_gender_breakdown$unknown &lt;- 0
+  }
+  
+  if (!&quot;m&quot; %in% colnames(prof_coauthor_gender_breakdown)){
+    prof_coauthor_gender_breakdown$m &lt;- 0
+  }
+  
+  if (!&quot;w&quot; %in% colnames(prof_coauthor_gender_breakdown)){
+    prof_coauthor_gender_breakdown$w &lt;- 0
+  }
+  
+  prof_coauthor_gender_breakdown &lt;- prof_coauthor_gender_breakdown[c(&quot;year&quot;, &quot;m&quot;, &quot;unknown&quot;, &quot;w&quot;)]
+  
+  colnames(prof_coauthor_gender_breakdown)[which(colnames(prof_coauthor_gender_breakdown) == &quot;m&quot;)] &lt;- &quot;coa_m&quot;
+  colnames(prof_coauthor_gender_breakdown)[which(colnames(prof_coauthor_gender_breakdown) == &quot;w&quot;)] &lt;- &quot;coa_w&quot;
+  colnames(prof_coauthor_gender_breakdown)[which(colnames(prof_coauthor_gender_breakdown) == &quot;unknown&quot;)] &lt;- &quot;coa_u&quot;
+  
+  # combined coauthor yearly summary
+  prof_coauthor_data_year &lt;- merge(prof_coauthor_data_year,
+                                   prof_coauthor_gender_breakdown,
+                                   by = &quot;year&quot;)
+  
+  # tidy up the colnames
+  colnames(prof_coauthor_data_year)[2:9] &lt;- paste0(&quot;coa_&quot;, colnames(prof_coauthor_data_year)[2:9])
+  
+  # and get a lagged equivalent
+  prof_coauthor_data_year_lag &lt;- prof_coauthor_data_year %&gt;%
+    arrange(year)%&gt;%
+    mutate_at(vars(contains(&#39;coa_&#39;)), lag)
+  
+  colnames(prof_coauthor_data_year_lag)[-1] &lt;- paste0(colnames(prof_coauthor_data_year)[-1], &quot;_l&quot;)
+  
+  # merge the two together and
+  # get cumulative info on coauthors for the professor in question 
+  prof_coauthor_data_all &lt;- merge(prof_coauthor_data_year,
+                                  prof_coauthor_data_year_lag,
+                                  by = &quot;year&quot;)
+  
+  # if we want cumulative, we first need to remove duplicate coauthor counts, keeping 
+  # only the most recent
+  years &lt;- unique(prof_coauthor_data_rel$year)
+  colnames_cumulative &lt;- c(&quot;prof_tot_count_pubs&quot;,
+                           &quot;prof_tot_cited_by&quot;,
+                           &quot;prof_tot_count_pubs_total_oa&quot;,
+                           &quot;prof_tot_cited_by_total_oa&quot;,
+                           &quot;prof_tot_cited_by_before_2012&quot;,
+                           &quot;prof_tot_count_pubs_before_2012&quot;,
+                           &quot;prof_tot_cited_by_total_all&quot;,
+                           &quot;prof_tot_count_pubs_total_all&quot;,     
+                           &quot;prof_tot_coa_attn_twitter_by&quot;,
+                           &quot;prof_tot_coa_attn_news_by&quot;,
+                           &quot;prof_tot_coa_attn_blog_by&quot;,
+                           &quot;prof_tot_coa_attn_news_by_total&quot;,
+                           &quot;prof_tot_coa_attn_blog_by_total&quot;,
+                           &quot;prof_tot_coa_attn_twitter_by_total&quot;,
+                           &quot;prof_tot_unique_coa_m&quot;,
+                           &quot;prof_tot_unique_coa_u&quot;,
+                           &quot;prof_tot_unique_coa_w&quot;)
+  
+  colnames_cumulative_all &lt;- c(&quot;year&quot;, &quot;prof_tot_count_pubs&quot;, &quot;prof_tot_cited_by&quot;, 
+                               &quot;prof_tot_count_pubs_total_oa&quot;, &quot;prof_tot_cited_by_total_oa&quot;, 
+                               &quot;prof_tot_cited_by_before_2012&quot;, &quot;prof_tot_count_pubs_before_2012&quot;,
+                               &quot;prof_tot_cited_by_total_all&quot;,  &quot;prof_tot_count_pubs_total_all&quot;, 
+                               &quot;prof_tot_coa_attn_twitter_by&quot;,  &quot;prof_tot_coa_attn_news_by&quot;, 
+                               &quot;prof_tot_coa_attn_blog_by&quot;, &quot;prof_tot_coa_attn_news_by_total&quot;, 
+                               &quot;prof_tot_coa_attn_blog_by_total&quot;, &quot;prof_tot_coa_attn_twitter_by_total&quot;,
+                               &quot;prof_tot_unique_coa_m&quot;,
+                               &quot;prof_tot_unique_coa_u&quot;,
+                               &quot;prof_tot_unique_coa_w&quot;,
+                               &quot;prof_tot_count_pubs_l&quot;, &quot;prof_tot_cited_by_l&quot;, &quot;prof_tot_count_pubs_total_oa_l&quot;,
+                               &quot;prof_tot_cited_by_total_oa_l&quot;,  &quot;prof_tot_cited_by_before_2012_l&quot;, 
+                               &quot;prof_tot_count_pubs_before_2012_l&quot;, &quot;prof_tot_cited_by_total_all_l&quot;, 
+                               &quot;prof_tot_count_pubs_total_all_l&quot;, &quot;prof_tot_coa_attn_twitter_by_l&quot;, 
+                               &quot;prof_tot_coa_attn_news_by_l&quot;,   &quot;prof_tot_coa_attn_blog_by_l&quot;,   
+                               &quot;prof_tot_coa_attn_news_by_total_l&quot;, &quot;prof_tot_coa_attn_blog_by_total_l&quot;,
+                               &quot;prof_tot_coa_attn_twitter_by_total_l&quot;,
+                               &quot;prof_tot_unique_coa_m_l&quot;,
+                               &quot;prof_tot_unique_coa_u_l&quot;,
+                               &quot;prof_tot_unique_coa_w_l&quot;,
+                               &quot;share_w_coa_all&quot;,
+                               &quot;share_w_coa_known&quot;,
+                               &quot;share_w_coa_all_l&quot;,
+                               &quot;share_w_coa_known_l&quot;)
+  
+  prof_coauthor_cumulative_data_all &lt;- as.data.frame(matrix(NA, ncol = length(colnames_cumulative_all), nrow = 0))
+  colnames(prof_coauthor_cumulative_data_all) &lt;- colnames_cumulative_all
+  
+  # loop  through the years to accumulate this
+  # additionally, get the average gender composition
+  # of author&#39;s papers in that year
+  for (year_in_question in years){
+    prof_coauthor_data_year &lt;- filter(prof_coauthor_data_rel,
+                                      year &lt;= year_in_question)
+    
+    if (nrow(prof_coauthor_data_year) &gt; 0){
+      
+      prof_coauthor_data_year &lt;- prof_coauthor_data_year %&gt;%
+        group_by(id)%&gt;%
+        slice(which.max(year))%&gt;%
+        ungroup()
+      
+      cumulative_year &lt;- prof_coauthor_data_year %&gt;%
+        select(-year)%&gt;%
+        summarise(across(where(is.numeric), \(x) sum(x, na.rm = T), .names = &quot;prof_tot_{.col}&quot;))
+      
+      cumulative_year_gender &lt;- prof_coauthor_data_year %&gt;%
+        group_by(gender)%&gt;%
+        summarise(n = n())%&gt;%
+        pivot_wider(names_from = gender, values_from = n)%&gt;%
+        replace(is.na(.), 0)
+      
+      if(! &quot;unknown&quot; %in% colnames(cumulative_year_gender)){
+        cumulative_year_gender$unknown &lt;- 0
+      }
+      if(! &quot;m&quot; %in% colnames(cumulative_year_gender)){
+        cumulative_year_gender$m &lt;- 0
+      }
+      if(! &quot;w&quot; %in% colnames(cumulative_year_gender)){
+        cumulative_year_gender$w &lt;- 0
+      }
+      cumulative_year_gender &lt;- cumulative_year_gender[c(&quot;m&quot;, &quot;unknown&quot;, &quot;w&quot;)]
+      colnames(cumulative_year_gender) &lt;- c(&quot;m&quot;, &quot;u&quot;, &quot;w&quot;)
+      
+      colnames(cumulative_year_gender) &lt;- paste0(&quot;prof_tot_unique_coa_&quot;, colnames(cumulative_year_gender))
+      
+      cumulative_year$year &lt;- year_in_question
+      
+      cumulative_year &lt;- cbind(cumulative_year,
+                               cumulative_year_gender)
+      
+      cumulative_year &lt;- cumulative_year %&gt;% relocate(year)
+      
+      prof_coauthor_data_year_lag &lt;- filter(prof_coauthor_data_rel,
+                                            year &lt;= year_in_question - 1)
+    } else {
+      cumulative_year &lt;- as.data.frame(matrix(0, ncol = length(colnames_cumulative), nrow = 1))
+      colnames(cumulative_year) &lt;- colnames_cumulative
+      cumulative_year$year &lt;- year_in_question
+    }
+    
+    prof_coauthor_data_year_lag &lt;- filter(prof_coauthor_data_rel,
+                                          year &lt;= year_in_question - 1)
+    
+    if (nrow(prof_coauthor_data_year_lag) &gt; 0){
+      prof_coauthor_data_year_lag &lt;- prof_coauthor_data_year_lag %&gt;%
+        group_by(id)%&gt;%
+        slice(which.max(year))%&gt;%
+        ungroup()
+      
+      cumulative_year_lag &lt;- prof_coauthor_data_year_lag %&gt;%
+        select(-year)%&gt;%
+        summarise(across(where(is.numeric), \(x) sum(x, na.rm = T), .names = &quot;prof_tot_{.col}_l&quot;))
+      
+      cumulative_year_gender_lag &lt;- prof_coauthor_data_year_lag %&gt;%
+        group_by(gender)%&gt;%
+        summarise(n = n())%&gt;%
+        pivot_wider(names_from = gender, values_from = n)%&gt;%
+        replace(is.na(.), 0)
+      
+      if(! &quot;unknown&quot; %in% colnames(cumulative_year_gender_lag)){
+        cumulative_year_gender_lag$unknown &lt;- 0
+      }
+      if(! &quot;m&quot; %in% colnames(cumulative_year_gender_lag)){
+        cumulative_year_gender_lag$m &lt;- 0
+      }
+      if(! &quot;w&quot; %in% colnames(cumulative_year_gender_lag)){
+        cumulative_year_gender_lag$w &lt;- 0
+      }
+      cumulative_year_gender_lag &lt;- cumulative_year_gender_lag[c(&quot;m&quot;, &quot;unknown&quot;, &quot;w&quot;)]
+      colnames(cumulative_year_gender_lag) &lt;- paste0(c(&quot;m&quot;, &quot;u&quot;, &quot;w&quot;), &quot;_l&quot;)
+      colnames(cumulative_year_gender_lag) &lt;- paste0(&quot;prof_tot_unique_coa_&quot;, colnames(cumulative_year_gender_lag))
+      
+      cumulative_year_lag$year &lt;- year_in_question
+      
+      cumulative_year_lag &lt;- cbind(cumulative_year_lag,
+                                   cumulative_year_gender_lag)
+      
+    }else{
+      cumulative_year_lag &lt;- as.data.frame(matrix(NA, ncol = length(colnames_cumulative), nrow = 1))
+      colnames(cumulative_year_lag) &lt;- paste0(colnames_cumulative, &quot;_l&quot;)
+      cumulative_year_lag$year &lt;- year_in_question
+    }
+    
+    # merge cumulatives and lagged cumulatives
+    cumulative_all &lt;- merge(cumulative_year,
+                            cumulative_year_lag,
+                            by = &quot;year&quot;)
+    
+    # add in gender composition
+    
+    ## gender composition
+    gender_composition_paper &lt;- prof_coauthors_oa_gender %&gt;%
+      filter(publication_year == year_in_question)%&gt;%
+      group_by(profile_id, id)%&gt;%
+      summarise(n_w = sum(inferred_gender == &quot;w&quot;),
+                n_m = sum(inferred_gender == &quot;m&quot;),
+                n_u = sum(inferred_gender == &quot;unknown&quot;))%&gt;%
+      mutate(share_w_all = n_w / (n_w + n_m + n_u),
+             share_w_known = n_w / (n_w + n_m))%&gt;%
+      select(profile_id, id, share_w_all, share_w_known)%&gt;%
+      group_by(profile_id)%&gt;%
+      reframe(share_w_coa_all = round(mean(share_w_all, na.rm = TRUE), 3),
+              share_w_coa_known = round(mean(share_w_known, na.rm = TRUE), 3))
+    
+    if (nrow(gender_composition_paper) == 0){
+      gender_composition_paper &lt;- cbind.data.frame(profile_id = current_profile_id,
+                                                   share_w_coa_all = NA,
+                                                   share_w_coa_known = NA)
+    }
+    
+    ## gender composition lagged
+    gender_composition_paper_lag &lt;- prof_coauthors_oa_gender %&gt;%
+      filter(publication_year == year_in_question - 1)%&gt;%
+      group_by(profile_id, id)%&gt;%
+      summarise(n_w = sum(inferred_gender == &quot;w&quot;),
+                n_m = sum(inferred_gender == &quot;m&quot;),
+                n_u = sum(inferred_gender == &quot;unknown&quot;))%&gt;%
+      mutate(share_w_all = n_w / (n_w + n_m + n_u),
+             share_w_known = n_w / (n_w + n_m))%&gt;%
+      select(profile_id, id, share_w_all, share_w_known)%&gt;%
+      group_by(profile_id)%&gt;%
+      summarise(share_w_coa_all = round(mean(share_w_all, na.rm = TRUE), 3),
+                share_w_coa_known = round(mean(share_w_known, na.rm = TRUE), 3))
+    
+    if (nrow(gender_composition_paper_lag) == 0){
+      gender_composition_paper_lag &lt;- cbind.data.frame(profile_id = current_profile_id,
+                                                       share_w_coa_all = NA,
+                                                       share_w_coa_known = NA)
+    }
+    
+    colnames(gender_composition_paper_lag) &lt;- paste0(colnames(gender_composition_paper_lag), &quot;_l&quot;)
+    
+    ## gender composition combined
+    gender_composition_prof_year &lt;- cbind(gender_composition_paper,
+                                          gender_composition_paper_lag[, -1])
+    
+    cumulative_all &lt;- cbind(cumulative_all,
+                            gender_composition_prof_year[, -1])
+    
+    
+    cumulative_all &lt;- cumulative_all %&gt;%
+      relocate(year)
+    
+    prof_coauthor_cumulative_data_all &lt;- rbind.data.frame(prof_coauthor_cumulative_data_all,
+                                                          cumulative_all)
+    
+    
+  }
+  
+  
+  
+  # merge prof info with coauthor data
+  prof_panel_merge &lt;- merge(prof_panel,
+                            prof_coauthor_data_all,
+                            by = &quot;year&quot;,
+                            all.x = TRUE)
+  
+  prof_panel_merge &lt;- merge(prof_panel_merge,
+                            prof_coauthor_cumulative_data_all,
+                            by = &quot;year&quot;,
+                            all.x = TRUE)
+  
+  return(prof_panel_merge)
+}
+
+
+# Regression analysis functions
+
+# this function takes individual field datasets,
+# and estimates the linear model, gets the predicted values per gender,
+# and then compares the predictions between genders
+
+
+# the same, but with scopus fields
+lm_fitter_cl_robust_scopus &lt;- function(panel_dataset,
+                                       lm_formula_list,
+                                       year_cutoff_upper = 2023,
+                                       year_cutoff_lower = 1973){
+  
+  all_predictions &lt;- data.frame(matrix(ncol = 7, nrow = 0))
+  all_models &lt;- data.frame(matrix(ncol = 10, nrow = 0))
+  all_comparisons &lt;- data.frame(matrix(ncol = 6, nrow = 0))
+  
+  fields &lt;- c(&quot;phys&quot;, &quot;life&quot;, &quot;health&quot;, &quot;soc_sci&quot;, &quot;arts&quot;)
+  life &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Life Sciences&quot;)
+  phys &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Physical Sciences&quot;)
+  soc_sci &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Social Sciences&quot;)
+  arts &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Arts and Humanities&quot;)
+  health &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Health Sciences&quot;)
+  
+  for (field in fields){
+    #print(field)
+    lm_model &lt;- NA
+    
+    field_dataset &lt;- get(field)
+    
+    field_dataset &lt;- filter(field_dataset,
+                            year &lt;= year_cutoff_upper &amp; year &gt;= year_cutoff_lower)
+    
+    for (lm_formula in lm_formula_list){
+      
+      lm_model &lt;- lm(lm_formula,
+                     data = field_dataset) 
+      
+      # cluster-robust SEs
+      coef_test_output &lt;- coeftest(lm(lm_formula,
+                                      data = field_dataset), vcov = vcovCL, cluster = field_dataset$profile_id)
+      model_result &lt;- coef_test_output[,] %&gt;% 
+        as.data.frame() %&gt;% 
+        rownames_to_column(var = &quot;term&quot;)
+      model_result$lower_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                     level = 0.95))[,1]
+      model_result$upper_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                     level = 0.95))[,2]
+      
+      # extracting R squared
+      model_result[nrow(model_result)+1, 1] &lt;- &quot;R^2&quot;
+      model_result[nrow(model_result), 2:ncol(model_result)] &lt;- round(summary(lm_model)$r.squared,3)
+      model_result$field &lt;- field
+      model_result$covariate &lt;- trimws(str_split_i(lm_formula, &quot;~&quot;, 1))
+      # binding field models together
+      all_models &lt;- rbind(all_models,
+                          model_result)
+      # prediction for our plots
+      prediction &lt;- predict_response(lm_model, c(&quot;inferred_gender&quot;), vcov_fun = &quot;vcovCL&quot;, 
+                                     vcov_type = &quot;HC0&quot;,
+                                     vcov.args = list(cluster = field_dataset$profile_id))
+      # check if we get CIs for our prediction
+      if(!&quot;conf.low&quot; %in% colnames(prediction)){
+        # if not, pad this with NA and CIs identical to the prediction
+        prediction$std.error &lt;- NA
+        prediction$conf.low &lt;- prediction$predicted
+        prediction$conf.high &lt;- prediction$predicted
+        prediction &lt;- prediction[,c(&quot;x&quot;, &quot;predicted&quot;, &quot;std.error&quot;, &quot;conf.low&quot;, &quot;conf.high&quot;, &quot;group&quot; )]
+      }
+      
+      prediction$field &lt;- field
+      
+      
+      # binding the predictions for all fields together
+      prediction$covariate &lt;- trimws(str_split_i(lm_formula, &quot;~&quot;, 1))
+      all_predictions &lt;- rbind(all_predictions,
+                               prediction)
+      
+      # comparing whether the predictions for men and women are significantly different
+      gender_comparison &lt;- test_predictions(lm_model, c(&quot;inferred_gender&quot;), vcov_fun = &quot;vcovCL&quot;)
+      gender_comparison$field &lt;- field
+      gender_comparison$covariate &lt;- trimws(str_split_i(lm_formula, &quot;~&quot;, 1))
+      
+      all_comparisons &lt;- rbind(all_comparisons,
+                               gender_comparison)
+      
+      
+      
+      
+      #print(field)
+      
+      
+    }
+  }
+  # adding some stars
+  all_models$stars &lt;- ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.001, &quot;***&quot;,
+                             ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.001, &quot;**&quot;,
+                                    ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.05, &quot;*&quot;,
+                                           ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.1, &quot;.&quot;, &quot;&quot;))))
+  
+  all_comparisons$stars &lt;- ifelse(all_comparisons$`p.value` &lt;= 0.001, &quot;***&quot;,
+                                  ifelse(all_comparisons$`p.value` &lt;= 0.001, &quot;**&quot;,
+                                         ifelse(all_comparisons$`p.value` &lt;= 0.05, &quot;*&quot;,
+                                                ifelse(all_comparisons$`p.value` &lt;= 0.1, &quot;.&quot;, &quot;&quot;))))
+  
+  # tidying up and rounding the results
+  all_comparisons$group1 &lt;- str_split_i(all_comparisons$inferred_gender, &quot;-&quot;, 1)
+  all_comparisons$group2 &lt;- str_split_i(all_comparisons$inferred_gender, &quot;-&quot;, 2)
+  all_comparisons$p_rounded &lt;- round(all_comparisons$p.value, 4)
+  
+  
+  all_models$field &lt;- factor(all_models$field,
+                             levels = c(&quot;phys&quot;,
+                                        &quot;life&quot;,
+                                        &quot;health&quot;,
+                                        &quot;soc_sci&quot;,
+                                        &quot;arts&quot;))
+  
+  
+  all_predictions$field &lt;- factor(all_predictions$field,
+                                  levels = c(&quot;phys&quot;,
+                                             &quot;life&quot;,
+                                             &quot;health&quot;,
+                                             &quot;soc_sci&quot;,
+                                             &quot;arts&quot;))
+  
+  all_comparisons$field &lt;- factor(all_comparisons$field,
+                                  levels = c(&quot;phys&quot;,
+                                             &quot;life&quot;,
+                                             &quot;health&quot;,
+                                             &quot;soc_sci&quot;,
+                                             &quot;arts&quot;))
+  
+  
+  
+  output_list &lt;- list(all_models,
+                      all_predictions,
+                      all_comparisons)
+  
+  return(output_list)
+}
+
+
+## Function that can fit a poisson or a logistic regression
+
+glm_fitter_cl_robust_scopus &lt;- function(panel_dataset,
+                                 formula_list,
+                                 year_cutoff_upper = 2023,
+                                 year_cutoff_lower = 1974,
+                                 reg_family = c(&quot;poisson&quot;, &quot;binomial&quot;)){
+  
+  all_models &lt;- data.frame(matrix(ncol = 10, nrow = 0))
+  
+  fields &lt;- c(&quot;phys&quot;, &quot;life&quot;, &quot;health&quot;, &quot;soc_sci&quot;, &quot;arts&quot;)
+  life &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Life Sciences&quot;)
+  phys &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Physical Sciences&quot;)
+  soc_sci &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Social Sciences&quot;)
+  arts &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Arts and Humanities&quot;)
+  health &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Health Sciences&quot;)
+  
+  for (field in fields){
+    #print(field)
+    reg_model &lt;- NA
+    coef_test_output &lt;- NA
+    
+    field_dataset &lt;- get(field)
+    
+    field_dataset &lt;- filter(field_dataset,
+                            year &lt;= year_cutoff_upper &amp; year &gt;= year_cutoff_lower)
+    
+    for (model_formula in formula_list){
+      #print(model_formula)
+      
+      if (reg_family == &quot;poisson&quot;){
+        
+        reg_model &lt;- glm(model_formula,
+                         data = field_dataset,
+                         family = &#39;poisson&#39;) 
+        
+        # cluster-robust SEs
+        
+        coef_test_output &lt;- coeftest(reg_model, vcov = vcovCL, cluster = reg_model$data$profile_id)
+        model_result &lt;- coef_test_output[,] %&gt;% 
+          as.data.frame() %&gt;% 
+          rownames_to_column(var = &quot;term&quot;)
+        model_result$lower_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                       level = 0.95))[,1]
+        model_result$upper_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                       level = 0.95))[,2]
+      }
+      
+      if (reg_family == &quot;binomial&quot;){
+        
+        reg_model &lt;- glm(model_formula,
+                         data = field_dataset,
+                         family = &#39;binomial&#39;) 
+        
+        coef_test_output &lt;- coeftest(reg_model, type = &quot;HC0&quot;, cluster = reg_model$data$profile_id)
+        model_result &lt;- coef_test_output[,] %&gt;% 
+          as.data.frame() %&gt;% 
+          rownames_to_column(var = &quot;term&quot;)
+        model_result$lower_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                       level = 0.95))[,1]
+        model_result$upper_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                       level = 0.95))[,2]
+        
+        model_result[nrow(model_result)+1, 1] &lt;- &quot;R^2&quot;
+        pseudo_r &lt;- &quot;no convergence&quot;
+        try(pseudo_r &lt;- round(PseudoR2(reg_model),3))
+        model_result[nrow(model_result), 2:ncol(model_result)] &lt;- pseudo_r
+        
+      }
+      
+      # tidy up
+      model_result$field &lt;- field
+      model_result$covariate &lt;- trimws(str_split_i(model_formula, &quot;~&quot;, 1))
+      # binding field models together
+      all_models &lt;- rbind(all_models,
+                          model_result)
+      
+    }
+  }
+  # adding some stars
+  all_models$stars &lt;- ifelse(all_models$`Pr(&gt;|z|)` &lt;= 0.001, &quot;***&quot;,
+                             ifelse(all_models$`Pr(&gt;|z|)` &lt;= 0.001, &quot;**&quot;,
+                                    ifelse(all_models$`Pr(&gt;|z|)` &lt;= 0.05, &quot;*&quot;,
+                                           ifelse(all_models$`Pr(&gt;|z|)` &lt;= 0.1, &quot;.&quot;, &quot;&quot;))))
+  
+  all_models$field &lt;- factor(all_models$field,
+                             levels = c(&quot;phys&quot;,
+                                        &quot;life&quot;,
+                                        &quot;health&quot;,
+                                        &quot;soc_sci&quot;,
+                                        &quot;arts&quot;))
+  
+  
+  output_list &lt;- list(all_models)
+  
+  return(output_list)
+}
+
+## FE and RE regression
+fe_re_fitter_cl_robust_scopus &lt;- function(panel_dataset,
+                                   lm_formula_list,
+                                   year_cutoff_upper = 2023,
+                                   year_cutoff_lower = 1973,
+                                   index = c(&quot;profile_id&quot;, &quot;year&quot;),
+                                   fe_re = c(&quot;fe&quot;, &quot;re&quot;)){
+  
+  all_models &lt;- data.frame(matrix(ncol = 10, nrow = 0))
+  
+  fields &lt;- c(&quot;phys&quot;, &quot;life&quot;, &quot;health&quot;, &quot;soc_sci&quot;, &quot;arts&quot;)
+  life &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Life Sciences&quot;)
+  phys &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Physical Sciences&quot;)
+  soc_sci &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Social Sciences&quot;)
+  arts &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Arts and Humanities&quot;)
+  health &lt;- filter(prof_panel_filter, overall_adj_domain == &quot;Health Sciences&quot;)
+  
+  for (field in fields){
+    plm_model &lt;- NA
+    
+    field_dataset &lt;- get(field)
+    
+    field_dataset &lt;- filter(field_dataset,
+                            year &lt;= year_cutoff_upper &amp; year &gt;= year_cutoff_lower)
+    
+    for (lm_formula in lm_formula_list){
+      
+      if (fe_re == &quot;fe&quot;){
+        
+        plm_model &lt;- plm(lm_formula, 
+                         data = field_dataset,
+                         index = index, 
+                         model = &quot;within&quot;, 
+                         effect = &quot;twoways&quot;)
+      }
+      
+      if (fe_re == &quot;re&quot;){
+        plm_model &lt;- plm(lm_formula,
+                         data = field_dataset,
+                         index = index, 
+                         model = &quot;random&quot;)
+        
+      }
+      
+      # cluster-robust SEs
+      coef_test_output &lt;- coeftest(lm(lm_formula,
+                                      data = field_dataset), vcov = vcovCL)
+      model_result &lt;- coef_test_output[,] %&gt;% 
+        as.data.frame() %&gt;% 
+        rownames_to_column(var = &quot;term&quot;)
+      model_result$lower_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                     level = 0.95))[,1]
+      model_result$upper_ci &lt;- as.data.frame(confint(coef_test_output,
+                                                     level = 0.95))[,2]
+      
+      # extracting R squared
+      model_result[nrow(model_result)+1, 1] &lt;- &quot;R^2&quot;
+      model_result[nrow(model_result), 2:ncol(model_result)] &lt;- round(summary(plm_model)$r.squared,3)
+      model_result$field &lt;- field
+      model_result$covariate &lt;- trimws(str_split_i(lm_formula, &quot;~&quot;, 1))
+      # binding field models together
+      all_models &lt;- rbind(all_models,
+                          model_result)
+      
+    }
+  }
+  # adding some stars
+  all_models$stars &lt;- ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.001, &quot;***&quot;,
+                             ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.001, &quot;**&quot;,
+                                    ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.05, &quot;*&quot;,
+                                           ifelse(all_models$`Pr(&gt;|t|)` &lt;= 0.1, &quot;.&quot;, &quot;&quot;))))
+  
+  all_models$field &lt;- factor(all_models$field,
+                             levels = c(&quot;phys&quot;,
+                                        &quot;life&quot;,
+                                        &quot;health&quot;,
+                                        &quot;soc_sci&quot;,
+                                        &quot;arts&quot;))
+  
+  
+  output_list &lt;- list(all_models)
+  
+  return(output_list)
+}
+
+# this function tidies up regression outputs for three
+# outcome variables and arranges them for easy writing
+# into a CSV file
+neat_regression_table &lt;- function(
+    table_1,
+    table_2,
+    table_3){
+  
+  table_1_neat &lt;- table_1 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_1_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_printed&quot;,
+                              &quot;se_printed&quot;,
+                              &quot;sig_printed&quot;)
+  
+  table_2_neat &lt;- table_2 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_2_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_online&quot;,
+                              &quot;se_online&quot;,
+                              &quot;sig_online&quot;)
+  
+  table_3_neat &lt;- table_3 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_3_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_twitter&quot;,
+                              &quot;se_twitter&quot;,
+                              &quot;sig_twitter&quot;)
+  
+  three_models_table &lt;- merge(table_1_neat,
+                              table_2_neat,
+                              by = c(&quot;field&quot;, 
+                                     &quot;term&quot;),
+                              all.x = TRUE,
+                              all.y = TRUE)
+  
+  three_models_table &lt;- merge(three_models_table,
+                              table_3_neat,
+                              by = c(&quot;field&quot;, 
+                                     &quot;term&quot;),
+                              all.x = TRUE,
+                              all.y = TRUE)
+  
+  
+  three_models_table$term &lt;- ifelse(three_models_table$term %in% c(&quot;news_all_l&quot;,
+                                                                   &quot;news_all_l_log&quot;,
+                                                                   &quot;alt_online_all_l&quot;,
+                                                                   &quot;alt_online_all_l_log&quot;,
+                                                                   &quot;alt_twitter_l&quot;,
+                                                                   &quot;alt_twitter_l_log&quot;),
+                                    &quot;t_min_1&quot;,
+                                    three_models_table$term)
+  
+  
+  three_models_table$term &lt;- factor(three_models_table$term,
+                                    levels = c(
+                                      &quot;inferred_genderw&quot;,
+                                      &quot;cited_by_total_all_l&quot;,
+                                      &quot;cited_by_total_all_l_log&quot;,
+                                      &quot;news_all_total_l&quot;,
+                                      &quot;news_all_total_l_log&quot;,
+                                      &quot;alt_online_all_total_l&quot;,
+                                      &quot;alt_online_all_total_l_log&quot;,
+                                      &quot;alt_twitter_total_l&quot;,
+                                      &quot;alt_twitter_total_l_log&quot;,
+                                      &quot;coa_tot_cited_by_total_l&quot;,
+                                      &quot;coa_tot_cited_by_total_l_log&quot;,
+                                      &quot;coa_online_all_total_l&quot;,
+                                      &quot;coa_online_all_total_l_log&quot;,
+                                      &quot;coa_tot_online_all_total_l&quot;,
+                                      &quot;coa_tot_online_all_total_l_log&quot;,
+                                      &quot;coa_twitter_total_l&quot;,
+                                      &quot;coa_twitter_total_l_log&quot;,
+                                      &quot;coa_tot_twitter_total_l&quot;,
+                                      &quot;coa_tot_twitter_total_l_log&quot;,
+                                      &quot;cited_by_l&quot;,
+                                      &quot;cited_by_l_log&quot;,
+                                      &quot;coa_tot_cited_by_l&quot;,
+                                      &quot;coa_tot_cited_by_l_log&quot;,
+                                      &quot;coa_online_all_l&quot;,
+                                      &quot;coa_online_all_l_log&quot;,
+                                      &quot;coa_tot_online_all_l&quot;,
+                                      &quot;coa_tot_online_all_l_log&quot;,
+                                      &quot;coa_twitter_l&quot;,
+                                      &quot;coa_twitter_l_log&quot;,
+                                      &quot;coa_tot_twitter_l&quot;,
+                                      &quot;coa_tot_twitter_l_log&quot;,
+                                      &quot;t_min_1&quot;,
+                                      &quot;news_all_l&quot;,
+                                      &quot;news_all_l_log&quot;,
+                                      &quot;alt_online_all_l&quot;,
+                                      &quot;alt_online_all_l_log&quot;,
+                                      &quot;alt_twitter_l&quot;,
+                                      &quot;alt_twitter_l_log&quot;,
+                                      &quot;years_since_first_pub&quot;,
+                                      &quot;as.factor(any_grant_l)1&quot;,
+                                      &quot;(Intercept)&quot;,
+                                      &quot;R^2&quot;
+                                    ))
+  
+  
+  three_models_table &lt;- three_models_table %&gt;%
+    mutate(across(where(is.numeric), round, 5))%&gt;%
+    mutate(term = recode(term,
+                         &#39;alt_online_all_l&#39; = &quot;Online attention (t-1)&quot;,
+                         &#39;alt_online_all_total_l&#39; = &quot;Total online attention (t-1)&quot;,
+                         &#39;alt_twitter_l&#39; = &quot;Twitter/X attention (t-1)&quot;,
+                         &#39;alt_twitter_total_l&#39; = &quot;Total Twitter/X attention (t-1)&quot;,
+                         &#39;cited_by_total_all_l&#39; = &quot;Total citations (t-1)&quot;,
+                         &#39;as.factor(any_grant_l)1&#39; = &quot;Received an NWO/ERC grant (t-1)&quot;,
+                         &#39;coa_online_all_total_l&#39; = &quot;Coauthors&#39; total online attention total (t-1)&quot;,
+                         &#39;coa_tot_online_all_total_l&#39; = &quot;Coauthors&#39; total online attention total (t-1)&quot;,
+                         &#39;coa_tot_cited_by_total_l&#39; = &quot;Coauthors&#39; total citations (t-1)&quot;,
+                         &#39;coa_twitter_total_l&#39; = &quot;Coauthors&#39; total Twitter/X attention (t-1)&quot;,
+                         &#39;coa_tot_twitter_total_l&#39; = &quot;Coauthors&#39; total Twitter/X attention (t-1)&quot;,
+                         &#39;years_since_first_pub&#39; = &quot;Years since first publication&quot;,
+                         &#39;inferred_genderw&#39; = &quot;Inferred gender (reference: man)&quot;,
+                         &#39;news_all_l&#39; = &quot;Printed news attention (t-1)&quot;,
+                         &#39;news_all_total_l&#39; = &quot;Total printed news attention (t-1)&quot;,
+                         &#39;alt_online_all_l_log&#39; = &quot;Online attention (log, t-1)&quot;,
+                         &#39;alt_online_all_total_l_log&#39; = &quot;Total online attention (log, t-1)&quot;,
+                         &#39;alt_twitter_l_log&#39; = &quot;Twitter/X attention (log, t-1)&quot;,
+                         &#39;alt_twitter_total_l_log&#39; = &quot;Total Twitter/X attention (log, t-1)&quot;,
+                         &#39;cited_by_total_all_l_log&#39; = &quot;Total citations (log, t-1)&quot;,
+                         &#39;t_min_1&#39; = &quot;Dependent variable (t-1)&quot;,
+                         &#39;coa_online_all_total_l_log&#39; = &quot;Coauthors&#39; total online attention total (log, t-1)&quot;,
+                         &#39;coa_tot_online_all_total_l_log&#39; = &quot;Coauthors&#39; total online attention total (log, t-1)&quot;,
+                         &#39;coa_tot_cited_by_total_l_log&#39; = &quot;Coauthors&#39; total citations (log, t-1)&quot;,
+                         &#39;coa_twitter_total_l_log&#39; = &quot;Coauthors&#39; total Twitter/X attention (log, t-1)&quot;,
+                         &#39;coa_tot_twitter_total_l_log&#39; = &quot;Coauthors&#39; total Twitter/X attention (log, t-1)&quot;,
+                         &#39;news_all_l_log&#39; = &quot;Printed news attention (log, t-1)&quot;,
+                         &#39;news_all_total_l_log&#39; = &quot;Total printed news attention (log, t-1)&quot;,
+                         &#39;cited_by_l&#39; = &quot;Citations (t-1)&quot;,
+                         &#39;coa_tot_online_all_l&#39; = &quot;Coauthors&#39; online attention (t-1)&quot;,
+                         &#39;coa_tot_cited_by_l&#39; = &quot;Coauthors&#39; citations (t-1)&quot;,
+                         &#39;coa_tot_twitter_l&#39; = &quot;Coauthors&#39; Twitter/X attention (t-1)&quot;,
+                         &#39;cited_by_all_l_log&#39; = &quot;Total citations (log, t-1)&quot;,
+                         &#39;coa_online_all_l_log&#39; = &quot;Coauthors&#39; online attention (log, t-1)&quot;,
+                         &#39;coa_tot_cited_by_l_log&#39; = &quot;Coauthors&#39; citations (log, t-1)&quot;,
+                         &#39;coa_twitter_l_log&#39; = &quot;Coauthors&#39; Twitter/X attention (log, t-1)&quot;
+    ),
+    field = recode(field,
+                   &#39;stem&#39; = &quot;STEM&quot;,
+                   &#39;medicine&#39; = &quot;Medicine&quot;,
+                   &#39;soc_sci&#39; = &quot;Social science&quot;,
+                   &#39;arts&#39; = &quot;Arts &amp; Humanities&quot;))%&gt;%
+    arrange(field, term)%&gt;%
+    select(field:coef_printed, sig_printed, se_printed, 
+           coef_online, sig_online, se_online,
+           coef_twitter, sig_twitter, se_twitter)
+  
+  three_models_table$se_printed &lt;- ifelse(!is.na(three_models_table$se_printed),
+                                          paste0(&quot;(&quot;, as.character(three_models_table$se_printed), &quot;)&quot;),
+                                          three_models_table$se_printed)
+  
+  three_models_table$se_online &lt;- ifelse(!is.na(three_models_table$se_online),
+                                         paste0(&quot;(&quot;, as.character(three_models_table$se_online), &quot;)&quot;),
+                                         three_models_table$se_online)
+  
+  three_models_table$se_twitter &lt;- ifelse(!is.na(three_models_table$se_twitter),
+                                          paste0(&quot;(&quot;, as.character(three_models_table$se_twitter), &quot;)&quot;),
+                                          three_models_table$se_twitter)
+  
+  three_models_table$field &lt;- ifelse(three_models_table$term == &quot;Inferred gender (reference: man)&quot;,
+                                     as.character(three_models_table$field),
+                                     &quot;&quot;)
+  
+  return(three_models_table)
+  
+}
+
+## neat regressions for scopus classification
+# this function tidies up regression outputs for three
+# outcome variables and arranges them for easy writing
+# into a CSV file
+neat_regression_table_scopus &lt;- function(
+    table_1,
+    table_2,
+    table_3,
+    fe =&quot;no&quot;){
+  
+  table_1_neat &lt;- table_1 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_1_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_printed&quot;,
+                              &quot;se_printed&quot;,
+                              &quot;sig_printed&quot;)
+  
+  table_2_neat &lt;- table_2 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_2_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_online&quot;,
+                              &quot;se_online&quot;,
+                              &quot;sig_online&quot;)
+  
+  table_3_neat &lt;- table_3 %&gt;%
+    arrange(field)%&gt;%
+    filter(!grepl(&quot;year)&quot;, term))%&gt;%
+    select(field, term:`Std. Error`, stars)
+  
+  colnames(table_3_neat) &lt;- c(&quot;field&quot;, 
+                              &quot;term&quot;,
+                              &quot;coef_twitter&quot;,
+                              &quot;se_twitter&quot;,
+                              &quot;sig_twitter&quot;)
+  
+  three_models_table &lt;- merge(table_1_neat,
+                              table_2_neat,
+                              by = c(&quot;field&quot;, 
+                                     &quot;term&quot;),
+                              all.x = TRUE,
+                              all.y = TRUE)
+  
+  three_models_table &lt;- merge(three_models_table,
+                              table_3_neat,
+                              by = c(&quot;field&quot;, 
+                                     &quot;term&quot;),
+                              all.x = TRUE,
+                              all.y = TRUE)
+  
+  
+  three_models_table$term &lt;- ifelse(three_models_table$term %in% c(&quot;news_all_l&quot;,
+                                                                   &quot;news_all_l_log&quot;,
+                                                                   &quot;alt_online_all_l&quot;,
+                                                                   &quot;alt_online_all_l_log&quot;,
+                                                                   &quot;alt_twitter_l&quot;,
+                                                                   &quot;alt_twitter_l_log&quot;),
+                                    &quot;t_min_1&quot;,
+                                    three_models_table$term)
+  
+  
+  three_models_table$term &lt;- factor(three_models_table$term,
+                                    levels = c(
+                                      &quot;inferred_genderw&quot;,
+                                      &quot;cited_by_total_all_l&quot;,
+                                      &quot;cited_by_total_all_l_log&quot;,
+                                      &quot;news_all_total_l&quot;,
+                                      &quot;news_all_total_l_log&quot;,
+                                      &quot;alt_online_all_total_l&quot;,
+                                      &quot;alt_online_all_total_l_log&quot;,
+                                      &quot;alt_twitter_total_l&quot;,
+                                      &quot;alt_twitter_total_l_log&quot;,
+                                      &quot;coa_tot_cited_by_total_l&quot;,
+                                      &quot;coa_tot_cited_by_total_l_log&quot;,
+                                      &quot;coa_online_all_total_l&quot;,
+                                      &quot;coa_online_all_total_l_log&quot;,
+                                      &quot;coa_tot_online_all_total_l&quot;,
+                                      &quot;coa_tot_online_all_total_l_log&quot;,
+                                      &quot;coa_twitter_total_l&quot;,
+                                      &quot;coa_twitter_total_l_log&quot;,
+                                      &quot;coa_tot_twitter_total_l&quot;,
+                                      &quot;coa_tot_twitter_total_l_log&quot;,
+                                      &quot;cited_by_l&quot;,
+                                      &quot;cited_by_l_log&quot;,
+                                      &quot;coa_tot_cited_by_l&quot;,
+                                      &quot;coa_tot_cited_by_l_log&quot;,
+                                      &quot;coa_online_all_l&quot;,
+                                      &quot;coa_online_all_l_log&quot;,
+                                      &quot;coa_tot_online_all_l&quot;,
+                                      &quot;coa_tot_online_all_l_log&quot;,
+                                      &quot;coa_twitter_l&quot;,
+                                      &quot;coa_twitter_l_log&quot;,
+                                      &quot;coa_tot_twitter_l&quot;,
+                                      &quot;coa_tot_twitter_l_log&quot;,
+                                      &quot;t_min_1&quot;,
+                                      &quot;news_all_l&quot;,
+                                      &quot;news_all_l_log&quot;,
+                                      &quot;alt_online_all_l&quot;,
+                                      &quot;alt_online_all_l_log&quot;,
+                                      &quot;alt_twitter_l&quot;,
+                                      &quot;alt_twitter_l_log&quot;,
+                                      &quot;years_since_first_pub&quot;,
+                                      &quot;as.factor(any_grant_l)1&quot;,
+                                      &quot;(Intercept)&quot;,
+                                      &quot;R^2&quot;
+                                    ))
+  
+  
+  three_models_table &lt;- three_models_table %&gt;%
+    mutate(across(where(is.numeric), round, 5))%&gt;%
+    mutate(term = recode(term,
+                         &#39;alt_online_all_l&#39; = &quot;Online attention (t-1)&quot;,
+                         &#39;alt_online_all_total_l&#39; = &quot;Total online attention (t-1)&quot;,
+                         &#39;alt_twitter_l&#39; = &quot;Twitter/X attention (t-1)&quot;,
+                         &#39;alt_twitter_total_l&#39; = &quot;Total Twitter/X attention (t-1)&quot;,
+                         &#39;cited_by_total_all_l&#39; = &quot;Total citations (t-1)&quot;,
+                         &#39;as.factor(any_grant_l)1&#39; = &quot;Received an NWO/ERC grant (t-1)&quot;,
+                         &#39;coa_online_all_total_l&#39; = &quot;Coauthors&#39; total online attention total (t-1)&quot;,
+                         &#39;coa_tot_online_all_total_l&#39; = &quot;Coauthors&#39; total online attention total (t-1)&quot;,
+                         &#39;coa_tot_cited_by_total_l&#39; = &quot;Coauthors&#39; total citations (t-1)&quot;,
+                         &#39;coa_twitter_total_l&#39; = &quot;Coauthors&#39; total Twitter/X attention (t-1)&quot;,
+                         &#39;coa_tot_twitter_total_l&#39; = &quot;Coauthors&#39; total Twitter/X attention (t-1)&quot;,
+                         &#39;years_since_first_pub&#39; = &quot;Years since first publication&quot;,
+                         &#39;inferred_genderw&#39; = &quot;Inferred gender (reference: man)&quot;,
+                         &#39;news_all_l&#39; = &quot;Printed news attention (t-1)&quot;,
+                         &#39;news_all_total_l&#39; = &quot;Total printed news attention (t-1)&quot;,
+                         &#39;alt_online_all_l_log&#39; = &quot;Online attention (log, t-1)&quot;,
+                         &#39;alt_online_all_total_l_log&#39; = &quot;Total online attention (log, t-1)&quot;,
+                         &#39;alt_twitter_l_log&#39; = &quot;Twitter/X attention (log, t-1)&quot;,
+                         &#39;alt_twitter_total_l_log&#39; = &quot;Total Twitter/X attention (log, t-1)&quot;,
+                         &#39;cited_by_total_all_l_log&#39; = &quot;Total citations (log, t-1)&quot;,
+                         &#39;t_min_1&#39; = &quot;Dependent variable (t-1)&quot;,
+                         &#39;coa_online_all_total_l_log&#39; = &quot;Coauthors&#39; total online attention total (log, t-1)&quot;,
+                         &#39;coa_tot_online_all_total_l_log&#39; = &quot;Coauthors&#39; total online attention total (log, t-1)&quot;,
+                         &#39;coa_tot_cited_by_total_l_log&#39; = &quot;Coauthors&#39; total citations (log, t-1)&quot;,
+                         &#39;coa_twitter_total_l_log&#39; = &quot;Coauthors&#39; total Twitter/X attention (log, t-1)&quot;,
+                         &#39;coa_tot_twitter_total_l_log&#39; = &quot;Coauthors&#39; total Twitter/X attention (log, t-1)&quot;,
+                         &#39;news_all_l_log&#39; = &quot;Printed news attention (log, t-1)&quot;,
+                         &#39;news_all_total_l_log&#39; = &quot;Total printed news attention (log, t-1)&quot;,
+                         &#39;cited_by_l&#39; = &quot;Citations (t-1)&quot;,
+                         &#39;coa_tot_online_all_l&#39; = &quot;Coauthors&#39; online attention (t-1)&quot;,
+                         &#39;coa_tot_cited_by_l&#39; = &quot;Coauthors&#39; citations (t-1)&quot;,
+                         &#39;coa_tot_twitter_l&#39; = &quot;Coauthors&#39; Twitter/X attention (t-1)&quot;,
+                         &#39;cited_by_all_l_log&#39; = &quot;Total citations (log, t-1)&quot;,
+                         &#39;coa_online_all_l_log&#39; = &quot;Coauthors&#39; online attention (log, t-1)&quot;,
+                         &#39;coa_tot_cited_by_l_log&#39; = &quot;Coauthors&#39; citations (log, t-1)&quot;,
+                         &#39;coa_twitter_l_log&#39; = &quot;Coauthors&#39; Twitter/X attention (log, t-1)&quot;
+    ),
+    field = recode(field,
+                   &#39;phys&#39; = &quot;Physical Sciences&quot;, 
+                   &#39;life&#39; = &quot;Life Sciences&quot;, 
+                   &#39;health&#39; = &quot;Health Sciences&quot;, 
+                   &#39;soc_sci&#39; = &quot;Social Sciences&quot;, 
+                   &#39;arts&#39; = &quot;Arts &amp; Humanities&quot;))%&gt;%
+    arrange(field, term)%&gt;%
+    select(field:coef_printed, sig_printed, se_printed, 
+           coef_online, sig_online, se_online,
+           coef_twitter, sig_twitter, se_twitter)
+  
+  three_models_table$se_printed &lt;- ifelse(!is.na(three_models_table$se_printed),
+                                          paste0(&quot;(&quot;, as.character(three_models_table$se_printed), &quot;)&quot;),
+                                          three_models_table$se_printed)
+  
+  three_models_table$se_online &lt;- ifelse(!is.na(three_models_table$se_online),
+                                         paste0(&quot;(&quot;, as.character(three_models_table$se_online), &quot;)&quot;),
+                                         three_models_table$se_online)
+  
+  three_models_table$se_twitter &lt;- ifelse(!is.na(three_models_table$se_twitter),
+                                          paste0(&quot;(&quot;, as.character(three_models_table$se_twitter), &quot;)&quot;),
+                                          three_models_table$se_twitter)
+  
+  if (fe == &quot;no&quot;){
+    
+    three_models_table$field &lt;- ifelse(three_models_table$term == &quot;Inferred gender (reference: man)&quot;,
+                                       as.character(three_models_table$field),
+                                       &quot;&quot;)
+  }
+  if (fe == &quot;yes&quot;){
+    three_models_table$field &lt;- ifelse(three_models_table$term == &quot;Total citations (t-1)&quot;,
+                                       as.character(three_models_table$field),
+                                       &quot;&quot;)
+  }
+  return(three_models_table)
+  
+}</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlByZXBhcmF0aW9uOiBOZXdzIHNvdXJjZSBjbGFzc2lmaWNhdGlvbiBhbmQgb3RoZXIgZnVuY3Rpb25zIg0KYXV0aG9yOiAiQW5hIE1hY2Fub3ZpYyINCmRhdGU6ICIyMDI0LTA3LTI0Ig0KLS0tDQoNClRoaXMgc2NyaXB0IHNob3dzIHRoZSBjb250ZW50IG9mIC5SIGZpbGVzIHdlIHVzZSB0byBjbGFzc2lmeSB0eXBlcyBvZiBwcmludGVkDQphbmQgb25saW5lIG5ld3Mgc291cmNlcy4gQWRkaXRpb25hbGx5LCBpdCBzaG93cyB0aGUgc291cmNlIGNvZGUgb2YgYWxsIGN1c3RvbQ0KZnVuY3Rpb25zIHVzZWQgaW4gb3VyIGFuYWx5c2VzLiANCg0KIyBOZXdzIHNvdXJjZSBjbGFzc2lmaWNhdGlvbiANCg0KUHJpbnRlZCBuZXdzIGNsYXNzaWZpY2F0aW9uIGNyaXRlcmlhLiBJbiB0aGUgbWFpbiBhbmFseXNlcywgZXZlcnl0aGluZyBidXQgIA0KIm5hdGlvbmFsX25ld3NfbmwiLCAicmVnaW9uYWxfbmV3c19ubCIsIGFuZCAiaGlnaF9wcm9maWxlX2ludCIgaXMgY2xhc3NpZmllZCBhcyAib3RoZXIiLg0KDQpUaGVzZSBjYXRlZ29yaWVzIG1hdGNoIHRob3NlIGRlc2NyaWJlIGluIG1haW4gdGV4dCBhcyBmb2xsb3dzOg0KDQoxLiBuYXRpb25hbF9uZXdzX25sOiBOYXRpb25hbCBuZXdzIChOTCkNCjIuIHJlZ2lvbmFsX25ld3Nfbmw6IFJlZ2lvbmFsIG5ld3MgKE5MKQ0KMy4gaGlnaF9wcm9maWxlX2ludDogSW50ZXJuYXRpb25hbCBuZXdzDQo0LiByZXN0OiBPdGhlciBzb3VyY2VzDQoNCmBgYHtyLCBjb2RlID0gcmVhZExpbmVzKCJyZXNvdXJjZXMvbGV4aXNfbmV3c19vdXRsZXRfY2xhc3NpZmljYXRpb24uUiIpfQ0KYGBgDQoNCk9ubGluZSBuZXdzIGNsYXNzaWZpY2F0aW9uIGNyaXRlcmlhIGFyZSBhcyBmb2xsb3dzOg0KDQpgYGB7ciwgY29kZSA9IHJlYWRMaW5lcygicmVzb3VyY2VzL2FsdG1ldHJpY19uZXdzX291dGxldF9jbGFzc2lmaWNhdGlvbi5SIil9DQpgYGANCg0KIyBPdGhlciBmdW5jdGlvbnMNCg0KQmVsb3cgd2UgbGlzdCB0aGUgc291cmNlIGNvZGUgb2YgYWxsIGZ1bmN0aW9ucyB3ZSB1c2UgaW4gb3VyIGFuYWx5c2VzLg0KYGBge3IsIGNvZGUgPSByZWFkTGluZXMoImhlbHBlcl9mdW5jdGlvbnMuUiIpfQ0KDQpgYGANCg0KDQo=</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("News_classification_other_functions.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+---
+title: "Preparation: Printed News"
+author: "Ana Macanovic"
+date: "2023-12-06"
+---
+
+This script reads in and parses printed news data from LexisNexis.
+
+
+Load the packages:
+```{r eval = T, echo=FALSE, results='hide', message = F, warning=F}
+source("helper_functions.R")
+packages_to_load <- c("readr", "dplyr", "stringr", "tidyr", "tidyverse",
+                      "RPostgres", "lubridate", "readtext", "knitr",
+                      "DBI", "RODBC", "odbc")
+fpackage_check(packages_to_load)
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2023-12-01")
+```
+
+```{r}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = FALSE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Load the R package by J. Grubber that conveniently tidies up the LexisNexis data:
+```{r message=  F, warning = F}
+# remotes::install_github("JBGruber/LexisNexisTools")
+library("LexisNexisTools")
+```
+
+# Tidy up professor data from NARCIS
+
+Connect to database:
+```{r}
+# default port here, change if needed
+port <- 5432
+# username
+user <- ""
+# password
+password <- ""
+# database name
+database_name <- ""
+
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+```
+
+# Loading in the data
+
+Below, we leave an example of the code we use to extract the data from files
+downloaded from Lexis Uni database.
+
+Load the word files from the individual professor zips and extract the 
+article texts:
+```{r}
+folder <- "../downloads/zipfiles"
+all_docs <- lnt_read(x = folder, convert_date = F, extract_paragraphs = F)
+meta_data <- all_docs@meta
+meta_data$profile_id <- str_split_i(meta_data$Source_File, "/zips/", 2)
+meta_data$profile_id <- str_split_i(meta_data$profile_id, "_", 1)
+```
+
+# Clean the LexisNexis data
+
+Tidy up the dates:
+```{r}
+meta_data$date_eng <- tolower(meta_data$Date)
+# replace dutch dates with english for easier conversion later on
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "januari",
+                                  "january")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "februari",
+                                  "february")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "maart",
+                                  "march")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "mei",
+                                  "may")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "mai",
+                                  "may")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "juni",
+                                  "june")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "juli",
+                                  "july")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "augustus",
+                                  "august")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "oktober",
+                                  "october")
+meta_data$date_eng <- str_replace(meta_data$date_eng,
+                                  "dezember",
+                                  "december")
+
+# convert the dates
+meta_data$date_tidy <- parse_date_time(meta_data$date_eng,  c("dmy", "md,y"))
+
+# get the year
+meta_data$year <- year(meta_data$date_tidy)
+
+# select columns of interest
+meta_data_sel <- meta_data %>%
+  select(ID, Newspaper, Length:Author, Headline, profile_id, date_tidy, year)
+
+colnames(meta_data_sel) <- tolower(colnames(meta_data_sel))
+```
+
+Prepare the article texts:
+```{r}
+article_content <- all_docs@articles
+colnames(article_content) <- tolower(colnames(article_content))
+```
+
+Clean up the memory:
+```{r}
+rm(all_docs)
+rm(missing_indices)
+gc()
+```
+
+Merge the metadata and the content
+```{r}
+news_mentions <- merge(meta_data_sel,
+                       article_content,
+                       by = "id")
+
+# profile ID to match the rest
+news_mentions$profile_id <- paste0("https://www.narcis.nl/person/RecordID/", news_mentions$profile_id)
+```
+
+Filter our professors we do not want to consider due to ambiguous names:
+```{r}
+# redacted for privacy reasons
+```
+
+
+# Article classification
+Denote whether an article is from a national, regional or specialized Dutch source, or perhaps a higher-profile international source:
+```{r}
+source("resources/lexis_news_outlet_classification.R")
+```
+
+
+Remove spaces around / for easier identification:
+```{r}
+news_mentions$newspaper_tidy <- str_replace(news_mentions$newspaper, " \\/ ", "\\/")
+```
+
+Denote whether the article belongs to any of these, and then also exclude
+one source that works a lot with newsletters, but not actual news:
+```{r}
+news_mentions$source_type <- NA
+
+# first, Dutch sources
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(national_news_nl),
+                                    "national_nl", 
+                                    news_mentions$source_type)
+
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(regional_news_nl),
+                                    "regional_nl", 
+                                    news_mentions$source_type)
+
+# International sources
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(high_profile_int),
+                                    "high_prof_intl", 
+                                    news_mentions$source_type)
+
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(local_int),
+                                    "local_int", 
+                                    news_mentions$source_type)
+
+
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(other_int),
+                                    "other_int", 
+                                    news_mentions$source_type)
+
+# News aggregators
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(aggregators),
+                                    "news_aggr", 
+                                    news_mentions$source_type)
+
+# Specialized outlets
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(finance_news),
+                                    "finance", 
+                                    news_mentions$source_type)
+
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(professional_pub),
+                                    "prof", 
+                                    news_mentions$source_type)
+
+
+news_mentions$source_type <- ifelse(tolower(news_mentions$newspaper_tidy) %in% tolower(science_pub),
+                                    "science", 
+                                    news_mentions$source_type)
+
+# Blogs
+news_mentions$source_type <- ifelse(str_detect(tolower(news_mentions$newspaper_tidy), "blog"), 
+                             "blog", 
+                             news_mentions$source_type)
+
+# No source
+news_mentions$source_type <- ifelse(news_mentions$newspaper_tidy == "" | is.na(is.na(news_mentions$newspaper_tidy)),
+                                    "unknown", 
+                                    news_mentions$source_type)
+
+# All the rest are classified as "other" (66k)
+news_mentions$source_type <- ifelse(is.na(news_mentions$source_type),
+                                    "other",
+                                    news_mentions$source_type)
+```
+
+See if the source is an online outlet/website:
+```{r}
+news_mentions$online_resource <- str_detect(tolower(news_mentions$newspaper_tidy), "\\.nl")
+news_mentions$online_resource_2 <- str_detect(tolower(news_mentions$newspaper_tidy), "\\.co")
+news_mentions$online_resource_3 <- str_detect(tolower(news_mentions$newspaper_tidy), "online")
+news_mentions$online_resource <- ifelse(news_mentions$online_resource == TRUE | news_mentions$online_resource_2 == TRUE |
+                                          news_mentions$online_resource_3 == TRUE ,
+                                        1,
+                                        0)
+
+news_mentions <- news_mentions %>% select(-online_resource_2, -online_resource_3)
+```
+
+
+## See mentions of professor's names AND institutions
+
+For robustness checks, we might want to know which articles include both the
+professor's last name and any of the institutions they have been affiliated with
+during their lifetimes. This could help us exclude articles about people with the
+same name and some sort of academic/university affiliation, but who are not our
+professor in question. 
+
+Read in the institutional search:
+```{r}
+all_prof_inst_search <- dbReadTable(con, "oa_affiliation_string_search")
+```
+
+
+Now, merge the professor IDs with Lexis outputs:
+```{r}
+colnames(all_prof_inst_search)[1] <- "profile_id"
+news_mentions_profs <- merge(news_mentions,
+                             all_prof_inst_search,
+                             by = "profile_id",
+                             all.x = TRUE)
+```
+
+Now also include their last name:
+```{r}
+profs_full <- dbReadTable(con, "narcis_prof_info")
+
+news_mentions_profs <- merge(news_mentions_profs,
+                             profs_full[c("profile_id", "last")],
+                             by = "profile_id")
+
+# lowercase text and uni strings
+news_mentions_profs$article_lowercase <- tolower(news_mentions_profs$article)
+news_mentions_profs$string_match_names_lower <- tolower(news_mentions_profs$string_match_names)
+
+# remove special characters from the string match columns
+news_mentions_profs$string_match_names_lower <- gsub("[\U4E00-\U9FFF\U3000-\U303F]", "", news_mentions_profs$string_match_names_lower)
+news_mentions_profs$string_match_names_lower <- gsub("（)", "", news_mentions_profs$string_match_names_lower)
+news_mentions_profs$string_match_names_lower <- gsub("\\b\\b|", "", news_mentions_profs$string_match_names_lower)
+news_mentions_profs$string_match_names_lower <- gsub("\\)", "", news_mentions_profs$string_match_names_lower)
+news_mentions_profs$string_match_names_lower <- gsub("\\(", "", news_mentions_profs$string_match_names_lower)
+```
+
+Detect affiliation:
+```{r}
+news_mentions_profs$affiliation <- str_detect(news_mentions_profs$article_lowercase, news_mentions_profs$string_match_names_lower)
+```
+
+Flag mentions to remove multiple regional newspapers discussing the same
+person:
+```{r}
+news_mentions_profs$regional_duplicate <- duplicated(news_mentions_profs[c("profile_id", "headline", "length")])
+```
+
+Drop redundant fields:
+```{r}
+news_mentions_profs <- news_mentions_profs %>%
+    select(-string_match_names, -last, -article_lowercase, -string_match_names_lower)
+```
+
+Write this out to our database:
+```{r}
+dbWriteTable(con, "lexis_nexis_mentions", news_mentions_profs)
+```
+
+Do a strict check - determine whether a News article contains both the
+first + last name of the professor AND any of the other keywords in the
+exact same sentence.
+
+Load the mentions and the professor name information:
+```{r pressure, echo=FALSE}
+lexis_data <- dbReadTable(con, "lexis_nexis_mentions")
+
+lexis_data_filter <- filter(lexis_data, 
+                            regional_duplicate == FALSE)
+
+rm(lexis_data)
+gc() 
+
+narcis_prof_info <- dbReadTable(con, "narcis_prof_info")
+
+lexis_data_filter <- merge(lexis_data_filter,
+                           narcis_prof_info[c("profile_id", "first", "last")],
+                           by = "profile_id")
+
+lexis_data_filter$first_last <- paste(lexis_data_filter$first, lexis_data_filter$last)
+```
+
+Seek keywords and names in the same sentence:
+```{r}
+keywords <- c("hoogleraar", "universitair docent", "universitair hoofddocent",
+              "assistant professor", "associate professor", "onderzoeker",
+              "researcher", "wetenschap*", "scien*", "dr.", "universiteitshoogleraar",
+              "universit*", "prof.",  "professor")
+
+keywords <- str_c("\\b(", str_c(keywords, collapse = "|"), ")\\b")
+
+lexis_data_filter$strict_criteria <- NA
+
+for (i in 1:nrow(lexis_data_filter[1:nrow(lexis_data_filter),])){
+  # get the text
+  text <- lexis_data_filter$article[i]
+  # get the professor name
+  name <- lexis_data_filter$first_last[i]
+  
+  # break the text down into senteces
+  sentences <- as.data.frame(unlist(tokenize_sentences(text, lowercase = FALSE, strip_punct = FALSE, simplify = FALSE)))
+  colnames(sentences) <- "sentence"
+  # lowecase
+  sentences$sentence <- tolower(sentences$sentence)
+  # does this sentence contain any of the keywords?
+  sentences$keyword <- grepl(glob2rx(keywords), sentences$sentence)
+  sentences$keyword <- ifelse(sentences$keyword == FALSE, 
+                              str_detect(sentences$sentence, keywords),
+                              sentences$keyword)
+  # does it contain the professors full name?
+  sentences$prof <- grepl(name, sentences$sentence)
+  
+  # both present?
+  sentences$both <- ifelse(sentences$keyword == TRUE & sentences$prof == TRUE, TRUE, FALSE)
+  
+  if (any(sentences$both) == TRUE){
+    # if both are present, replace the "strict_criteria" value with TRUE
+  lexis_data_filter$strict_criteria[i] <- TRUE
+  }
+  print(i)
+}
+
+dbWriteTable(con, "lexis_nexis_mentions_strict_criterion", lexis_data_filter)
+```

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Ana Macanovic" />
+
+<meta name="date" content="2023-12-22" />
+
+<title>Preparation: Online news</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+<link rel="stylesheet" href="tweaks.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a>
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="index.html">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-menu-hamburger"></span>
+     
+    DPM preparation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="NARCIS_collection.html">NARCIS data scrape</a>
+    </li>
+    <li>
+      <a href="OpenAlex_Altmetric_data_download.html">Open Alex and Altmetric data download</a>
+    </li>
+    <li>
+      <a href="Gender_inference.html">Gender inference</a>
+    </li>
+    <li>
+      <a href="Grant_parsing.html">Grant parsing</a>
+    </li>
+    <li>
+      <a href="Printed_news_preparation.html">Printed news preparation</a>
+    </li>
+    <li>
+      <a href="Online_news_preparation.html">Online news preparation</a>
+    </li>
+    <li>
+      <a href="Data_coverage.html">NARCIS and OA database comparison</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-tasks"></span>
+     
+    DPM Panel Dataset
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Panel_data_compilation.html">Panel dataset preparation</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-ok-sign"></span>
+     
+    Analyses and Results
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_main.html">Main analyses</a>
+    </li>
+    <li>
+      <a href="Supplement_data_information.html">SI S1 Dataset information</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental.html">SI S2-S4 Additional results</a>
+    </li>
+    <li>
+      <a href="News_classification_other_functions.html">Resources and functions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    Robustness checks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_robustness_ols.html">Main linear models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_ols_log.html">Main linear models - log-transformed</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_poisson.html">Poisson models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_logit.html">Logistic models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_fe_re.html">Fixed and random effect models</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/amacanovic/dutch_media_profs">
+    <span class="fab fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Preparation: Online news</h1>
+<h4 class="author">Ana Macanovic</h4>
+<h4 class="date">2023-12-22</h4>
+
+</div>
+
+
+<p>This script prepares the full texts of online news mentions from
+Altmetric.</p>
+<p>Load the packages:</p>
+<pre class="r"><code>source(&quot;helper_functions.R&quot;)
+# you might need to install Java for openNLP
+packages_to_load &lt;- c(&quot;readr&quot;, &quot;dplyr&quot;, &quot;tidyr&quot;, &quot;stringr&quot;,
+                      &quot;tidyverse&quot;, &quot;RPostgres&quot;, &quot;lubridate&quot;,
+                      &quot;digest&quot;, &quot;DBI&quot;, &quot;RODBC&quot;, &quot;odbc&quot;,
+                      &quot;NLP&quot;, &quot;openNLP&quot;, &quot;rvest&quot;, &quot;xml2&quot;)
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = &quot;2024-12-01&quot;)</code></pre>
+<div id="step-1-retrieving-mentions" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Step 1: Retrieving
+mentions</h1>
+<p>We retrieve mentions with a python script.</p>
+</div>
+<div id="step-3-tidy-up-the-full-mention-text" class="section level1"
+number="2">
+<h1><span class="header-section-number">2</span> Step 3: Tidy up the
+full mention text</h1>
+<p>First, load the obtained webpages of online news mentions:</p>
+<pre class="r"><code># load the scraped data
+files &lt;- list.files(&quot;../dutch_media_profs_python/news_mentions&quot;, pattern = &quot;.csv&quot;, recursive = TRUE, full.names = TRUE)
+
+prof_mention_scraped_data &lt;- do.call(rbind, lapply(files, read_csv))</code></pre>
+<p>Extract the relevant data from headers, clean up the content:</p>
+<pre class="r"><code>prof_mention_extracted_data &lt;- data.frame(matrix(NA, ncol = 14, nrow = 0))
+  
+for (i in 1:nrow(prof_mention_scraped_data)){
+  row_of_interest &lt;- prof_mention_scraped_data[i, c(&quot;url&quot;, &quot;response&quot;)]
+  
+  text &lt;- as.character(prof_mention_scraped_data$content[i])
+  sitename &lt;- NA
+  title &lt;- NA
+  date &lt;- NA
+  description &lt;- NA 
+  author &lt;- NA
+  categories &lt;- NA 
+  tags &lt;- NA
+  content &lt;- NA
+  language &lt;- NA
+  
+  if (!all(is.na(text))){
+    header &lt;- str_split(text, &quot;&lt;main&gt;&quot;)[[1]][1]
+    
+    header_elements &lt;- as.character(str_split(header, &#39;\&quot; &#39;, simplify = TRUE))
+    # loop through header elements to  get the info we want
+    # try to find the following elements, that are by default set to NA
+    for (element in header_elements){
+      # remove backslashes from the element to make splitting easier
+      
+      # seek different aspects in the element and fill in if applicable
+      if (str_detect(element, &quot;sitename&quot;)){
+        sitename &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;title&quot;)){
+        title &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;author&quot;)){
+        author &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;date&quot;)){
+        date &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;description&quot;)){
+        description &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;categories&quot;)){
+        categories &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+      if (str_detect(element, &quot;tags&quot;)){
+        tags &lt;- str_replace(str_split_i(element, &#39;=&#39;, 2), &#39;&quot;&#39;, &#39;&#39;)
+      }
+    }
+    
+    # get the textual content
+    content &lt;- str_split(text, &quot;&lt;main&gt;&quot;)[[1]][2]
+    # remove the paragraphs and line breaks
+    content &lt;- str_replace_all(content, &quot;[\r\n]&quot; , &quot;&quot;)
+    content &lt;- gsub(&quot;&lt;.*?&gt;&quot;, &quot;&quot;, content)
+    content &lt;- str_replace_all(content, &#39;\&quot;&#39; , &quot;&quot;)
+    # and remove any redundant white spaces
+    content &lt;- str_squish(content)
+    
+  }
+  
+  row_content &lt;- data.frame(sitename, 
+                            title,
+                            author,
+                            date,
+                            description,
+                            categories,
+                            tags,
+                            language,
+                            content)
+  
+  row_combined &lt;- cbind(row_of_interest,
+                        row_content)
+  
+  prof_mention_extracted_data &lt;- rbind(prof_mention_extracted_data,
+                                             row_combined)
+  
+  print(paste(&quot;done with&quot;, i, &quot;out of&quot;, nrow(prof_mention_scraped_data)))
+}</code></pre>
+<p>Write this to our database:</p>
+<pre class="r"><code># fill in own credentials
+port &lt;- 5432
+user &lt;- &quot;postgres&quot;
+password &lt;- &quot;dutchmediaprofssql&quot;
+database_name &lt;- &quot;postgres&quot;
+# connect to the database
+con &lt;- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+con # Checks connection is working</code></pre>
+<p>Deduplicate and write out:</p>
+<pre class="r"><code>prof_mention_extracted_data_filter &lt;- prof_mention_extracted_data %&gt;%
+  distinct(url, .keep_all = TRUE)
+
+dbWriteTable(con, &quot;pub_att_news_full_text&quot;, prof_mention_extracted_data_filter, row.names=FALSE, append=TRUE) </code></pre>
+<div id="error-breakdown" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Error breakdown</h2>
+<p>How many were ok and how many had errors?</p>
+<pre class="r"><code>prof_mention_extracted_data_filter$code &lt;- ifelse(prof_mention_extracted_data_filter$response == &quot;200&quot;, &quot;ok&quot;, &quot;error&quot;)
+
+
+nrow(prof_mention_extracted_data_filter)
+table(prof_mention_extracted_data_filter$code)
+prop.table(table(prof_mention_extracted_data_filter$code))</code></pre>
+<p>Most common response codes?</p>
+<pre class="r"><code>response_codes &lt;- prof_mention_extracted_data_filter %&gt;%
+  group_by(response)%&gt;%
+  summarise(n = n(),
+            prop = round(n()/nrow(prof_mention_extracted_data_filter)*100,2))%&gt;%
+  arrange(-n)</code></pre>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlByZXBhcmF0aW9uOiBPbmxpbmUgbmV3cyINCmF1dGhvcjogIkFuYSBNYWNhbm92aWMiDQpkYXRlOiAiMjAyMy0xMi0yMiINCi0tLQ0KDQpUaGlzIHNjcmlwdCBwcmVwYXJlcyB0aGUgZnVsbCB0ZXh0cyBvZiBvbmxpbmUgbmV3cyBtZW50aW9ucyBmcm9tIEFsdG1ldHJpYy4NCg0KTG9hZCB0aGUgcGFja2FnZXM6DQpgYGB7ciBtZXNzYWdlPSAgRiwgd2FybmluZyA9IEZ9DQpzb3VyY2UoImhlbHBlcl9mdW5jdGlvbnMuUiIpDQojIHlvdSBtaWdodCBuZWVkIHRvIGluc3RhbGwgSmF2YSBmb3Igb3Blbk5MUA0KcGFja2FnZXNfdG9fbG9hZCA8LSBjKCJyZWFkciIsICJkcGx5ciIsICJ0aWR5ciIsICJzdHJpbmdyIiwNCiAgICAgICAgICAgICAgICAgICAgICAidGlkeXZlcnNlIiwgIlJQb3N0Z3JlcyIsICJsdWJyaWRhdGUiLA0KICAgICAgICAgICAgICAgICAgICAgICJkaWdlc3QiLCAiREJJIiwgIlJPREJDIiwgIm9kYmMiLA0KICAgICAgICAgICAgICAgICAgICAgICJOTFAiLCAib3Blbk5MUCIsICJydmVzdCIsICJ4bWwyIikNCg0KZnBhY2thZ2VfY2hlY2socGFja2FnZXNfdG9fbG9hZCkNCg0KDQojIEZvciBmdWxsIHJlcHJvZHVjaWJpbGl0eSwgbG9hZCB0aGUgcGFja2FnZXMgd2l0aCBncm91bmRob2cgdXNpbmcgdGhlIGNvZGUgYmVsb3cgaW5zdGVhZA0KIyBvZiB0aGUgZnBhY2thZ2VfY2hlY2sgZnVuY3Rpb24NCg0KIyBsaWJyYXJ5KGdyb3VuZGhvZykNCiMgZ3JvdW5kaG9nLmxpYnJhcnkocGFja2FnZXNfdG9fbG9hZCwgZGF0ZSA9ICIyMDI0LTEyLTAxIikNCmBgYA0KDQpgYGB7ciBpbmNsdWRlPUZBTFNFfQ0Kb3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUpDQpvcHRzX2NodW5rJHNldChldmFsID0gRkFMU0UpDQpvcHRzX2NodW5rJHNldCh3YXJuaW5nID0gRkFMU0UpDQpvcHRzX2NodW5rJHNldChtZXNzYWdlID0gRkFMU0UpDQpgYGANCg0KIyBTdGVwIDE6IFJldHJpZXZpbmcgbWVudGlvbnMNCg0KV2UgcmV0cmlldmUgbWVudGlvbnMgd2l0aCBhIHB5dGhvbiBzY3JpcHQuDQoNCg0KIyBTdGVwIDM6IFRpZHkgdXAgdGhlIGZ1bGwgbWVudGlvbiB0ZXh0DQoNCkZpcnN0LCBsb2FkIHRoZSBvYnRhaW5lZCB3ZWJwYWdlcyBvZiBvbmxpbmUgbmV3cyBtZW50aW9uczoNCmBgYHtyIHdhcm5pbmcgPSBGLCBtZXNzYWdlID0gRn0NCiMgbG9hZCB0aGUgc2NyYXBlZCBkYXRhDQpmaWxlcyA8LSBsaXN0LmZpbGVzKCIuLi9kdXRjaF9tZWRpYV9wcm9mc19weXRob24vbmV3c19tZW50aW9ucyIsIHBhdHRlcm4gPSAiLmNzdiIsIHJlY3Vyc2l2ZSA9IFRSVUUsIGZ1bGwubmFtZXMgPSBUUlVFKQ0KDQpwcm9mX21lbnRpb25fc2NyYXBlZF9kYXRhIDwtIGRvLmNhbGwocmJpbmQsIGxhcHBseShmaWxlcywgcmVhZF9jc3YpKQ0KYGBgDQoNCkV4dHJhY3QgdGhlIHJlbGV2YW50IGRhdGEgZnJvbSBoZWFkZXJzLCBjbGVhbiB1cCB0aGUgY29udGVudDoNCmBgYHtyfQ0KcHJvZl9tZW50aW9uX2V4dHJhY3RlZF9kYXRhIDwtIGRhdGEuZnJhbWUobWF0cml4KE5BLCBuY29sID0gMTQsIG5yb3cgPSAwKSkNCiAgDQpmb3IgKGkgaW4gMTpucm93KHByb2ZfbWVudGlvbl9zY3JhcGVkX2RhdGEpKXsNCiAgcm93X29mX2ludGVyZXN0IDwtIHByb2ZfbWVudGlvbl9zY3JhcGVkX2RhdGFbaSwgYygidXJsIiwgInJlc3BvbnNlIildDQogIA0KICB0ZXh0IDwtIGFzLmNoYXJhY3Rlcihwcm9mX21lbnRpb25fc2NyYXBlZF9kYXRhJGNvbnRlbnRbaV0pDQogIHNpdGVuYW1lIDwtIE5BDQogIHRpdGxlIDwtIE5BDQogIGRhdGUgPC0gTkENCiAgZGVzY3JpcHRpb24gPC0gTkEgDQogIGF1dGhvciA8LSBOQQ0KICBjYXRlZ29yaWVzIDwtIE5BIA0KICB0YWdzIDwtIE5BDQogIGNvbnRlbnQgPC0gTkENCiAgbGFuZ3VhZ2UgPC0gTkENCiAgDQogIGlmICghYWxsKGlzLm5hKHRleHQpKSl7DQogICAgaGVhZGVyIDwtIHN0cl9zcGxpdCh0ZXh0LCAiPG1haW4+IilbWzFdXVsxXQ0KICAgIA0KICAgIGhlYWRlcl9lbGVtZW50cyA8LSBhcy5jaGFyYWN0ZXIoc3RyX3NwbGl0KGhlYWRlciwgJ1wiICcsIHNpbXBsaWZ5ID0gVFJVRSkpDQogICAgIyBsb29wIHRocm91Z2ggaGVhZGVyIGVsZW1lbnRzIHRvICBnZXQgdGhlIGluZm8gd2Ugd2FudA0KICAgICMgdHJ5IHRvIGZpbmQgdGhlIGZvbGxvd2luZyBlbGVtZW50cywgdGhhdCBhcmUgYnkgZGVmYXVsdCBzZXQgdG8gTkENCiAgICBmb3IgKGVsZW1lbnQgaW4gaGVhZGVyX2VsZW1lbnRzKXsNCiAgICAgICMgcmVtb3ZlIGJhY2tzbGFzaGVzIGZyb20gdGhlIGVsZW1lbnQgdG8gbWFrZSBzcGxpdHRpbmcgZWFzaWVyDQogICAgICANCiAgICAgICMgc2VlayBkaWZmZXJlbnQgYXNwZWN0cyBpbiB0aGUgZWxlbWVudCBhbmQgZmlsbCBpbiBpZiBhcHBsaWNhYmxlDQogICAgICBpZiAoc3RyX2RldGVjdChlbGVtZW50LCAic2l0ZW5hbWUiKSl7DQogICAgICAgIHNpdGVuYW1lIDwtIHN0cl9yZXBsYWNlKHN0cl9zcGxpdF9pKGVsZW1lbnQsICc9JywgMiksICciJywgJycpDQogICAgICB9DQogICAgICBpZiAoc3RyX2RldGVjdChlbGVtZW50LCAidGl0bGUiKSl7DQogICAgICAgIHRpdGxlIDwtIHN0cl9yZXBsYWNlKHN0cl9zcGxpdF9pKGVsZW1lbnQsICc9JywgMiksICciJywgJycpDQogICAgICB9DQogICAgICBpZiAoc3RyX2RldGVjdChlbGVtZW50LCAiYXV0aG9yIikpew0KICAgICAgICBhdXRob3IgPC0gc3RyX3JlcGxhY2Uoc3RyX3NwbGl0X2koZWxlbWVudCwgJz0nLCAyKSwgJyInLCAnJykNCiAgICAgIH0NCiAgICAgIGlmIChzdHJfZGV0ZWN0KGVsZW1lbnQsICJkYXRlIikpew0KICAgICAgICBkYXRlIDwtIHN0cl9yZXBsYWNlKHN0cl9zcGxpdF9pKGVsZW1lbnQsICc9JywgMiksICciJywgJycpDQogICAgICB9DQogICAgICBpZiAoc3RyX2RldGVjdChlbGVtZW50LCAiZGVzY3JpcHRpb24iKSl7DQogICAgICAgIGRlc2NyaXB0aW9uIDwtIHN0cl9yZXBsYWNlKHN0cl9zcGxpdF9pKGVsZW1lbnQsICc9JywgMiksICciJywgJycpDQogICAgICB9DQogICAgICBpZiAoc3RyX2RldGVjdChlbGVtZW50LCAiY2F0ZWdvcmllcyIpKXsNCiAgICAgICAgY2F0ZWdvcmllcyA8LSBzdHJfcmVwbGFjZShzdHJfc3BsaXRfaShlbGVtZW50LCAnPScsIDIpLCAnIicsICcnKQ0KICAgICAgfQ0KICAgICAgaWYgKHN0cl9kZXRlY3QoZWxlbWVudCwgInRhZ3MiKSl7DQogICAgICAgIHRhZ3MgPC0gc3RyX3JlcGxhY2Uoc3RyX3NwbGl0X2koZWxlbWVudCwgJz0nLCAyKSwgJyInLCAnJykNCiAgICAgIH0NCiAgICB9DQogICAgDQogICAgIyBnZXQgdGhlIHRleHR1YWwgY29udGVudA0KICAgIGNvbnRlbnQgPC0gc3RyX3NwbGl0KHRleHQsICI8bWFpbj4iKVtbMV1dWzJdDQogICAgIyByZW1vdmUgdGhlIHBhcmFncmFwaHMgYW5kIGxpbmUgYnJlYWtzDQogICAgY29udGVudCA8LSBzdHJfcmVwbGFjZV9hbGwoY29udGVudCwgIltcclxuXSIgLCAiIikNCiAgICBjb250ZW50IDwtIGdzdWIoIjwuKj8+IiwgIiIsIGNvbnRlbnQpDQogICAgY29udGVudCA8LSBzdHJfcmVwbGFjZV9hbGwoY29udGVudCwgJ1wiJyAsICIiKQ0KICAgICMgYW5kIHJlbW92ZSBhbnkgcmVkdW5kYW50IHdoaXRlIHNwYWNlcw0KICAgIGNvbnRlbnQgPC0gc3RyX3NxdWlzaChjb250ZW50KQ0KICAgIA0KICB9DQogIA0KICByb3dfY29udGVudCA8LSBkYXRhLmZyYW1lKHNpdGVuYW1lLCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICB0aXRsZSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBhdXRob3IsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgZGF0ZSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBjYXRlZ29yaWVzLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRhZ3MsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgbGFuZ3VhZ2UsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgY29udGVudCkNCiAgDQogIHJvd19jb21iaW5lZCA8LSBjYmluZChyb3dfb2ZfaW50ZXJlc3QsDQogICAgICAgICAgICAgICAgICAgICAgICByb3dfY29udGVudCkNCiAgDQogIHByb2ZfbWVudGlvbl9leHRyYWN0ZWRfZGF0YSA8LSByYmluZChwcm9mX21lbnRpb25fZXh0cmFjdGVkX2RhdGEsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByb3dfY29tYmluZWQpDQogIA0KICBwcmludChwYXN0ZSgiZG9uZSB3aXRoIiwgaSwgIm91dCBvZiIsIG5yb3cocHJvZl9tZW50aW9uX3NjcmFwZWRfZGF0YSkpKQ0KfQ0KDQpgYGANCg0KV3JpdGUgdGhpcyB0byBvdXIgZGF0YWJhc2U6DQpgYGB7cn0NCiMgZmlsbCBpbiBvd24gY3JlZGVudGlhbHMNCnBvcnQgPC0gNTQzMg0KdXNlciA8LSAicG9zdGdyZXMiDQpwYXNzd29yZCA8LSAiZHV0Y2htZWRpYXByb2Zzc3FsIg0KZGF0YWJhc2VfbmFtZSA8LSAicG9zdGdyZXMiDQojIGNvbm5lY3QgdG8gdGhlIGRhdGFiYXNlDQpjb24gPC0gZGJDb25uZWN0KFBvc3RncmVzKCksDQogICAgICAgICAgICAgICAgIGRibmFtZT0gZGF0YWJhc2VfbmFtZSwNCiAgICAgICAgICAgICAgICAgcG9ydCA9IHBvcnQsDQogICAgICAgICAgICAgICAgIHVzZXIgPSB1c2VyLCANCiAgICAgICAgICAgICAgICAgcGFzc3dvcmQgPSBwYXNzd29yZCkNCg0KY29uICMgQ2hlY2tzIGNvbm5lY3Rpb24gaXMgd29ya2luZw0KDQpgYGANCg0KRGVkdXBsaWNhdGUgYW5kIHdyaXRlIG91dDoNCmBgYHtyfQ0KcHJvZl9tZW50aW9uX2V4dHJhY3RlZF9kYXRhX2ZpbHRlciA8LSBwcm9mX21lbnRpb25fZXh0cmFjdGVkX2RhdGEgJT4lDQogIGRpc3RpbmN0KHVybCwgLmtlZXBfYWxsID0gVFJVRSkNCg0KZGJXcml0ZVRhYmxlKGNvbiwgInB1Yl9hdHRfbmV3c19mdWxsX3RleHQiLCBwcm9mX21lbnRpb25fZXh0cmFjdGVkX2RhdGFfZmlsdGVyLCByb3cubmFtZXM9RkFMU0UsIGFwcGVuZD1UUlVFKSANCmBgYA0KDQojIyBFcnJvciBicmVha2Rvd24NCkhvdyBtYW55IHdlcmUgb2sgYW5kIGhvdyBtYW55IGhhZCBlcnJvcnM/DQpgYGB7cn0NCnByb2ZfbWVudGlvbl9leHRyYWN0ZWRfZGF0YV9maWx0ZXIkY29kZSA8LSBpZmVsc2UocHJvZl9tZW50aW9uX2V4dHJhY3RlZF9kYXRhX2ZpbHRlciRyZXNwb25zZSA9PSAiMjAwIiwgIm9rIiwgImVycm9yIikNCg0KDQpucm93KHByb2ZfbWVudGlvbl9leHRyYWN0ZWRfZGF0YV9maWx0ZXIpDQp0YWJsZShwcm9mX21lbnRpb25fZXh0cmFjdGVkX2RhdGFfZmlsdGVyJGNvZGUpDQpwcm9wLnRhYmxlKHRhYmxlKHByb2ZfbWVudGlvbl9leHRyYWN0ZWRfZGF0YV9maWx0ZXIkY29kZSkpDQpgYGANCg0KTW9zdCBjb21tb24gcmVzcG9uc2UgY29kZXM/DQpgYGB7cn0NCnJlc3BvbnNlX2NvZGVzIDwtIHByb2ZfbWVudGlvbl9leHRyYWN0ZWRfZGF0YV9maWx0ZXIgJT4lDQogIGdyb3VwX2J5KHJlc3BvbnNlKSU+JQ0KICBzdW1tYXJpc2UobiA9IG4oKSwNCiAgICAgICAgICAgIHByb3AgPSByb3VuZChuKCkvbnJvdyhwcm9mX21lbnRpb25fZXh0cmFjdGVkX2RhdGFfZmlsdGVyKSoxMDAsMikpJT4lDQogIGFycmFuZ2UoLW4pDQpgYGANCg0K</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("Online_news_preparation.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

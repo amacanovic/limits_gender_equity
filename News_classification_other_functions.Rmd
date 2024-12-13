@@ -1,0 +1,38 @@
+---
+title: "Preparation: News source classification and other functions"
+author: "Ana Macanovic"
+date: "2024-07-24"
+---
+
+This script shows the content of .R files we use to classify types of printed
+and online news sources. Additionally, it shows the source code of all custom
+functions used in our analyses. 
+
+# News source classification 
+
+Printed news classification criteria. In the main analyses, everything but  
+"national_news_nl", "regional_news_nl", and "high_profile_int" is classified as "other".
+
+These categories match those describe in main text as follows:
+
+1. national_news_nl: National news (NL)
+2. regional_news_nl: Regional news (NL)
+3. high_profile_int: International news
+4. rest: Other sources
+
+```{r, code = readLines("resources/lexis_news_outlet_classification.R")}
+```
+
+Online news classification criteria are as follows:
+
+```{r, code = readLines("resources/altmetric_news_outlet_classification.R")}
+```
+
+# Other functions
+
+Below we list the source code of all functions we use in our analyses.
+```{r, code = readLines("helper_functions.R")}
+
+```
+
+

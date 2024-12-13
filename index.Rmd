@@ -1,0 +1,113 @@
+---
+title: "Dutch Professors in Media (DPM)"
+output:
+  html_document:
+    toc: false
+    number_sections: false
+bibliography: references.bib
+
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r, install remotely, globalsettings, echo=FALSE, warning=FALSE, results='hide'}
+# install.packages("remotes")
+#remotes::install_github("rlesur/klippy")
+``` 
+
+```{r, globalsettings, echo=FALSE, warning=FALSE, results='hide'}
+library(knitr)
+
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(tidy.opts=list(width.cutoff=100),tidy=TRUE, warning = FALSE, message = FALSE,comment = "#>", cache=TRUE, class.source=c("test"), class.output=c("test2"))
+options(width = 100)
+rgl::setupKnitr()
+
+colorize <- function(x, color) {sprintf("<span style='color: %s;'>%s</span>", color, x) }
+
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = c('top', 'right'))
+#klippy::klippy(color = 'darkred')
+#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
+```
+
+
+----
+
+:::::::::::::: {.columns}
+::: {.column width="80%"}
+
+# Repository Description
+Last compiled on `r format(Sys.time(), '%B %d, %Y')`
+
+<br />
+
+### Dutch Professors in Media (DPM)
+This website documents the preparation of the Dutch Professors in Media database (DPM): 
+a newly curated fine-grained data source containing nearly all full professors in the 
+Netherlands (N = 6.830) as of 2022 across all academic fields. 
+
+This database contains information on professors' publication, citation, affiliation, and topical interest records from [OpenAlex](https://openalex.org/). We enrich these data with funding received by both the Dutch [(NWO)](https://www.nwo.nl/) and the European [(ERC)](https://erc.easme-web.eu?mode=7&countries=NL) Research Councils, as well as information on positions held within the Dutch government or its advisory bodies.
+
+Uniquely, we link professors to detailed, time-stamped accounts of attention across a variety 
+of media types. From [LexisNexis](https://www.lexisnexis.com/) we retrieve 721 thousand mentions of professors in printed news media (e.g., The New York Times). Using the [Altmetric database](https://www.altmetric.com/), we capture 695 thousand online news (e.g., Yahoo! News) and blog (e.g., Psychology Today) articles and 3.3 million social media posts (on Twitter, now X) containing mentions of professors’ scientific work. 
+
+Finally, we compile social network data on 1.35 million co-authors of professors in the DPM, collecting information on co-authors’ publications, citations, and the number of times their work appeared in the online news and online social media (Twitter/X). 
+
+Most of the scripts used in the preparation of this database can be found in the top
+menu under the section *"DPM preparation"*.
+
+The database was compiled by [Ana Macanovic](https://amacanovic.github.io/) and [Bas Hofstra](https://www.bashofstra.com) at [Radboud University](https://www.ru.nl/en).
+
+<br />
+
+### DPM Panel dataset
+
+This website further contains scripts that use DPM to prepare a panel dataset
+compiling indicators of professors' scientific careers, media attention, and collaboration
+networks on the yearly basis, covering the time span between 2012 and 2023.
+
+The script used to compile this panel dataset from the DPM can be found in the top
+menu under the section *"DPM Panel dataset"*.
+
+<br />
+
+### Analyses and Results
+
+This section of the website contains scripts that produce results found in the 
+main text and the Online SI of the following paper:
+
+**Macanovic, A., Hofstra, B. (2024). "Limits to Gender Equity in Science Communication".**
+
+The scripts used to generate the results in the paper can be found in the top
+menu under the section *"Analyses and Results"*.
+
+Additional robustness checks can be found in the top
+menu under the section *"Robustness checks"*.
+
+
+
+----
+
+
+:::
+::: {.column width="80%"}
+
+
+:::
+::::::::::::::
+
+
+
+----
+
+
+
+
+
+

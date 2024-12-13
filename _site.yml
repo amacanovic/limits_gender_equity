@@ -1,0 +1,79 @@
+name: "Dutch media profs R code"
+author: 
+  - 'Ana Macanovic and Bas Hofstra'
+output_dir: "docs"
+exclude: 
+  - "data"
+  - "narcis_screenshots"
+  - "resources"
+  - "panel_datasets"
+  - "results"
+
+  
+bibliography: references.bib
+navbar:
+  left:
+    - icon: fa-home
+    - text: "About"
+      icon: glyphicon glyphicon-info-sign
+      href: index.html
+    - text: "DPM preparation"
+      icon: glyphicon glyphicon-menu-hamburger
+      menu:
+      - text: "NARCIS data scrape"
+        href: NARCIS_collection.html
+      - text: "Open Alex and Altmetric data download"
+        href: OpenAlex_Altmetric_data_download.html
+      - text: "Gender inference"
+        href: Gender_inference.html
+      - text: "Grant parsing"
+        href: Grant_parsing.html
+      - text: "Printed news preparation"
+        href: Printed_news_preparation.html
+      - text: "Online news preparation"
+        href: Online_news_preparation.html
+      - text: "NARCIS and OA database comparison"
+        href: Data_coverage.html
+    - text: "DPM Panel Dataset"
+      icon: glyphicon glyphicon-tasks
+      menu:
+      - text: "Panel dataset preparation"
+        href: Panel_data_compilation.html
+    - text: "Analyses and Results"
+      icon: glyphicon glyphicon-ok-sign
+      menu:
+      - text: "Main analyses"
+        href: Analyses_main.html
+      - text: "SI S1 Dataset information"
+        href: Supplement_data_information.html  
+      - text: "SI S2-S4 Additional results"
+        href: Analyses_supplemental.html
+      - text: "Resources and functions"
+        href: News_classification_other_functions.html
+    - text: "Robustness checks"
+      icon: glyphicon glyphicon-info-sign
+      menu:
+        - text: "Main linear models"
+          href: Analyses_robustness_ols.html
+        - text: "Main linear models - log-transformed"
+          href: Analyses_robustness_ols_log.html
+        - text: "Poisson models"
+          href: Analyses_robustness_poisson.html
+        - text: "Logistic models"
+          href: Analyses_robustness_logit.html
+        - text: "Fixed and random effect models"
+          href: Analyses_robustness_fe_re.html
+
+  right:
+  - icon: fab fa-github
+    href: https://github.com/amacanovic/dutch_media_profs
+output:
+  html_document:
+    theme: flatly
+    highlight: default
+    toc:  true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    code_download: yes
+    css: tweaks.css

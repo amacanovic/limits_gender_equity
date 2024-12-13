@@ -1,0 +1,444 @@
+---
+title: "Preparation: NARCIS data retrieval"
+author: "Bas Hofstra"
+date: "2022-03-25"
+---
+
+This script shows the content of .R files used to retrieve the information from
+the NARCIS website and shows some screenshot of the website.
+
+The code used to retrieve the data:
+```{r eval = F}
+#############################################
+# Author:   Bas Hofstra                     #
+# Date:     25-03-2022                      #
+# Task:     get metata from dutch profs 2021#
+#############################################
+
+# Required packages thus far
+rm(list = ls()) 
+
+require(tidyverse)
+require(tm)
+require(quanteda)
+require(httr) 
+require(xml2)
+require(rvest)
+require(readxl)
+#require(data.table)
+install.packages("furrr")
+require(furrr)
+require(future)
+require(tictoc)
+require(future)
+require(httr)
+require(doParallel)
+#------------------------------------------------------------------------------------------
+# 1 Generate a vector of links that I can look through for the htmls
+#------------------------------------------------------------------------------------------
+
+urls <- read_excel("dutch_profs_urls.xlsx") # 
+
+
+#------------------------------------------------------------------------------------------
+# 2 From those links download html code of profiles
+#------------------------------------------------------------------------------------------
+
+# get html docs
+
+doclist <- list()
+for (i in 1:nrow(urls)) {
+  
+  Sys.sleep(runif(1, 0, 0.01))
+
+  doclist[[i]] <- read_html(as.character(urls[i,c("URL")])) # get the entire html of that link
+  
+}
+save(doclist, file = "dutch_profs_xmls.rda")
+doclist  %>% 
+  lapply(.,toString) %>%    
+  saveRDS(., "dutch_profs_strings.rda")
+
+
+
+#------------------------------------------------------------------------------------------
+# 3 From those profile htmls extract metadata
+#------------------------------------------------------------------------------------------
+
+# LOOP THROUGH THE XMLS AND FIND METADATA FROM THE WEBSITE
+metacols <- list()
+metainfo <- list()
+metadf <- list()
+for (i in 1:length(doclist)) { # now this is where some magix happens
+  
+  if (length(doclist[[i]]) > 0) {
+  
+  metacols[[i]] <- doclist[[i]] %>% # title
+    rvest::html_nodes('body') %>%
+    xml2::xml_find_all("//th") %>%
+    rvest::html_text()
+  
+  metainfo[[i]] <- doclist[[i]] %>% # title
+    rvest::html_nodes('body') %>%
+    xml2::xml_find_all("//td") %>%
+    rvest::html_text()
+  
+  
+  metacols[[i]] <-  gsub("\n", "", metacols[[i]])
+  metacols[[i]] <-  gsub("\t", "", metacols[[i]])
+  metacols[[i]] <-  gsub("\r", "", metacols[[i]])
+  metacols[[i]] <-  gsub("&nbsp&nbsp", "", metacols[[i]])
+  
+  metadf[[i]] <- as.data.frame(t(unlist(metainfo[[i]]))) # transpose the object for row-column
+  names(metadf[[i]]) <- t(unlist(metacols[[i]])) # same
+  metadf[[i]][,c(length(metadf[[i]]))] <- NULL
+  metadf[[i]]["narcis_url"] <- as.character(urls[i,c("URL")])
+  } 
+}
+metadf <- bind_rows(metadf)
+save(metadf, file = "media_profs_profiles.rda")
+load(file = "media_profs_profiles.rda")
+
+
+
+#------------------------------------------------------------------------------------------
+# 4 From those profile htmls extract numpubs to get links to crawl
+#------------------------------------------------------------------------------------------
+urls$puburls <- gsub("person", "personpub", urls$URL)
+expanded <- list()
+z<-0
+for (i in 1:length(doclist)) {
+  
+  if (length(doclist[[i]]) > 0) {
+  
+    if(length(doclist[[i]] %>% # title
+      rvest::html_nodes('head') %>%
+      xml2::xml_find_all("//a") %>%
+      rvest::html_text() %>%
+      str_subset("Publications \\(")) > 0 ) {
+    
+  z[i] <- doclist[[i]] %>% # title
+    rvest::html_nodes('head') %>%
+    xml2::xml_find_all("//a") %>%
+    rvest::html_text() %>%
+    str_subset("Publications \\(") %>% 
+    gsub("Publications \\(", "",. ) %>%
+    gsub("\\)", "",. ) %>%
+    as.numeric(.)
+  
+    } else {
+      
+      z[i] <- 0
+      
+    }
+  
+  expanded[[i]] <- paste0(urls[i, c("puburls")], "/pageable/")
+  expanded[[i]] <- data.frame(rep(expanded[[i]],  ceiling(z[i]/10))) # so ten per page, we round up, know exactly how many pages to scrape :-)
+  expanded[[i]][,1] <- paste0(expanded[[i]][,1], as.numeric(row.names(expanded[[i]]))-1)
+  }
+}
+expanded <- unlist(expanded) # list of tailor made urls to scrape the pub urls from (not longer than necessary!)
+
+
+#------------------------------------------------------------------------------------------
+# 5 From those links to crawl, get the urls to the profiles
+#------------------------------------------------------------------------------------------
+
+#And from those we want their pub links
+# pub_htmls <- list()
+# pub_urls <- list()
+
+for (i in 1:length(expanded)) { # Sot his took a while, saved in six different DFs
+  
+    skip_to_next <- FALSE
+    
+    tryCatch({
+    
+    Sys.sleep(runif(1, 0, 0.01))
+    pub_htmls[[i]] <- read_html(expanded[i])
+    pub_urls[[i]] <- html_attr(html_nodes(pub_htmls[[i]], "a"), "href") # get the link
+    
+    })
+    
+    if(skip_to_next) { next }     
+    
+}
+
+save(pub_htmls, file = "pub_htmls_temp.rda")
+pub_htmls  %>% 
+  lapply(.,toString) %>%    
+  saveRDS(., "pub_htmls_string_temp.rda")
+save(pub_urls, file = "pub_urls_temp.rda")
+
+
+pub_urls_clean <- list()
+for (i in 1:length(pub_urls)) {
+  pub_urls_clean[[i]] <- paste0("https://www.narcis.nl", pub_urls[[i]][grepl("/publication/RecordID/", pub_urls[[i]])])
+  pub_urls_clean[[i]] <- data.frame(pub_urls_clean[[i]])
+  pub_urls_clean[[i]][,2] <- gsub("pageable.*", "", expanded[i])
+}
+pub_urls_clean <- bind_rows(pub_urls_clean)
+pub_urls_clean <- data.table(pub_urls_clean) # DT, to assist the unique function, usually saves time
+pub_urls_clean <- unique(pub_urls_clean) # given that we need to go over multiple pages per person, we only keep the unique ones (it parses the same urls even with "pageable" increments)
+names(pub_urls_clean) <- c("pub_url", "profile_id")
+pub_to_profile_id <- pub_urls_clean
+save(pub_to_profile_id, file = "media_profs_pub_to_profile_ids.rda")
+
+load("media_profs_pub_to_profile_ids.rda")
+pub_to_profile_id$profile_id <- gsub("personpub", "person", pub_to_profile_id$profile_id)
+save(pub_to_profile_id, file = "media_profs_pub_to_profile_ids.rda")
+pub_urls_clean <- pub_to_profile_id
+
+
+#------------------------------------------------------------------------------------------
+# 6 From those crawled pub pages, we now have pub ids, that we're gonna scrape
+
+
+
+
+
+
+#------------------------------------------------------------------------------------------
+x <- pub_urls_clean$pub_url
+# pubs_metadata <- list()
+# for (i in 1:length(x)) { # it's fascinating that the most important stuff (these read_html) loops are so short
+# 
+#   Sys.sleep(runif(1, 0, 0.001))
+#   skip_to_next <- FALSE
+#   
+#   tryCatch({
+# fscrape <- function(link)   
+#   
+#     if (http_status(GET(as.character(pub_urls_clean[i,1])))$message == "Server error: (500) Internal Server Error") {
+#       
+#       pubs_metadata[[i]] <- "HTTP error 500" # so about 1/1000 fails, .1% of links changed in the timespan data gathering data (not weird, though annoying)
+#       
+#     }
+#     if (http_status(GET(as.character(pub_urls_clean[i,1])))$message == "Client error: (404) Not Found") {
+#       
+#       pubs_metadata[[i]] <- "HTTP error 400" # so about 1/1000 fails, .1% of links changed in the timespan data gathering data (not weird, though annoying)
+#       
+#     }
+#     else {
+#       
+#       pubs_metadata[[i]] <- read_html(x[i])
+#       
+#     }
+#   })
+#   
+#   if(skip_to_next) { next }  
+#   
+# }
+
+
+# paralellize the estimation
+
+# numCores <- detectCores()
+# if (numCores > 4) {
+#   registerDoParallel(cores = 8)
+# } else {    
+#   print("Too few cores!") 
+# } 
+
+# dividing code in 10k chunks
+chunk_number <- 10000       
+urls <- split(x,          
+          cut(seq_along(x),
+              chunk_number,
+          labels = FALSE))
+
+# close workers, open workers in a future plan
+closeAllConnections()
+plan(multisession(workers = availableCores()))
+  
+tic() # start....
+pubs_metadatac <- list()
+  
+for (i in 9001:10000) { # so over all the se chunks
+    
+  print(paste0(round((100/1000)*(i-9000), digits = 2), "%, or ", i-9000," out of 1000"))  
+  
+  Sys.sleep(runif(1, 0, 0.01))
+  skip_to_next <- FALSE
+    
+  tryCatch({
+      
+    pubs_metadatac[[i]] = furrr::future_map(urls[[i]], purrr::possibly(.f = function(o) { # map all the urls *IF POSSIBLE*
+    x_get =  read_html(o)
+    x_get = toString(x_get) # to string, otherwise dreaded external pointer error
+    }, otherwise = NULL) 
+    )
+   
+    })
+    
+    if(skip_to_next) { next }  
+    
+  }
+toc() # ...and end, how much time passed?
+
+
+#3 has 2000, doesn't start at 2001, so 2000 needs to be deleted beforehand
+
+
+# annoying checks, given unlist merges some of the same htmls I think
+load(file = "dutch_profs_pub_strings1.rda")
+pubs_metadac1 <- pubs_metadatac[c(1:1000)]
+pubs_metadac1 <- unlist(pubs_metadac1, recursive = FALSE)
+urls1 <- unlist(urls[c(1:1000)], recursive = FALSE)
+length(pubs_metadac1)==length(urls1)
+
+
+load(file = "dutch_profs_pub_strings2.rda")
+pubs_metadac2 <- pubs_metadatac[c(1001:2000)]
+pubs_metadac2 <- unlist(pubs_metadac2, recursive = FALSE)
+urls2 <- unlist(urls[c(1001:2000)], recursive = FALSE)
+length(pubs_metadac2)==length(urls2)
+
+load(file = "dutch_profs_pub_strings3.rda")
+pubs_metadac3 <- pubs_metadatac[c(2001:3000)]
+pubs_metadac3 <- unlist(pubs_metadac3, recursive = FALSE)
+urls3 <- unlist(urls[c(2001:3000)], recursive = FALSE)
+length(pubs_metadac3)==length(urls3)
+
+
+load(file = "dutch_profs_pub_strings4.rda")
+pubs_metadac4 <- pubs_metadatac[c(3001:4000)]
+pubs_metadac4 <- unlist(pubs_metadac4, recursive = FALSE)
+urls4 <- unlist(urls[c(3001:4000)], recursive = FALSE)
+length(pubs_metadac4)==length(urls4)
+
+load(file = "dutch_profs_pub_strings5.rda")
+pubs_metadac5 <- pubs_metadatac[c(4001:5000)]
+pubs_metadac5 <- unlist(pubs_metadac5, recursive = FALSE)
+urls5 <- unlist(urls[c(4001:5000)], recursive = FALSE)
+length(pubs_metadac5)==length(urls5)
+
+load(file = "dutch_profs_pub_strings6.rda")
+pubs_metadac6 <- pubs_metadatac[c(5001:6000)]
+pubs_metadac6 <- unlist(pubs_metadac6, recursive = FALSE)
+urls6 <- unlist(urls[c(5001:6000)], recursive = FALSE)
+length(pubs_metadac6)==length(urls6)
+
+load(file = "dutch_profs_pub_strings7.rda")
+pubs_metadac7 <- pubs_metadatac[c(6001:7000)]
+pubs_metadac7 <- unlist(pubs_metadac7, recursive = FALSE)
+urls7 <- unlist(urls[c(6001:7000)], recursive = FALSE)
+length(pubs_metadac7)==length(urls7)
+
+load(file = "dutch_profs_pub_strings8.rda")
+pubs_metadac8 <- pubs_metadatac[c(7001:8000)]
+pubs_metadac8 <- unlist(pubs_metadac8, recursive = FALSE)
+urls8 <- unlist(urls[c(7001:8000)], recursive = FALSE)
+length(pubs_metadac8)==length(urls8)
+
+load(file = "dutch_profs_pub_strings9.rda")
+pubs_metadac9 <- pubs_metadatac[c(8001:9000)]
+pubs_metadac9 <- unlist(pubs_metadac9, recursive = FALSE)
+urls9 <- unlist(urls[c(8001:9000)], recursive = FALSE)
+length(pubs_metadac9)==length(urls9)
+
+load(file = "dutch_profs_pub_strings10.rda")
+pubs_metadac10 <- pubs_metadatac[c(9001:10000)]
+pubs_metadac10 <- unlist(pubs_metadac10, recursive = FALSE)
+urls10 <- unlist(urls[c(9001:10000)], recursive = FALSE)
+length(pubs_metadac10)==length(urls10)
+
+pubs_metadac <- c(pubs_metadac1, pubs_metadac2, pubs_metadac3, pubs_metadac4, pubs_metadac5, 
+                  pubs_metadac6, pubs_metadac7, pubs_metadac8, pubs_metadac9, pubs_metadac10)
+
+urll <- c(urls1, urls2, urls3, urls4, urls5, urls6, urls7, urls8, urls9, urls10)
+
+rm(pubs_metadac1, pubs_metadac2, pubs_metadac3, pubs_metadac4, pubs_metadac5, 
+pubs_metadac6, pubs_metadac7, pubs_metadac8, pubs_metadac9, pubs_metadac10)
+rm(urls1, urls2, urls3, urls4, urls5, urls6, urls7, urls8, urls9, urls10)
+
+length(pubs_metadac)==length(urll)
+
+#------------------------------------------------------------------------------------------
+# 7Fand since we have pub metadata now, we can clean that up.
+#------------------------------------------------------------------------------------------
+# LOOP THROUGH THE XMLS AND FIND METADATA FROM THE WEBSITE
+metacols <- list()
+metainfo <- list()
+metaauthors <- list()
+metadf <- list()
+pubs_metadata <- list()
+for (i in 744071:length(pubs_metadac)) { # now this is where some magix happens
+  
+  if (is.null(pubs_metadac[[i]])) {
+     
+    metadf[[i]] <- as.data.frame("nullvalue")
+    metadf[[i]]["narcis_url"] <- urll[i]
+  
+  
+  # else if (pubs_metadata[[i]][1] == "HTTP error 400") {
+  #   
+  #   metadf[[i]] <- as.data.frame("HTTP error 400")
+  #   metadf[[i]]["narcis_id"] <- pub_urls_clean[i, 2]
+  #   metadf[[i]]["narcis_url"] <- pub_urls_clean[i, 1]
+  #   
+  } else {
+  
+    pubs_metadac[[i]] <- read_html(pubs_metadac[[i]])  
+  
+    metacols[[i]] <- pubs_metadac[[i]] %>% # title
+      rvest::html_nodes('body') %>%
+      xml2::xml_find_all("//th") %>%
+      rvest::html_text()
+    
+    metainfo[[i]] <- pubs_metadac[[i]] %>% # title
+      rvest::html_nodes('body') %>%
+      xml2::xml_find_all("//td") %>%
+      rvest::html_text()
+    
+    metaauthors[[i]] <-  html_attr(html_nodes(pubs_metadac[[i]], "a"), "href") # get the link
+    metaauthors[[i]] <- metaauthors[[i]][grepl("person/", metaauthors[[i]])] # this one is key to get the co authors of the student!
+    
+    metacols[[i]] <-  gsub("\n", "", metacols[[i]])
+    metacols[[i]] <-  gsub("\t", "", metacols[[i]])
+    metacols[[i]] <-  gsub("\r", "", metacols[[i]])
+    metacols[[i]] <-  gsub("&nbsp&nbsp", "", metacols[[i]])
+    
+    metadf[[i]] <- as.data.frame(t(unlist(metainfo[[i]]))) # transpose the object for row-column
+    names(metadf[[i]]) <- t(unlist(metacols[[i]])) # same
+    metadf[[i]][,c(length(metadf[[i]]))] <- NULL
+    
+    metadf[[i]]["narcis_url"] <- urll[i]
+    #metadf[[i]]["narcis_url"] <- pub_urls_clean[i, 1]
+    metadf[[i]]["narcis_coauthors"] <- paste(metaauthors[[i]], collapse = " , ") 
+    # can expand to long later, but these are coauthor ids
+    # so this LAST line is super essential moving forward
+    
+  }
+}
+pubs_metadf <- bind_rows(metadf)
+
+
+save(pubs_metadf, file = "media_profs_pubs.rda")
+pubs_metadf$pub_url <- pubs_metadf$narcis_url
+
+load(file = "media_profs_pubs1.rda")
+
+metadf
+rm(pubs_metadatac)
+
+id <- list()
+for (i in 1) { # Sot his took a while, saved in six different DFs
+  
+    id[[i]] <- read_html(pubs_metadatacx[[i]])
+    id[[i]] <- html_attr(html_nodes(id[[i]], "a"), "href") # get the link
+
+}
+grepl(id[[1]], "https://www.narcis.nl/publication/RecordID/oai")
+
+
+load(file = "media_profs_profiles.rda")
+metadf$profile_id <- metadf$narcis_url
+metadf$pub_url <- NULL
+save(metadf, file = "media_profs_profiles.rda")
+
+```
+
+
+
+![An example of a NARCIS personal page](./narcis_screenshots/personal_page.png){width=782px, height=986px}\

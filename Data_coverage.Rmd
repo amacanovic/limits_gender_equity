@@ -1,0 +1,449 @@
+---
+title: "Preparation: Data Coverage"
+author: "Ana Macanovic"
+date: "2024-02-14"
+output: html_document
+---
+
+This script provides a description of various tables in our final database.
+Finally, it compares the coverage of OpenAlex to NARCIS.
+
+Load the necessary packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+packages_to_load <- c("readr", "dplyr", "jsonlite", "tidyr",
+                      "stringr", "ggplot2", "RPostgres", "lubridate",
+                      "digest","DBI", "RODBC", "odbc", "knitr", "tidyverse")
+
+fpackage_check(packages_to_load)
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2023-12-01")
+```
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = FALSE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Connect to our database:
+```{r}
+port <- 5432
+user <- "postgres"
+password <- "dutchmediaprofssql"
+database_name <- "postgres"
+
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+```
+
+
+# Data descriptives
+
+## NARCIS data
+
+First, the counts of professor profiles and NARCIS publications:
+```{r}
+profs_full <- dbGetQuery(con, "select * from narcis_prof_info;")
+prof_pubs_full <- dbGetQuery(con, "select * from narcis_pub_info;")
+
+nrow(profs_full)
+nrow(prof_pubs_full)
+```
+
+ORCIDs:
+```{r}
+prof_orcids <- dbGetQuery(con, "select * from orcid_mapping;")
+
+prof_orcids_unique <- distinct(prof_orcids, profile_id, .keep_all = TRUE)
+
+narcis_orcids <- filter(profs_full, !is.na(ORCID))
+
+nrow(narcis_orcids)
+
+prof_orcids_unique_new <- filter(prof_orcids_unique,
+                                 ! profile_id %in% narcis_orcids$profile_id)
+
+nrow(prof_orcids_unique_new)
+
+nrow(prof_orcids_unique)
+```
+
+## Grant data
+
+Grant info.
+1. NWO:
+```{r}
+narcis_nwo_grant_info <- dbGetQuery(con, "select * from narcis_nwo_grant_info;")
+
+nrow(narcis_nwo_grant_info)
+
+nwo_per_prof <- narcis_nwo_grant_info %>%
+  group_by(profile_id)%>%
+  summarise(n_veni = sum(grant == "veni"),
+            n_vidi = sum(grant == "vidi"),
+            n_vici = sum(grant == "vici"),
+            n_spinoza = sum(grant == "spinoza"),
+            n_stevin = sum(grant == "stevin"),
+            any = n())
+
+nrow(nwo_per_prof)
+
+mean(nwo_per_prof$any)
+
+
+nwo_summary <- narcis_nwo_grant_info %>%
+  group_by(grant)%>%
+  summarise(n = n())
+
+nwo_summary
+```
+
+2. ERC:
+```{r}
+erc_grant_info <- dbGetQuery(con, "select * from erc_grant_info;")
+
+nrow(erc_grant_info)
+
+erc_per_prof <- erc_grant_info %>%
+  group_by(profile_id)%>%
+  summarise(any = n())
+
+nrow(erc_per_prof)
+mean(erc_per_prof$any)
+
+erc_summary <- erc_grant_info %>%
+  group_by(grant_type)%>%
+  summarise(n = n())
+
+erc_summary
+```
+
+## OpenAlex data
+
+### OA IDs
+
+Now, information about OA IDs:
+```{r}
+oa_id_mapping <- dbGetQuery(con, "select * from oa_id_mapping;")
+
+missing <- filter(profs_full, ! profile_id %in% oa_id_mapping$profile_id)
+# missing IDs
+nrow(missing)
+```
+Source of OA IDs:
+```{r}
+oa_id_mapping$source2 <- ifelse(oa_id_mapping$source == "name",
+                                "name",
+                                "doi_orcid") 
+
+oa_id_mapping_sources <- distinct(oa_id_mapping, profile_id,
+                                  .keep_all = TRUE)
+
+table(oa_id_mapping_sources$source2)
+prop.table(table(oa_id_mapping_sources$source2))*100
+```
+
+Average OA IDs per professor:
+```{r}
+oa_id_mapping_avg <- oa_id_mapping %>%
+  group_by(profile_id)%>%
+  summarise(n = n())
+
+mean(oa_id_mapping_avg$n)
+median(oa_id_mapping_avg$n)
+sd(oa_id_mapping_avg$n)
+```
+
+### OA publications
+
+Counts of publications we retrieve from OA:
+```{r}
+oa_prof_pubs <- dbGetQuery(con, "select * from oa_prof_pubs;")
+
+oa_prof_pubs_unique <- distinct(oa_prof_pubs, id, .keep_all = TRUE)
+
+nrow(oa_prof_pubs_unique)
+
+oa_pubs_per_prof <- oa_prof_pubs_unique %>%
+  group_by(profile_id)%>%
+  summarise(n = n())
+
+mean(oa_pubs_per_prof$n)
+median(oa_pubs_per_prof$n)
+sd(oa_pubs_per_prof$n)
+quantile(oa_pubs_per_prof$n)
+```
+
+## Coauthors
+Information on coauthors:
+```{r}
+oa_prof_coauthors <- dbGetQuery(con, "select * from oa_coauthor_info;")
+
+oa_prof_coauthors_unique <- distinct(oa_prof_coauthors, au_id, .keep_all = TRUE)
+
+oa_coauthors_per_prof <- oa_prof_coauthors_unique %>%
+  group_by(profile_id)%>%
+  summarise(n = n())
+
+mean(oa_coauthors_per_prof$n)
+median(oa_coauthors_per_prof$n)
+sd(oa_coauthors_per_prof$n)
+quantile(oa_coauthors_per_prof$n)
+```
+
+### Coauthor attention
+
+```{r}
+altmetric_coauthor_attention <- dbGetQuery(con, "select * from altmetric_coauthor_attention;")
+
+altmetric_coauthor_attention_unique <- distinct(altmetric_coauthor_attention,
+                                                id, 
+                                                .keep_all = TRUE)
+
+nrow(altmetric_coauthor_attention_unique)
+```
+
+### Coauthor first names
+
+```{r}
+coauthor_name_gender <- dbGetQuery(con, "select * from coauthor_name_gender;")
+
+coauthor_name_list <- dbGetQuery(con, "select * from oa_coauthor_name_list;")
+
+# which ones have no first name?
+no_first_coauthors <- filter(oa_prof_coauthors_unique,
+                             ! au_id %in% coauthor_name_list$id)
+
+nrow(no_first_coauthors)
+nrow(no_first_coauthors)/nrow(oa_prof_coauthors_unique)*100
+
+# NAs in the gender list
+nrow(coauthor_name_gender)
+nrow(filter(coauthor_name_gender, !is.na(gender)))
+nrow(filter(coauthor_name_gender, is.na(gender)))
+
+# which ones have gender determined
+coauthor_name_list$name <- tolower(coauthor_name_list$first)
+coauthor_name_list_match <- merge(coauthor_name_list,
+                                  coauthor_name_gender,
+                                  by = "name",
+                                  all.x = TRUE)
+
+nrow(coauthor_name_list)
+coauthor_name_list_not_na <- filter(coauthor_name_list_match,
+                                    !is.na(gender))
+
+nrow(coauthor_name_list_not_na)
+table(coauthor_name_list_not_na$gender)
+prop.table(table(coauthor_name_list_not_na$gender))*100
+```
+
+## Attention data
+
+News attention:
+```{r}
+altmetric_pub_att_blogs <- dbGetQuery(con, "select * from altmetric_pub_att_blogs;")
+altmetric_pub_att_news <- dbGetQuery(con, "select * from altmetric_pub_att_news;")
+altmetric_pub_att_reddit <- dbGetQuery(con, "select * from altmetric_pub_att_reddit;")
+altmetric_pub_att_wiki <- dbGetQuery(con, "select * from altmetric_pub_att_wiki;")
+altmetric_pub_att_policy <- dbGetQuery(con, "select * from altmetric_pub_att_policy;")
+# altmetric_pub_att_twitter <- dbGetQuery(con, "select * from altmetric_pub_att_twitter;")
+
+```
+
+Average mentions per publication:
+```{r}
+items <- c("blogs", "news", "reddit", "wiki", "policy")
+total_pubs <- 1208052
+
+for (item in items){
+  data <- get(paste0("altmetric_pub_att_", item))
+  
+  grouped <- data %>%
+    group_by(id)%>%
+    summarise(n = n())
+  
+  print(item)
+  print(paste("attention count:", nrow(data)))
+  print(paste("publications receiving attention:", nrow(grouped)))
+  print(paste("share w/ att. out of all pub:", nrow(grouped)/total_pubs*100))
+  print(paste("attention per mentioned pub:", sum(grouped$n)/nrow(grouped)))
+  print(paste("attention per any pub:", sum(grouped$n)/total_pubs))
+}
+```
+
+
+# OA vs NARCIS publication coverage
+
+Using DOIs and titles, estimate the extent to which OA covers our NARCIS data.
+
+Get the coverage table per professor:
+```{r}
+# if needed, query the full NARCIS and OA publication lists
+narcis_pubs <- dbGetQuery(con, "select * from narcis_pub_info;")
+oa_pubs <- dbGetQuery(con, "select * from oa_prof_pubs;")
+# for OA, only the unique publications (since the oa_prof_pubs table is in pub/year format)
+oa_pubs <- distinct(oa_pubs, id, profile_id, .keep_all = TRUE)
+
+# remove the html parts of the doi from both
+narcis_pubs$doi_match <- str_remove(narcis_pubs$DOI, "https://doi.org/")
+oa_pubs$doi_match <- str_remove(oa_pubs$doi, "https://doi.org/")
+
+# clean the titles of both
+narcis_pubs$title_match <- str_squish(tolower(str_remove_all(narcis_pubs$Title, "[^[:alnum:] ]")))
+oa_pubs$title_match <- str_squish(tolower(str_remove_all(oa_pubs$display_name, "[^[:alnum:] ]")))
+
+# find which NARCIS pubs also in OA and vice versa
+
+# first, seek matches by DOI unless DOI is NA
+narcis_pubs$in_oa_doi <- ifelse((narcis_pubs$doi_match %in% oa_pubs$doi_match) & !is.na(narcis_pubs$DOI),
+                                TRUE,
+                                FALSE)
+
+oa_pubs$in_narcis_doi <- ifelse((oa_pubs$doi_match %in% narcis_pubs$doi_match) & !is.na(oa_pubs$doi),
+                                TRUE,
+                                FALSE)
+
+# then, seek matches per title unless title is NA
+narcis_pubs$in_oa_title <- ifelse((narcis_pubs$title_match %in% oa_pubs$title_match) & !is.na(narcis_pubs$title_match),
+                                  TRUE,
+                                  FALSE)
+
+oa_pubs$in_narcis_title <- ifelse((oa_pubs$title_match %in% narcis_pubs$title_match) & !is.na(oa_pubs$title_match),
+                                  TRUE,
+                                  FALSE)
+
+# if any of the two match, match is TRUE, otherwise FALSE
+narcis_pubs$in_oa <- ifelse(narcis_pubs$in_oa_doi == TRUE | narcis_pubs$in_oa_title == TRUE,
+                            TRUE,
+                            FALSE)
+
+oa_pubs$in_narcis <- ifelse(oa_pubs$in_narcis_doi == TRUE | oa_pubs$in_narcis_title == TRUE,
+                            TRUE,
+                            FALSE)
+
+
+# per professor, get counts in each dataset and then get the count of matches
+# against the other database
+# NARCIS pubs and NARCIS pubs also found in OA
+narcis_prof <- narcis_pubs %>%
+  group_by(profile_id)%>%
+  summarise(n_narcis = n(),
+            narcis_vs_oa = sum(in_oa == TRUE))
+
+# OA pubs and OA pubs also found in NARCIS
+oa_prof <- oa_pubs %>%
+  group_by(profile_id)%>%
+  summarise(n_oa = n(),
+            oa_vs_narcis = sum(in_narcis == TRUE))
+
+# combine the two, replace NAs
+full_prof_coverage <- merge(narcis_prof,
+                            oa_prof,
+                            by = "profile_id",
+                            all.x = TRUE,
+                            all.y = TRUE)%>%
+  replace(is.na(.), 0)
+
+# replace with NAs if either of the sources is empty
+# get share of NARCIS pubs that are in OA, and the share of OA pubs that are in NARCIS
+full_prof_coverage$coverage_narcis_oa <- ifelse(full_prof_coverage$n_narcis == 0|full_prof_coverage$n_oa == 0,
+                                                NA,
+                                                round(full_prof_coverage$narcis_vs_oa/full_prof_coverage$n_narcis, 2))
+
+full_prof_coverage$coverage_oa_narcis <- ifelse(full_prof_coverage$n_oa == 0|full_prof_coverage$n_narcis == 0,
+                                                NA,
+                                                round(full_prof_coverage$oa_vs_narcis/full_prof_coverage$n_oa, 2))
+
+
+```
+
+So, in total, we get the coverage data for 6798 out of 6830 professors (99.5 %, missing 32).
+
+## Overall statistics
+We have NARCIS publications for 5627 professors, or 82% of our NARCIS dataset. 
+```{r}
+length(which(full_prof_coverage$n_narcis != 0))
+length(which(full_prof_coverage$n_narcis != 0))/6830*100
+```
+We have ORCID publications for 6798 professors, or 99% of our NARCIS dataset. 
+```{r}
+length(which(full_prof_coverage$n_oa != 0))
+length(which(full_prof_coverage$n_oa != 0))/6830*100
+```
+
+## NARCIS vs OA
+Check the share of publications we retrieve from NARCIS that are also present in our
+OA data.
+
+On average, 79% of publications in our NARCIS dataset are also in our OA dataset.
+```{r}
+round(mean(full_prof_coverage$coverage_narcis_oa, na.rm = TRUE), 2)
+```
+Median coverage is 91%:
+```{r}
+summary(full_prof_coverage$coverage_narcis_oa)
+```
+
+## OA vs NARCIS
+On average, 42% of publications in our OA dataset are also in our NARCIS dataset.
+```{r}
+round(mean(full_prof_coverage$coverage_oa_narcis, na.rm = TRUE), 2)
+```
+
+Median coverage is 42%:
+```{r}
+summary(full_prof_coverage$coverage_oa_narcis)
+```
+
+# A flat table of professor statistics
+```{r}
+oa_prof_pubs_unique <- dbReadTable(con, "oa_prof_pubs_unique")
+
+altmetric_pub_att_news <- dbReadTable(con, "altmetric_pub_att_news")
+altmetric_pub_att_wiki <- dbReadTable(con, "altmetric_pub_att_wiki")
+
+# merge
+
+grouped_news <- altmetric_pub_att_news %>%
+  group_by(id)%>%
+  summarise(n_news = n())
+
+grouped_wiki <- altmetric_pub_att_wiki %>%
+  group_by(id)%>%
+  summarise(n_wiki = n())
+
+grouped_policy <- altmetric_pub_att_policy %>%
+  group_by(id)%>%
+  summarise(n_policy = n())
+
+oa_prof_pubs_merge <- merge(oa_prof_pubs,
+                            grouped_news,
+                            all.x = TRUE,
+                            by = "id")
+
+oa_prof_pubs_merge <- merge(oa_prof_pubs_merge,
+                            grouped_wiki,
+                            all.x = TRUE,
+                            by = "id")
+
+oa_prof_pubs_merge <- merge(oa_prof_pubs_merge,
+                            grouped_policy,
+                            all.x = TRUE,
+                            by = "id")
+
+per_prof_stats <- oa_prof_pubs_merge %>%
+  group_by(profile_id)%>%
+  summarise(n = n(),
+            news = sum(n_news))
+
+```
+

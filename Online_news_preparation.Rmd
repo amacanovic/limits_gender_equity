@@ -1,0 +1,178 @@
+---
+title: "Preparation: Online news"
+author: "Ana Macanovic"
+date: "2023-12-22"
+---
+
+This script prepares the full texts of online news mentions from Altmetric.
+
+Load the packages:
+```{r message=  F, warning = F}
+source("helper_functions.R")
+# you might need to install Java for openNLP
+packages_to_load <- c("readr", "dplyr", "tidyr", "stringr",
+                      "tidyverse", "RPostgres", "lubridate",
+                      "digest", "DBI", "RODBC", "odbc",
+                      "NLP", "openNLP", "rvest", "xml2")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-12-01")
+```
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = FALSE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+# Step 1: Retrieving mentions
+
+We retrieve mentions with a python script.
+
+
+# Step 3: Tidy up the full mention text
+
+First, load the obtained webpages of online news mentions:
+```{r warning = F, message = F}
+# load the scraped data
+files <- list.files("../dutch_media_profs_python/news_mentions", pattern = ".csv", recursive = TRUE, full.names = TRUE)
+
+prof_mention_scraped_data <- do.call(rbind, lapply(files, read_csv))
+```
+
+Extract the relevant data from headers, clean up the content:
+```{r}
+prof_mention_extracted_data <- data.frame(matrix(NA, ncol = 14, nrow = 0))
+  
+for (i in 1:nrow(prof_mention_scraped_data)){
+  row_of_interest <- prof_mention_scraped_data[i, c("url", "response")]
+  
+  text <- as.character(prof_mention_scraped_data$content[i])
+  sitename <- NA
+  title <- NA
+  date <- NA
+  description <- NA 
+  author <- NA
+  categories <- NA 
+  tags <- NA
+  content <- NA
+  language <- NA
+  
+  if (!all(is.na(text))){
+    header <- str_split(text, "<main>")[[1]][1]
+    
+    header_elements <- as.character(str_split(header, '\" ', simplify = TRUE))
+    # loop through header elements to  get the info we want
+    # try to find the following elements, that are by default set to NA
+    for (element in header_elements){
+      # remove backslashes from the element to make splitting easier
+      
+      # seek different aspects in the element and fill in if applicable
+      if (str_detect(element, "sitename")){
+        sitename <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "title")){
+        title <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "author")){
+        author <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "date")){
+        date <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "description")){
+        description <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "categories")){
+        categories <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+      if (str_detect(element, "tags")){
+        tags <- str_replace(str_split_i(element, '=', 2), '"', '')
+      }
+    }
+    
+    # get the textual content
+    content <- str_split(text, "<main>")[[1]][2]
+    # remove the paragraphs and line breaks
+    content <- str_replace_all(content, "[\r\n]" , "")
+    content <- gsub("<.*?>", "", content)
+    content <- str_replace_all(content, '\"' , "")
+    # and remove any redundant white spaces
+    content <- str_squish(content)
+    
+  }
+  
+  row_content <- data.frame(sitename, 
+                            title,
+                            author,
+                            date,
+                            description,
+                            categories,
+                            tags,
+                            language,
+                            content)
+  
+  row_combined <- cbind(row_of_interest,
+                        row_content)
+  
+  prof_mention_extracted_data <- rbind(prof_mention_extracted_data,
+                                             row_combined)
+  
+  print(paste("done with", i, "out of", nrow(prof_mention_scraped_data)))
+}
+
+```
+
+Write this to our database:
+```{r}
+# fill in own credentials
+port <- 5432
+user <- "postgres"
+password <- "dutchmediaprofssql"
+database_name <- "postgres"
+# connect to the database
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+con # Checks connection is working
+
+```
+
+Deduplicate and write out:
+```{r}
+prof_mention_extracted_data_filter <- prof_mention_extracted_data %>%
+  distinct(url, .keep_all = TRUE)
+
+dbWriteTable(con, "pub_att_news_full_text", prof_mention_extracted_data_filter, row.names=FALSE, append=TRUE) 
+```
+
+## Error breakdown
+How many were ok and how many had errors?
+```{r}
+prof_mention_extracted_data_filter$code <- ifelse(prof_mention_extracted_data_filter$response == "200", "ok", "error")
+
+
+nrow(prof_mention_extracted_data_filter)
+table(prof_mention_extracted_data_filter$code)
+prop.table(table(prof_mention_extracted_data_filter$code))
+```
+
+Most common response codes?
+```{r}
+response_codes <- prof_mention_extracted_data_filter %>%
+  group_by(response)%>%
+  summarise(n = n(),
+            prop = round(n()/nrow(prof_mention_extracted_data_filter)*100,2))%>%
+  arrange(-n)
+```
+

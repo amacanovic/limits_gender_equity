@@ -1,0 +1,399 @@
+---
+title: "SI: Dataset information"
+author: "Ana Macanovic"
+date: "2024-07-24"
+---
+
+This script compiles the descriptive information about our dataset presented in 
+Supplemental Information - "S1 Data preparation".
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+# load the helper function file
+source("helper_functions.R")
+packages_to_load <- c("readr", "dplyr", "tidyr", "PerformanceAnalytics",
+                      "tidyverse", "RPostgres", "lubridate", "psych",
+                      "digest", "DBI", "RODBC", "odbc", "gridExtra",
+                      "panelr", "skimr", "foreach", "vegan", "knitr",
+                      "doParallel")
+
+fpackage_check(packages_to_load)
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2023-12-01")
+```
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+
+Connect to the database:
+```{r}
+# fill in own credentials
+port <- 5432
+user <- "postgres"
+password <- "dutchmediaprofssql"
+database_name <- "postgres"
+
+
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+con # Checks connection is working
+```
+
+# NARCIS database
+
+Number of professor profiles - 6830:
+```{r message = F, warning = F}
+narcis_prof_info <- dbReadTable(con, "narcis_prof_info")
+
+nrow(narcis_prof_info)
+```
+Number of publications in NARCIS - 750 049:
+```{r}
+narcis_pub_info <- dbReadTable(con, "narcis_pub_info")
+
+nrow(narcis_pub_info)
+```
+
+# Gender inference
+
+Fix some errors in first names and count the unique number of first names (2090):
+```{r}
+# fix some first names that were cut short by mistake - redacted for privacy.
+
+length(unique(narcis_prof_info$first))
+```
+Other details available in the script on gender inference.
+
+# Publication and citation data
+
+OpenAlex IDs:
+```{r}
+oa_ids <- dbReadTable(con, "oa_id_mapping")
+
+oa_id_sources <- oa_ids %>%
+  group_by(profile_id) %>%
+  summarise( sources =  n_distinct(source))
+```
+
+We retrieve at least one OA ID for 6799 professors (99.55%):
+```{r}
+length(unique(oa_id_sources$profile_id))
+
+length(unique(oa_id_sources$profile_id))/nrow(narcis_prof_info)*100
+```
+For those whose OA IDs we retrieve through DOIs or ORCIDS:
+```{r}
+# see how many OA IDs derived from each source
+doi_orcid_id <- oa_ids %>%
+  filter(source != "name")%>%
+  group_by(profile_id)%>%
+  summarise(doi = sum(source == "publications"),
+            orcid = sum(source == "orcid"))
+
+# and only check if we use a certain source for a certain professor
+doi_orcid_id$doi <- ifelse(doi_orcid_id$doi > 0, 1, 0)
+
+# how many profs we get from either pubs/orcids?
+not_name_oa_id <- oa_ids %>%
+  filter(source != "name")%>%
+  distinct(profile_id, .keep_all = TRUE)
+
+print("From either")
+nrow(not_name_oa_id)
+round(nrow(not_name_oa_id)/6830*100, 1)
+
+print("From DOI")
+table(doi_orcid_id$doi)
+print("From ORCID")
+table(doi_orcid_id$orcid)
+```
+
+For 1347 professors, we are only able to retrieve their OA ID using their name:
+```{r}
+name_oa_id <- oa_ids %>%
+  filter(source == "name")%>%
+  distinct(profile_id, .keep_all = TRUE)
+
+nrow(name_oa_id)
+```
+
+On average, a professor in our dataset is linked to 1.41 OA ids on average, with a 
+median of 1 and a SD of 1.64.
+```{r}
+average_oa_ids <- oa_ids %>%
+  group_by(profile_id)%>%
+  summarise(count = n())%>%
+  ungroup()%>%
+  summarize(mean=round(mean(count, na.rm=TRUE), 2), 
+            median = median(count, na.rm = TRUE),
+            standard_deviation= round(sd(count, na.rm=TRUE), 2))
+
+average_oa_ids
+```
+
+Load publication info for all professors and tidy it up:
+```{r}
+# all professors, their pubs, and the yearly citation breakdown
+oa_prof_pubs <- dbReadTable(con, "oa_prof_pubs")
+
+# detailed information about publications
+oa_pubs_unique <- dbReadTable(con, "oa_prof_pubs_unique")
+
+# dataset matching professor IDs to publications
+oa_prof_pub_matching <- dbReadTable(con, "oa_prof_pub_match")
+
+# match publication information with professors
+oa_prof_pubs_unique <- merge(oa_pubs_unique,
+                             oa_prof_pub_matching[c("id", "au_id", "au_display_name", "profile_id")],
+                             all.x = TRUE,
+                             all.y = TRUE,
+                             by = "id")
+```
+
+Total publications:
+```{r}
+nrow(oa_pubs_unique)
+```
+
+Of how many professors?
+```{r}
+length(unique(oa_prof_pubs_unique$profile_id))
+```
+
+To build our panel, we only use articles,books, and book chapters published after
+1973 and where we have a publication year:
+
+```{r}
+oa_pubs_unique_panel <- oa_pubs_unique %>%
+  filter(!is.na(publication_year) & publication_year > 1973 & 
+           publication_year < 2024 & 
+           type %in% c("article", "book", "book-chapter"))
+
+nrow(oa_pubs_unique_panel)
+```
+
+# Printed news attention
+
+Load the mentions from our database:
+```{r}
+printed_news_attention <- dbReadTable(con, "lexis_nexis_mentions")
+```
+Filter out anything after 2023:
+```{r}
+printed_news_attention_selected <- filter(printed_news_attention,
+                                          year < 2024)
+```
+
+How many mentions?
+```{r}
+nrow(printed_news_attention_selected)
+```
+
+How many professors?
+```{r}
+length(unique(printed_news_attention_selected$profile_id))
+
+average_printed <- printed_news_attention_selected %>%
+  group_by(profile_id)%>%
+  summarise(count = n())%>%
+  ungroup()%>%
+  summarize(mean=round(mean(count, na.rm=TRUE), 2), 
+            median = median(count, na.rm = TRUE),
+            standard_deviation= round(sd(count, na.rm=TRUE), 2))
+
+average_printed
+```
+Deduplicating local outlets:
+```{r}
+printed_news_attention_selected_filt <- filter(printed_news_attention_selected,
+                          source_type != "irrelevant")
+
+printed_news_attention_selected_filt <- printed_news_attention_selected %>%
+  filter(regional_duplicate == FALSE)
+
+nrow(printed_news_attention_selected_filt)
+```
+
+Online sources:
+```{r}
+table(printed_news_attention$online_resource)
+
+round(prop.table(table(printed_news_attention$online_resource))*100,1)
+```
+
+
+# Online news and social media attention
+
+How many of our publications have a DOI?
+```{r}
+length(which(!is.na(oa_pubs_unique$doi)))
+
+round(length(which(!is.na(oa_pubs_unique$doi)))/nrow(oa_pubs_unique_panel)*100, 1)
+```
+
+Get all the attention measures we have per paper:
+```{r}
+attention_news <- dbReadTable(con, "altmetric_pub_att_news")
+attention_blogs <- dbReadTable(con, "altmetric_pub_att_blogs")
+
+# merge the papers with their authors
+attention_news_profs <- merge(attention_news,
+                        oa_prof_pub_matching[c("id", "profile_id")],
+                        by = "id")
+
+# merge the papers with their authors
+attention_blogs_profs <- merge(attention_blogs,
+                        oa_prof_pub_matching[c("id", "profile_id")],
+                        by = "id")
+
+attention_news$year <- year(as_date(attention_news$posted_on))
+attention_blogs$year <- year(as_date(attention_blogs$posted_on))
+```
+
+How many?
+```{r}
+attention_news_selected <- filter(attention_news, year < 2024)
+attention_blogs_selected <- filter(attention_blogs, year < 2024)
+
+nrow(attention_news_selected)
+length(unique(attention_news_selected$id))
+
+nrow(attention_blogs_selected)
+length(unique(attention_blogs_selected$id))
+```
+
+
+Compile the two together:
+```{r}
+attention_news_profs <- attention_news_profs[c("id", "title", "url", "license", "posted_on", 
+                                               "summary", "author_name", "author_url", "profile_id")]
+
+attention_blogs_profs <- attention_blogs_profs[c("id", "title", "url", "license", "posted_on", 
+                                               "summary", "author_name", "author_url", "profile_id")]
+
+
+attention_news_blogs_profs <- rbind(attention_news_profs,
+                                    attention_blogs_profs)
+
+attention_news_blogs_profs$year <- year(as_date(attention_news_blogs_profs$posted_on))
+
+```
+
+How many mentions before 2024:
+```{r}
+attention_news_blogs_profs_selected <- filter(attention_news_blogs_profs, year < 2024)
+
+nrow(attention_news_blogs_profs_selected)
+length(unique(attention_news_blogs_profs_selected$profile_id))
+```
+
+How many professors and mentions?
+```{r}
+average_online <- attention_news_blogs_profs_selected %>%
+  group_by(profile_id)%>%
+  summarise(count = n())%>%
+  ungroup()%>%
+  summarize(mean=round(mean(count, na.rm=TRUE), 2), 
+            median = median(count, na.rm = TRUE),
+            standard_deviation= round(sd(count, na.rm=TRUE), 2))
+
+average_online
+```
+
+How many unique URLs?
+```{r}
+length(unique(attention_news_blogs_profs$url))
+```
+
+
+About URLs we tried to retrieve:
+```{r}
+attention_news_full <- dbReadTable(con, "pub_att_news_full_text")
+
+table(attention_news_full$response)
+```
+
+Clean the environment:
+```{r}
+rm(attention_news_full)
+rm(attention_news_blogs_profs_selected)
+rm(attention_news_blogs_profs)
+rm(attention_news)
+rm(attention_news_selected)
+rm(attention_news_profs)
+rm(attention_news_profs_selected)
+rm(attention_blogs)
+rm(attention_blogs_profs)
+rm(attention_blogs_selected)
+rm(attention_blogs_profs_selected)
+rm(printed_news_attention)
+rm(printed_news_attention_selected)
+rm(printed_news_attention_selected_filt)
+gc()
+```
+
+## Coauthor data
+
+First, let's count the unique coauthors:
+```{r}
+coauthors_unique_ids <- dbGetQuery(con, "select distinct \"au_id\" from oa_coauthor_info")
+
+nrow(coauthors_unique_ids)
+```
+How many ORCIDs do we have?
+```{r}
+coauthors_unique_orcids <- dbGetQuery(con, "select \"au_orcid\", \"au_id\" from oa_coauthor_info")
+
+# choose only unique au_ids
+coauthors_unique_orcids_filter <- coauthors_unique_orcids %>%
+  distinct(au_id, .keep_all = TRUE)
+
+coauthors_unique_orcids_filter$found <- ifelse(is.na(coauthors_unique_orcids_filter$au_orcid),
+                                        "no", 
+                                        "yes")
+
+table(coauthors_unique_orcids_filter$found)
+prop.table(table(coauthors_unique_orcids_filter$found))
+```
+
+## Panel data info
+
+```{r}
+prof_panel_coa <- read_csv("panel_datasets/prof_panel_tidy.csv")
+
+prof_panel_filter <- filter(prof_panel_coa,
+                            year < 2024 & !is.na(general_field))
+```
+
+Number of observations:
+```{r}
+nrow(prof_panel_filter)
+
+length(unique(prof_panel_filter$profile_id))
+```
+
+Only between 2012 and 2023:
+```{r}
+prof_panel_filter_strict <- prof_panel_filter %>%
+  filter(year >= 2012 & year <= 2023)
+
+nrow(prof_panel_filter_strict)
+
+length(unique(prof_panel_filter_strict$profile_id))
+```
+
+
+

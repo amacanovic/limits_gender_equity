@@ -1,0 +1,252 @@
+---
+title: "SI Robustness checks: logistic models"
+author: "Ana Macanovic"
+date: "2024-07-24"
+---
+
+
+Robustness checks including various logistic model specifications.
+All specifications include standard errors clustered at the professor level.
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "dplyr", "tidyr", 
+                      "ggplot2", "cowplot",
+                      "tidyverse", "RPostgres", 
+                      "lubridate", "lmtest", 
+                      "sandwich", "ggpubr", 
+                      "knitr", "scales", 
+                      "ggeffects", "flextable", 
+                      "officer", "DescTools",
+                      "gglorenz", "corrplot")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+
+Load the panel dataset:
+```{r warning = F, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+```
+
+Make a list to save all the results into:
+```{r}
+all_reg_rob_list <- list()
+```
+
+## Logistic models - any attetion
+
+Model with a binary indicator of whether the professor received any attention of
+a certain type in a given year.
+
+### Printed news attention
+
+```{r warning = F}
+news_formula_main_model <- "any_news  ~ inferred_gender + news_all_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                         formula_list = news_formula_main_model,
+                                         year_cutoff_upper = 2023,
+                                         year_cutoff_lower = 2012,
+                                         reg_family = "binomial")
+```
+
+### Online news attention 
+```{r warning = F}
+online_news_formula_main_model <- "any_online_news  ~ inferred_gender + alt_online_all_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                               formula_list = online_news_formula_main_model,
+                                               year_cutoff_upper = 2023,
+                                               year_cutoff_lower = 2012,
+                                               reg_family = "binomial")
+```
+
+### Twitter/X
+```{r warning = F}
+twitter_formula_main_model <- "any_twitter  ~ inferred_gender + alt_twitter_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                           formula_list = twitter_formula_main_model,
+                                           year_cutoff_upper = 2023,
+                                           year_cutoff_lower = 2012,
+                                           reg_family = "binomial")
+```
+
+
+### Combined coefficients
+
+Combine this all to plot the coefficients in one plot.
+```{r warning = F}
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                           online_news_model_logit[[1]],
+                                           twitter_model_logit[[1]])
+# add to the list
+all_reg_rob_list[['logit_any']] <- table_models_logit
+
+(table_models_save <- table_models_logit %>%
+  regulartable() %>%
+  set_caption("Logistic model - any attention")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(table_models_save) %>%
+    print(target = "results/supplement_tables/logistic_model_any_att.docx")
+```
+
+
+
+## Logistic models - top 10% attetion
+
+Model with a binary indicator of whether the professor was in the top 10% of professors
+within an  attention type in a given year.
+
+### Printed news attention
+
+```{r ?, warning=FALSE}
+news_formula_main_model <- "news_all_top_10  ~ inferred_gender + news_all_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                           formula_list = news_formula_main_model,
+                                           year_cutoff_upper = 2023,
+                                           year_cutoff_lower = 2012,
+                                           reg_family = "binomial")
+```
+
+### Online news attention 
+```{r warning = F}
+online_news_formula_main_model <- "alt_online_all_top_10  ~ inferred_gender + alt_online_all_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                               formula_list = online_news_formula_main_model,
+                                               year_cutoff_upper = 2023,
+                                               year_cutoff_lower = 2012,
+                                               reg_family = "binomial")
+```
+
+### Twitter/X
+```{r warning = F}
+twitter_formula_main_model <- "alt_twitter_top_10  ~ inferred_gender + alt_twitter_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                           formula_list = twitter_formula_main_model,
+                                           year_cutoff_upper = 2023,
+                                           year_cutoff_lower = 2012,
+                                           reg_family = "binomial")
+```
+
+
+### Combined coefficients
+
+Combine this all to plot the coefficients in one plot.
+```{r warning = F}
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                           online_news_model_logit[[1]],
+                                           twitter_model_logit[[1]])
+
+# add to the list
+all_reg_rob_list[['logit_top_10']] <- table_models_logit
+
+(table_models_save <- table_models_logit %>%
+  regulartable() %>%
+  set_caption("Logistic model - top 10% of attention")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(table_models_save) %>%
+    print(target = "results/supplement_tables/logistic_model_top10_att.docx")
+```
+
+
+## Logistic models - top 20% attetion
+
+Model with a binary indicator of whether the professor was in the top 20% of professors
+within an  attention type in a given year.
+
+### Printed news attention
+
+```{r warning = F}
+news_formula_main_model <- "news_all_top_20  ~ inferred_gender + news_all_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                           formula_list = news_formula_main_model,
+                                           year_cutoff_upper = 2023,
+                                           year_cutoff_lower = 2012,
+                                           reg_family = "binomial")
+```
+
+### Online news attention 
+```{r warning = F}
+online_news_formula_main_model <- "alt_online_all_top_20  ~ inferred_gender + alt_online_all_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                               formula_list = online_news_formula_main_model,
+                                               year_cutoff_upper = 2023,
+                                               year_cutoff_lower = 2012,
+                                               reg_family = "binomial")
+```
+
+### Twitter/X
+```{r warning = F}
+twitter_formula_main_model <- "alt_twitter_top_20  ~ inferred_gender + alt_twitter_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_tot_online_all_total_l + coa_tot_twitter_total_l+years_since_first_pub + as.factor(year)"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                           formula_list = twitter_formula_main_model,
+                                           year_cutoff_upper = 2023,
+                                           year_cutoff_lower = 2012,
+                                           reg_family = "binomial")
+```
+
+
+### Combined coefficients
+
+Combine this all to plot the coefficients in one plot.
+```{r warning = F}
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                           online_news_model_logit[[1]],
+                                           twitter_model_logit[[1]])
+
+# add to the list
+all_reg_rob_list[['logit_top_20']] <- table_models_logit
+
+(table_models_save <- table_models_logit %>%
+  regulartable() %>%
+  set_caption("Logistic model - top 20% of attention")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(table_models_save) %>%
+    print(target = "results/supplement_tables/logistic_model_top20_att.docx")
+```
+
+
+Save the list:
+```{r}
+saveRDS(all_reg_rob_list, "results/logit_models.RDS")
+```

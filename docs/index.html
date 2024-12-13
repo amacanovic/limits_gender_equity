@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Dutch Professors in Media (DPM)</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/clipboard-1.7.1/clipboard.min.js"></script>
+<link href="site_libs/primer-tooltips-1.4.0/build.css" rel="stylesheet" />
+<link href="site_libs/klippy-0.0.0.9500/css/klippy.min.css" rel="stylesheet" />
+<script src="site_libs/klippy-0.0.0.9500/js/klippy.min.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+<link rel="stylesheet" href="tweaks.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a>
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="index.html">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-menu-hamburger"></span>
+     
+    DPM preparation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="NARCIS_collection.html">NARCIS data scrape</a>
+    </li>
+    <li>
+      <a href="OpenAlex_Altmetric_data_download.html">Open Alex and Altmetric data download</a>
+    </li>
+    <li>
+      <a href="Gender_inference.html">Gender inference</a>
+    </li>
+    <li>
+      <a href="Grant_parsing.html">Grant parsing</a>
+    </li>
+    <li>
+      <a href="Printed_news_preparation.html">Printed news preparation</a>
+    </li>
+    <li>
+      <a href="Online_news_preparation.html">Online news preparation</a>
+    </li>
+    <li>
+      <a href="Data_coverage.html">NARCIS and OA database comparison</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-tasks"></span>
+     
+    DPM Panel Dataset
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Panel_data_compilation.html">Panel dataset preparation</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-ok-sign"></span>
+     
+    Analyses and Results
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_main.html">Main analyses</a>
+    </li>
+    <li>
+      <a href="Supplement_data_information.html">SI S1 Dataset information</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental.html">SI S2-S4 Additional results</a>
+    </li>
+    <li>
+      <a href="News_classification_other_functions.html">Resources and functions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    Robustness checks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_robustness_ols.html">Main linear models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_ols_log.html">Main linear models - log-transformed</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_poisson.html">Poisson models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_logit.html">Logistic models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_fe_re.html">Fixed and random effect models</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/amacanovic/dutch_media_profs">
+    <span class="fab fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Dutch Professors in Media (DPM)</h1>
+
+</div>
+
+
+<style>
+body {
+text-align: justify}
+</style>
+<script>
+  addClassKlippyTo("pre.r, pre.markdown");
+  addKlippy('right', 'top', 'auto', '1', 'Copy code', 'Copied!');
+</script>
+<hr />
+<div class="columns">
+<div class="column" style="width:80%;">
+<div id="repository-description" class="section level1">
+<h1>Repository Description</h1>
+<p>Last compiled on December 11, 2024</p>
+<p><br /></p>
+<div id="dutch-professors-in-media-dpm" class="section level3">
+<h3>Dutch Professors in Media (DPM)</h3>
+<p>This website documents the preparation of the Dutch Professors in
+Media database (DPM): a newly curated fine-grained data source
+containing nearly all full professors in the Netherlands (N = 6.830) as
+of 2022 across all academic fields.</p>
+<p>This database contains information on professors’ publication,
+citation, affiliation, and topical interest records from <a
+href="https://openalex.org/">OpenAlex</a>. We enrich these data with
+funding received by both the Dutch <a
+href="https://www.nwo.nl/">(NWO)</a> and the European <a
+href="https://erc.easme-web.eu?mode=7&amp;countries=NL">(ERC)</a>
+Research Councils, as well as information on positions held within the
+Dutch government or its advisory bodies.</p>
+<p>Uniquely, we link professors to detailed, time-stamped accounts of
+attention across a variety of media types. From <a
+href="https://www.lexisnexis.com/">LexisNexis</a> we retrieve 721
+thousand mentions of professors in printed news media (e.g., The New
+York Times). Using the <a href="https://www.altmetric.com/">Altmetric
+database</a>, we capture 695 thousand online news (e.g., Yahoo! News)
+and blog (e.g., Psychology Today) articles and 3.3 million social media
+posts (on Twitter, now X) containing mentions of professors’ scientific
+work.</p>
+<p>Finally, we compile social network data on 1.35 million co-authors of
+professors in the DPM, collecting information on co-authors’
+publications, citations, and the number of times their work appeared in
+the online news and online social media (Twitter/X).</p>
+<p>Most of the scripts used in the preparation of this database can be
+found in the top menu under the section <em>“DPM preparation”</em>.</p>
+<p>The database was compiled by <a
+href="https://amacanovic.github.io/">Ana Macanovic</a> and <a
+href="https://www.bashofstra.com">Bas Hofstra</a> at <a
+href="https://www.ru.nl/en">Radboud University</a>.</p>
+<p><br /></p>
+</div>
+<div id="dpm-panel-dataset" class="section level3">
+<h3>DPM Panel dataset</h3>
+<p>This website further contains scripts that use DPM to prepare a panel
+dataset compiling indicators of professors’ scientific careers, media
+attention, and collaboration networks on the yearly basis, covering the
+time span between 2012 and 2023.</p>
+<p>The script used to compile this panel dataset from the DPM can be
+found in the top menu under the section <em>“DPM Panel
+dataset”</em>.</p>
+<p><br /></p>
+</div>
+<div id="analyses-and-results" class="section level3">
+<h3>Analyses and Results</h3>
+<p>This section of the website contains scripts that produce results
+found in the main text and the Online SI of the following paper:</p>
+<p><strong>Macanovic, A., Hofstra, B. (2024). “Limits to Gender Equity
+in Science Communication”.</strong></p>
+<p>The scripts used to generate the results in the paper can be found in
+the top menu under the section <em>“Analyses and Results”</em>.</p>
+<p>Additional robustness checks can be found in the top menu under the
+section <em>“Robustness checks”</em>.</p>
+<hr />
+</div>
+</div>
+</div><div class="column" style="width:80%;">
+
+</div>
+</div>
+<hr />
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkR1dGNoIFByb2Zlc3NvcnMgaW4gTWVkaWEgKERQTSkiDQpvdXRwdXQ6DQogIGh0bWxfZG9jdW1lbnQ6DQogICAgdG9jOiBmYWxzZQ0KICAgIG51bWJlcl9zZWN0aW9uczogZmFsc2UNCmJpYmxpb2dyYXBoeTogcmVmZXJlbmNlcy5iaWINCg0KLS0tDQoNCjxzdHlsZT4NCmJvZHkgew0KdGV4dC1hbGlnbjoganVzdGlmeX0NCjwvc3R5bGU+DQoNCmBgYHtyLCBpbnN0YWxsIHJlbW90ZWx5LCBnbG9iYWxzZXR0aW5ncywgZWNobz1GQUxTRSwgd2FybmluZz1GQUxTRSwgcmVzdWx0cz0naGlkZSd9DQojIGluc3RhbGwucGFja2FnZXMoInJlbW90ZXMiKQ0KI3JlbW90ZXM6Omluc3RhbGxfZ2l0aHViKCJybGVzdXIva2xpcHB5IikNCmBgYCANCg0KYGBge3IsIGdsb2JhbHNldHRpbmdzLCBlY2hvPUZBTFNFLCB3YXJuaW5nPUZBTFNFLCByZXN1bHRzPSdoaWRlJ30NCmxpYnJhcnkoa25pdHIpDQoNCm9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFKQ0Kb3B0c19jaHVuayRzZXQodGlkeS5vcHRzPWxpc3Qod2lkdGguY3V0b2ZmPTEwMCksdGlkeT1UUlVFLCB3YXJuaW5nID0gRkFMU0UsIG1lc3NhZ2UgPSBGQUxTRSxjb21tZW50ID0gIiM+IiwgY2FjaGU9VFJVRSwgY2xhc3Muc291cmNlPWMoInRlc3QiKSwgY2xhc3Mub3V0cHV0PWMoInRlc3QyIikpDQpvcHRpb25zKHdpZHRoID0gMTAwKQ0KcmdsOjpzZXR1cEtuaXRyKCkNCg0KY29sb3JpemUgPC0gZnVuY3Rpb24oeCwgY29sb3IpIHtzcHJpbnRmKCI8c3BhbiBzdHlsZT0nY29sb3I6ICVzOyc+JXM8L3NwYW4+IiwgY29sb3IsIHgpIH0NCg0KYGBgDQoNCmBgYHtyIGtsaXBweSwgZWNobz1GQUxTRSwgaW5jbHVkZT1UUlVFfQ0Ka2xpcHB5OjprbGlwcHkocG9zaXRpb24gPSBjKCd0b3AnLCAncmlnaHQnKSkNCiNrbGlwcHk6OmtsaXBweShjb2xvciA9ICdkYXJrcmVkJykNCiNrbGlwcHk6OmtsaXBweSh0b29sdGlwX21lc3NhZ2UgPSAnQ2xpY2sgdG8gY29weScsIHRvb2x0aXBfc3VjY2VzcyA9ICdEb25lJykNCmBgYA0KDQoNCi0tLS0NCg0KOjo6Ojo6Ojo6Ojo6Ojogey5jb2x1bW5zfQ0KOjo6IHsuY29sdW1uIHdpZHRoPSI4MCUifQ0KDQojIFJlcG9zaXRvcnkgRGVzY3JpcHRpb24NCkxhc3QgY29tcGlsZWQgb24gYHIgZm9ybWF0KFN5cy50aW1lKCksICclQiAlZCwgJVknKWANCg0KPGJyIC8+DQoNCiMjIyBEdXRjaCBQcm9mZXNzb3JzIGluIE1lZGlhIChEUE0pDQpUaGlzIHdlYnNpdGUgZG9jdW1lbnRzIHRoZSBwcmVwYXJhdGlvbiBvZiB0aGUgRHV0Y2ggUHJvZmVzc29ycyBpbiBNZWRpYSBkYXRhYmFzZSAoRFBNKTogDQphIG5ld2x5IGN1cmF0ZWQgZmluZS1ncmFpbmVkIGRhdGEgc291cmNlIGNvbnRhaW5pbmcgbmVhcmx5IGFsbCBmdWxsIHByb2Zlc3NvcnMgaW4gdGhlIA0KTmV0aGVybGFuZHMgKE4gPSA2LjgzMCkgYXMgb2YgMjAyMiBhY3Jvc3MgYWxsIGFjYWRlbWljIGZpZWxkcy4gDQoNClRoaXMgZGF0YWJhc2UgY29udGFpbnMgaW5mb3JtYXRpb24gb24gcHJvZmVzc29ycycgcHVibGljYXRpb24sIGNpdGF0aW9uLCBhZmZpbGlhdGlvbiwgYW5kIHRvcGljYWwgaW50ZXJlc3QgcmVjb3JkcyBmcm9tIFtPcGVuQWxleF0oaHR0cHM6Ly9vcGVuYWxleC5vcmcvKS4gV2UgZW5yaWNoIHRoZXNlIGRhdGEgd2l0aCBmdW5kaW5nIHJlY2VpdmVkIGJ5IGJvdGggdGhlIER1dGNoIFsoTldPKV0oaHR0cHM6Ly93d3cubndvLm5sLykgYW5kIHRoZSBFdXJvcGVhbiBbKEVSQyldKGh0dHBzOi8vZXJjLmVhc21lLXdlYi5ldT9tb2RlPTcmY291bnRyaWVzPU5MKSBSZXNlYXJjaCBDb3VuY2lscywgYXMgd2VsbCBhcyBpbmZvcm1hdGlvbiBvbiBwb3NpdGlvbnMgaGVsZCB3aXRoaW4gdGhlIER1dGNoIGdvdmVybm1lbnQgb3IgaXRzIGFkdmlzb3J5IGJvZGllcy4NCg0KVW5pcXVlbHksIHdlIGxpbmsgcHJvZmVzc29ycyB0byBkZXRhaWxlZCwgdGltZS1zdGFtcGVkIGFjY291bnRzIG9mIGF0dGVudGlvbiBhY3Jvc3MgYSB2YXJpZXR5IA0Kb2YgbWVkaWEgdHlwZXMuIEZyb20gW0xleGlzTmV4aXNdKGh0dHBzOi8vd3d3LmxleGlzbmV4aXMuY29tLykgd2UgcmV0cmlldmUgNzIxIHRob3VzYW5kIG1lbnRpb25zIG9mIHByb2Zlc3NvcnMgaW4gcHJpbnRlZCBuZXdzIG1lZGlhIChlLmcuLCBUaGUgTmV3IFlvcmsgVGltZXMpLiBVc2luZyB0aGUgW0FsdG1ldHJpYyBkYXRhYmFzZV0oaHR0cHM6Ly93d3cuYWx0bWV0cmljLmNvbS8pLCB3ZSBjYXB0dXJlIDY5NSB0aG91c2FuZCBvbmxpbmUgbmV3cyAoZS5nLiwgWWFob28hIE5ld3MpIGFuZCBibG9nIChlLmcuLCBQc3ljaG9sb2d5IFRvZGF5KSBhcnRpY2xlcyBhbmQgMy4zIG1pbGxpb24gc29jaWFsIG1lZGlhIHBvc3RzIChvbiBUd2l0dGVyLCBub3cgWCkgY29udGFpbmluZyBtZW50aW9ucyBvZiBwcm9mZXNzb3Jz4oCZIHNjaWVudGlmaWMgd29yay4gDQoNCkZpbmFsbHksIHdlIGNvbXBpbGUgc29jaWFsIG5ldHdvcmsgZGF0YSBvbiAxLjM1IG1pbGxpb24gY28tYXV0aG9ycyBvZiBwcm9mZXNzb3JzIGluIHRoZSBEUE0sIGNvbGxlY3RpbmcgaW5mb3JtYXRpb24gb24gY28tYXV0aG9yc+KAmSBwdWJsaWNhdGlvbnMsIGNpdGF0aW9ucywgYW5kIHRoZSBudW1iZXIgb2YgdGltZXMgdGhlaXIgd29yayBhcHBlYXJlZCBpbiB0aGUgb25saW5lIG5ld3MgYW5kIG9ubGluZSBzb2NpYWwgbWVkaWEgKFR3aXR0ZXIvWCkuIA0KDQpNb3N0IG9mIHRoZSBzY3JpcHRzIHVzZWQgaW4gdGhlIHByZXBhcmF0aW9uIG9mIHRoaXMgZGF0YWJhc2UgY2FuIGJlIGZvdW5kIGluIHRoZSB0b3ANCm1lbnUgdW5kZXIgdGhlIHNlY3Rpb24gKiJEUE0gcHJlcGFyYXRpb24iKi4NCg0KVGhlIGRhdGFiYXNlIHdhcyBjb21waWxlZCBieSBbQW5hIE1hY2Fub3ZpY10oaHR0cHM6Ly9hbWFjYW5vdmljLmdpdGh1Yi5pby8pIGFuZCBbQmFzIEhvZnN0cmFdKGh0dHBzOi8vd3d3LmJhc2hvZnN0cmEuY29tKSBhdCBbUmFkYm91ZCBVbml2ZXJzaXR5XShodHRwczovL3d3dy5ydS5ubC9lbikuDQoNCjxiciAvPg0KDQojIyMgRFBNIFBhbmVsIGRhdGFzZXQNCg0KVGhpcyB3ZWJzaXRlIGZ1cnRoZXIgY29udGFpbnMgc2NyaXB0cyB0aGF0IHVzZSBEUE0gdG8gcHJlcGFyZSBhIHBhbmVsIGRhdGFzZXQNCmNvbXBpbGluZyBpbmRpY2F0b3JzIG9mIHByb2Zlc3NvcnMnIHNjaWVudGlmaWMgY2FyZWVycywgbWVkaWEgYXR0ZW50aW9uLCBhbmQgY29sbGFib3JhdGlvbg0KbmV0d29ya3Mgb24gdGhlIHllYXJseSBiYXNpcywgY292ZXJpbmcgdGhlIHRpbWUgc3BhbiBiZXR3ZWVuIDIwMTIgYW5kIDIwMjMuDQoNClRoZSBzY3JpcHQgdXNlZCB0byBjb21waWxlIHRoaXMgcGFuZWwgZGF0YXNldCBmcm9tIHRoZSBEUE0gY2FuIGJlIGZvdW5kIGluIHRoZSB0b3ANCm1lbnUgdW5kZXIgdGhlIHNlY3Rpb24gKiJEUE0gUGFuZWwgZGF0YXNldCIqLg0KDQo8YnIgLz4NCg0KIyMjIEFuYWx5c2VzIGFuZCBSZXN1bHRzDQoNClRoaXMgc2VjdGlvbiBvZiB0aGUgd2Vic2l0ZSBjb250YWlucyBzY3JpcHRzIHRoYXQgcHJvZHVjZSByZXN1bHRzIGZvdW5kIGluIHRoZSANCm1haW4gdGV4dCBhbmQgdGhlIE9ubGluZSBTSSBvZiB0aGUgZm9sbG93aW5nIHBhcGVyOg0KDQoqKk1hY2Fub3ZpYywgQS4sIEhvZnN0cmEsIEIuICgyMDI0KS4gIkxpbWl0cyB0byBHZW5kZXIgRXF1aXR5IGluIFNjaWVuY2UgQ29tbXVuaWNhdGlvbiIuKioNCg0KVGhlIHNjcmlwdHMgdXNlZCB0byBnZW5lcmF0ZSB0aGUgcmVzdWx0cyBpbiB0aGUgcGFwZXIgY2FuIGJlIGZvdW5kIGluIHRoZSB0b3ANCm1lbnUgdW5kZXIgdGhlIHNlY3Rpb24gKiJBbmFseXNlcyBhbmQgUmVzdWx0cyIqLg0KDQpBZGRpdGlvbmFsIHJvYnVzdG5lc3MgY2hlY2tzIGNhbiBiZSBmb3VuZCBpbiB0aGUgdG9wDQptZW51IHVuZGVyIHRoZSBzZWN0aW9uICoiUm9idXN0bmVzcyBjaGVja3MiKi4NCg0KDQoNCi0tLS0NCg0KDQo6OjoNCjo6OiB7LmNvbHVtbiB3aWR0aD0iODAlIn0NCg0KDQo6OjoNCjo6Ojo6Ojo6Ojo6Ojo6DQoNCg0KDQotLS0tDQoNCg0KDQoNCg0KDQo=</div>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("index.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
