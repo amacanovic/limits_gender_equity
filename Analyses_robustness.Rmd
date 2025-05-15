@@ -1,0 +1,1972 @@
+---
+title: "SI Robustness checks"
+author: "Ana Macanovic"
+date: "2025-05-12"
+---
+
+# SI: Model robustness checks
+
+Robustness checks including various alternative regression model specifications.
+All specifications include standard errors clustered at the professor level and year and institution controls.
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "stevemisc", "MASS", "dplyr", "tidyr", 
+                      "ggplot2", "cowplot",
+                      "tidyverse", "RPostgres", 
+                      "lubridate", "lmtest", 
+                      "sandwich", "ggpubr", 
+                      "knitr", "scales", 
+                      "ggeffects", "flextable", 
+                      "officer", "DescTools",
+                      "gglorenz", "corrplot")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Load the panel:
+```{r warning = T, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+```
+
+Set the gender indicator to a factor:
+```{r}
+prof_panel_filter$inferred_gender <- as.factor(prof_panel_filter$inferred_gender)
+prof_panel_filter$any_grant_l <- as.factor(prof_panel_filter$any_grant_l)
+prof_panel_filter$institution_dutch_total_narcis <- as.factor(prof_panel_filter$institution_dutch_total_narcis)
+```
+
+Standardize variables for poisson/negative binomial models.
+```{r}
+prof_panel_filter_stand_main <- prof_panel_filter %>%
+  dplyr::select(profile_id, year, overall_adj_domain , years_since_first_pub, institution_dutch_total_narcis, 
+                inferred_gender, news_all, news_all_l, alt_online_all_l, alt_twitter_l,
+                alt_online_all, alt_twitter, count_pubs_total_l, share_first_au_total_l, cited_by_total_all_l, avg_sjr_total_l,
+                coa_tot_cited_by_total_l, coa_online_combi_total_l, alt_online_all_total_l,
+                alt_twitter_total_l, news_all_total_l, alt_online_all_total_l, alt_twitter_total_l)
+
+prof_panel_filter_stand_main <-  prof_panel_filter_stand_main %>%
+  group_by(overall_adj_domain , year)%>%
+  mutate_at(vars(count_pubs_total_l:alt_twitter_total_l), ~(r2sd(.) %>% as.vector))
+```
+
+Standardize other variables as well:
+```{r}
+prof_panel_filter_stand <- prof_panel_filter %>%
+  filter(year >= 2012 & year <= 2023)%>%
+  dplyr::select(profile_id, year, overall_adj_domain , years_since_first_pub, institution_dutch_total_narcis, institution_dutch_yearly_strict_l,
+                inferred_gender, any_news, news_all_top_1, news_all_top_5, news_all_top_10,
+                news_all_top_20, any_online_news, alt_online_all_top_1, alt_online_all_top_5, alt_online_all_top_10, alt_online_all_top_20, 
+                any_twitter, alt_twitter_top_1, alt_twitter_top_5, alt_twitter_top_10, alt_twitter_top_20, news_all,
+                alt_online_all, alt_twitter, any_grant_l, count_pubs_total_l, share_first_au_total_l, share_last_au_total_l, cited_by_total_all_l, avg_sjr_total_l,
+                coa_tot_cited_by_total_l, coa_online_combi_total_l, alt_online_all_total_l,
+                alt_twitter_total_l, news_all_total_l, alt_online_all_total_l, alt_twitter_total_l,
+                news_all_l, alt_online_all_l, alt_twitter_l, count_pubs_l, cited_by_l, coa_tot_cited_by_l, coa_online_combi_l, 
+                avg_sjr_l, share_first_au_l, share_last_au_l)
+
+prof_panel_filter_stand <-  prof_panel_filter_stand %>%
+  group_by(overall_adj_domain , year)%>%
+  mutate_at(vars(count_pubs_total_l:share_last_au_l), ~(r2sd(.) %>% as.vector))
+```
+
+
+Make a list to save all the results into:
+```{r}
+logistic_models <- list()
+ols_log_models <- list()
+ols_models <- list()
+main_models_rob <- list()
+```
+
+## Main model - additional controls
+
+### Main model - for comparison
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <-  lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula = news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                        lm_formula = online_news_formula_main_model,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                     lm_formula = twitter_formula_main_model,
+                                                     year_cutoff_upper = 2023,
+                                                     year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['main']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                        online_news_model[[1]],
+                                                        twitter_model[[1]], 
+                                                        exp = "yes")
+
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table.docx")
+```
+
+### Main model - share last author
+```{r warning = T}
+
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_last_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                          lm_formula= news_formula_main_model,
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_last_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula= online_news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <-  "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_last_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                             lm_formula= twitter_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['main_last_au']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                                online_news_model[[1]],
+                                                                twitter_model[[1]], 
+                                                                exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - last au")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_last_au_table.docx")
+```
+
+
+### Main model - yearly institution variable
+```{r warning = T}
+news_formula_main_model <-  "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_yearly_strict_l"
+
+
+news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                          lm_formula= news_formula_main_model,
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_yearly_strict_l"
+
+
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula= online_news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_yearly_strict_l"
+
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                             lm_formula= twitter_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['yearly_inst']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                               online_news_model[[1]],
+                                                               twitter_model[[1]], 
+                                                               exp = "yes")
+
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - yearly institution")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_yearly_inst.docx")
+```
+
+### Lag depenedent variable
+
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ log(news_all_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                          lm_formula= news_formula_main_model,
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ log(alt_online_all_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula= online_news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ log(alt_twitter_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                             lm_formula= twitter_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['lag']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                       online_news_model[[1]],
+                                                       twitter_model[[1]], 
+                                                       exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_lag.docx")
+```
+
+
+Print the coefficients for Figure S8:
+
+First, prepare the dataframe:
+```{r}
+model_news <- news_model[[1]]
+model_online_news <- online_news_model[[1]]
+model_twitter <- twitter_model[[1]]
+
+model_news$model <- "News attention"
+model_online_news$model <- "Online news attention"
+model_twitter$model <- "Twitter attention"
+
+all_models_plot <- rbind(model_news,
+                         model_online_news,
+                         model_twitter)
+
+all_models_plot$term <- ifelse(all_models_plot$term %in% c("log(news_all_l + 1)", "log(alt_online_all_l + 1)", "log(alt_twitter_l + 1)"),
+                               "t_min_1", all_models_plot$term)
+
+
+all_models_plot$term <- ordered(all_models_plot$term,
+                                levels = c("(Intercept)",
+                                           "inferred_genderw",
+                                           "t_min_1",
+                                           "log(cited_by_total_all_l + 1)",
+                                           "log(count_pubs_total_l + 1)",
+                                           "log(news_all_total_l + 1)",
+                                           "log(alt_online_all_total_l + 1)", 
+                                           "log(alt_twitter_total_l + 1)",
+                                           "log(coa_tot_cited_by_total_l + 1)",
+                                           "log(coa_online_combi_total_l + 1)",
+                                           "avg_sjr_total_l",
+                                           "share_first_au_total_l",
+                                           "years_since_first_pub",
+                                           "as.factor(year)2014",
+                                           "as.factor(year)2015",
+                                           "as.factor(year)2016",
+                                           "as.factor(year)2017",
+                                           "as.factor(year)2018",
+                                           "as.factor(year)2019",
+                                           "as.factor(year)2020",
+                                           "as.factor(year)2021",
+                                           "as.factor(year)2022",
+                                           "as.factor(year)2023",
+                                           "institution_dutch_total_narcisuni_1",
+                                           "institution_dutch_total_narcisuni_2",
+                                           "institution_dutch_total_narcisuni_3",
+                                           "institution_dutch_total_narcisuni_4",
+                                           "institution_dutch_total_narcisuni_5",
+                                           "institution_dutch_total_narcisuni_6",
+                                           "institution_dutch_total_narcisuni_7",
+                                           "institution_dutch_total_narcisuni_8",
+                                           "institution_dutch_total_narcisuni_9",
+                                           "institution_dutch_total_narcisuni_10",
+                                           "institution_dutch_total_narcisuni_11",
+                                           "institution_dutch_total_narcisuni_12",
+                                           "institution_dutch_total_narcisuni_13",
+                                           "institution_dutch_total_narcisuni_14",
+                                           "institution_dutch_total_narcisuni_15",
+                                           "R^2"))
+
+all_models_plot$model <- ordered(all_models_plot$model,
+                                 levels = c("News attention",
+                                            "Online news attention",
+                                            "Twitter attention" ))
+
+
+all_models_plot$field <- ordered(all_models_plot$field,
+                                 levels = c("phys",
+                                            "life",
+                                            "health",
+                                            "soc_sci",
+                                            "arts"))
+
+covariate_names <- c(
+  't_min_1' = "Dependent variable -\nprevious period",
+  'log(cited_by_total_all_l + 1)'="Total citations\n(log-transformed)",
+  'log(count_pubs_total_l + 1)'="Total publications\n(log-transformed)",
+  'log(news_all_total_l + 1)'="Total printed news \nattention (log-transformed)",
+  'log(alt_online_all_total_l + 1)'="Total online news\n attention (log-transformed)",
+  'log(alt_twitter_total_l + 1)'="Total Twitter/X \nattention (log-transformed)",
+  'log(coa_tot_cited_by_total_l + 1)' = "Coauthors' total citations\n(log-transformed)",
+  'log(coa_online_combi_total_l + 1)' = "Coauthors' total online \nnews and Twitter/X attention\n(log-transformed)",
+  'share_first_au_total_l' = "Total share of first- and \nsingle-authored publications",
+  'avg_sjr_total_l' = "Total average SJR \nscore of publications"
+)
+
+field_names <- c("arts" = "Arts and\n Humanities",
+                 "health" = "Health \nsciences",
+                 "soc_sci" = "Social \nsciences",
+                 "life" = "Life sciences",
+                 "phys" = "Physical \nsciences")
+
+media_names <- c('News attention' = "Printed news",
+                 'Online news attention' = "Online news",
+                 'Twitter attention' = "Twitter/X")
+
+labeller_names <- c(field_names, media_names)
+```
+
+Plot out selected regression coefficients for physical sciences:
+```{r fig.width=8, fig.height= 13, warning = F}
+# reorder the factor for Figure 2
+all_models_plot$term <- ordered(all_models_plot$term,
+                                levels = c("(Intercept)",
+                                           "t_min_1",
+                                           "inferred_genderw",
+                                           "log(count_pubs_total_l + 1)",
+                                           "share_first_au_total_l",
+                                           "log(cited_by_total_all_l + 1)",
+                                           "avg_sjr_total_l",
+                                           "log(news_all_total_l + 1)",
+                                           "log(alt_online_all_total_l + 1)", 
+                                           "log(alt_twitter_total_l + 1)",
+                                           "log(coa_tot_cited_by_total_l + 1)",
+                                           "log(coa_online_combi_total_l + 1)",
+                                           "years_since_first_pub",
+                                           "as.factor(year)2014",
+                                           "as.factor(year)2015",
+                                           "as.factor(year)2016",
+                                           "as.factor(year)2017",
+                                           "as.factor(year)2018",
+                                           "as.factor(year)2019",
+                                           "as.factor(year)2020",
+                                           "as.factor(year)2021",
+                                           "as.factor(year)2022",
+                                           "as.factor(year)2023",
+                                           "institution_dutch_total_narcisuni_1",
+                                           "institution_dutch_total_narcisuni_2",
+                                           "institution_dutch_total_narcisuni_3",
+                                           "institution_dutch_total_narcisuni_4",
+                                           "institution_dutch_total_narcisuni_5",
+                                           "institution_dutch_total_narcisuni_6",
+                                           "institution_dutch_total_narcisuni_7",
+                                           "institution_dutch_total_narcisuni_8",
+                                           "institution_dutch_total_narcisuni_9",
+                                           "institution_dutch_total_narcisuni_10",
+                                           "institution_dutch_total_narcisuni_11",
+                                           "institution_dutch_total_narcisuni_12",
+                                           "institution_dutch_total_narcisuni_13",
+                                           "institution_dutch_total_narcisuni_14",
+                                           "institution_dutch_total_narcisuni_15",
+                                           "R^2"))
+
+(selected_plot <- all_models_plot %>%
+    filter(term %in% c(
+      "t_min_1",
+      "log(count_pubs_total_l + 1)",
+      "share_first_au_total_l",
+      "log(cited_by_total_all_l + 1)",
+      "avg_sjr_total_l",
+      "log(coa_tot_cited_by_total_l + 1)",
+      "log(coa_online_combi_total_l + 1)")) %>%
+    ggplot(aes(Estimate, fct_rev(term), color = model, shape = model, label = stars)) +
+    geom_point(position = position_dodge(width = -0.7), size = 3) +
+    geom_errorbar(aes(xmin = lower_ci, xmax = upper_ci),
+                  width=0,
+                  size=0.7,
+                  position = position_dodge(width = -0.7)) +
+    geom_text(hjust=0, vjust=0, position = position_dodge(width = -0.7), size = 3.5)+
+    scale_y_discrete(labels=covariate_names,
+                     name = "Field")+
+    scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+    scale_shape_discrete(labels = c("Printed news", "Online news", "Twitter/X"))+
+    # scale_x_continuous(limits = c(0.5, 2.25), breaks = seq(0.5, 2.25, by = 0.25))+
+    labs(
+      x = "Regression coefficients",
+      y = NULL,
+      color = "Attention type",
+      shape = "Attention type"
+    ) + 
+    geom_vline(xintercept = 0,  colour="black", linetype = "longdash")+
+    facet_grid(field ~ model, labeller = as_labeller(labeller_names))+
+    theme_minimal_hgrid()+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 10),
+          legend.position = "none")+
+    #strip.text.x=element_text(size = 10))+
+    panel_border())
+
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S8.png",
+  plot = selected_plot,
+  width = 8,
+  height = 13,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+```
+
+
+### Last year instead of total indicators
+
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_l+1) + log(cited_by_l+1) + log(coa_tot_cited_by_l+1) + log(coa_online_combi_l+1) + log(alt_online_all_l+1) + log(alt_twitter_l+1) + avg_sjr_l + share_first_au_l + institution_dutch_total_narcis"
+
+
+news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                          lm_formula= news_formula_main_model,
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_l+1) + log(cited_by_l+1) + log(coa_tot_cited_by_l+1) + log(coa_online_combi_l+1) + log(news_all_l+1) + log(alt_twitter_l+1) + avg_sjr_l + share_first_au_l + institution_dutch_total_narcis"
+
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula= online_news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_l+1) + log(cited_by_l+1) + log(coa_tot_cited_by_l+1) + log(coa_online_combi_l+1) + log(news_all_l+1) + log(alt_online_all_l+1) + avg_sjr_l + share_first_au_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                             lm_formula= twitter_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['last_year']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                             online_news_model[[1]],
+                                                             twitter_model[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - last year indicators")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_last_year.docx")
+```
+
+### Excluding 2020 and 2021
+
+In these models, we exclude 2020 and 2021 to account for potential disruptive dynamics
+during the COVID-19 pandemic.
+```{r}
+prof_panel_filter_2020 <- filter(prof_panel_filter,
+                                       ! year %in% c(2020, 2021))
+```
+
+
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <-  lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_2020,
+                                                 lm_formula = news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_2020,
+                                                        lm_formula = online_news_formula_main_model,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_2020,
+                                                     lm_formula = twitter_formula_main_model,
+                                                     year_cutoff_upper = 2023,
+                                                     year_cutoff_lower = 2012)
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['excl_2020_2021']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                                  online_news_model[[1]],
+                                                                  twitter_model[[1]], 
+                                                                  exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - excluding 2020 and 2021")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_excl_2020_2021.docx")
+```
+
+
+
+### Grant control
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + any_grant_l"
+
+
+news_model <-  lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula = news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + any_grant_l"
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                        lm_formula = online_news_formula_main_model,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + any_grant_l"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                     lm_formula = twitter_formula_main_model,
+                                                     year_cutoff_upper = 2023,
+                                                     year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['grants']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                          online_news_model[[1]],
+                                                          twitter_model[[1]], 
+                                                          exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - including grant control")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_grants.docx")
+```
+
+
+
+### Public posts
+
+Load data on professors who had a public position:
+```{r}
+# Connect to the database:
+# fill in own credentials
+port <- 5432
+user <- "postgres"
+password <- "dutchmediaprofssql"
+database_name <- "postgres"
+
+
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+con # Checks connection is working
+
+public_roles <- dbReadTable(con, "govt_positions")
+
+prof_panel_filter_public <- filter(prof_panel_filter,
+                                         ! profile_id %in% public_roles$profile_id)
+```
+
+
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <-  lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_public,
+                                                 lm_formula = news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_public,
+                                                        lm_formula = online_news_formula_main_model,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_public,
+                                                     lm_formula = twitter_formula_main_model,
+                                                     year_cutoff_upper = 2023,
+                                                     year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['no_public']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                             online_news_model[[1]],
+                                                             twitter_model[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - excluding professors with public positions at any time")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_no_public.docx")
+```
+
+
+### Emeritus
+
+Main models, but excluding professors who held an emeritus position at the time
+of NARCIS data collection.
+
+Load data on professors who had a public position:
+```{r}
+emeritus_roles <- dbReadTable(con, "emeritus_info")
+
+emeritus_roles <- filter(emeritus_roles, emeritus == TRUE)
+
+prof_panel_filter_emeritus <- filter(prof_panel_filter,
+                                           ! profile_id %in% emeritus_roles$profile_id)
+```
+
+
+```{r warning = T}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model <-  lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_emeritus,
+                                                 lm_formula = news_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_emeritus,
+                                                        lm_formula = online_news_formula_main_model,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_emeritus,
+                                                     lm_formula = twitter_formula_main_model,
+                                                     year_cutoff_upper = 2023,
+                                                     year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['no_emeritus']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                               online_news_model[[1]],
+                                                               twitter_model[[1]], 
+                                                               exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - excluding emeritus professors")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_no_emeritus.docx")
+```
+
+## Negative binomial models
+### Main model
+```{r warning = T}
+news_formula_main_model <- c("news_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + institution_dutch_total_narcis")
+
+news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                          formula_list = news_formula_main_model,
+                                          reg_family = "negative_binomial",
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "alt_online_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l  + institution_dutch_total_narcis"
+
+online_news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                                 formula_list = online_news_formula_main_model,
+                                                 reg_family = "negative_binomial",
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "alt_twitter ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + institution_dutch_total_narcis"
+
+twitter_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                             formula_list = twitter_formula_main_model,
+                                             reg_family = "negative_binomial",
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['negbin']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                           online_news_model[[1]],
+                                                           twitter_model[[1]], 
+                                                           exp = "yes")
+
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - negative binomial")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/main_model_table_negbin.docx")
+```
+
+
+### Lag depenedent variable
+
+```{r warning = T}
+news_formula_main_model <- c("news_all ~ news_all_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis")
+
+
+news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                          formula_list = news_formula_main_model,
+                                          reg_family = "negative_binomial",
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "alt_online_all ~ alt_online_all_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 formula_list = online_news_formula_main_model,
+                                                 reg_family = "negative_binomial",
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "alt_twitter ~ alt_twitter_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l +
+coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+twitter_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                             formula_list = twitter_formula_main_model,
+                                             reg_family = "negative_binomial",
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['negbin_lag']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                       online_news_model[[1]],
+                                                       twitter_model[[1]], 
+                                                       exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - negative binomial, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_lag_negbin.docx")
+```
+
+
+
+
+## Poisson models
+### Main model
+```{r warning = T}
+news_formula_main_model <- c("news_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + institution_dutch_total_narcis")
+
+news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                          formula_list = news_formula_main_model,
+                                          reg_family = "poisson",
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+
+online_news_formula_main_model <- "alt_online_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l  + institution_dutch_total_narcis"
+
+online_news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                                 formula_list = online_news_formula_main_model,
+                                                 reg_family = "poisson",
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "alt_twitter ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + share_first_au_total_l + cited_by_total_all_l + avg_sjr_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + institution_dutch_total_narcis"
+
+twitter_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand_main,
+                                             formula_list = twitter_formula_main_model,
+                                             reg_family = "poisson",
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['poisson']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                           online_news_model[[1]],
+                                                           twitter_model[[1]], 
+                                                           exp = "yes")
+
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - poisson")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/main_model_table_poisson.docx")
+```
+
+
+
+### Lag depenedent variable
+
+```{r warning = T}
+news_formula_main_model <- c("news_all ~ news_all_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis")
+
+
+news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                          formula_list = news_formula_main_model,
+                                          reg_family = "poisson",
+                                          year_cutoff_upper = 2023,
+                                          year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "alt_online_all ~ alt_online_all_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                 formula_list = online_news_formula_main_model,
+                                                 reg_family = "poisson",
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+
+
+twitter_formula_main_model <- "alt_twitter ~ alt_twitter_l + inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l +
+coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+twitter_model <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                             formula_list = twitter_formula_main_model,
+                                             reg_family = "poisson",
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]])
+
+# add to the list
+main_models_rob[['poisson_lag']] <- neat_plotting_table_scopus(news_model[[1]],
+                                                       online_news_model[[1]],
+                                                       twitter_model[[1]], 
+                                                       exp = "yes")
+
+(table_models_save <- table_models %>%
+    regulartable() %>%
+    set_caption("Main model - poisson, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_lag_poisson.docx")
+```
+
+
+
+
+
+## Logistic models
+
+### Any attention
+
+Model with a binary indicator of whether the professor received any attention of
+a certain type in a given year.
+
+```{r warning = T}
+news_formula_main_model <- "any_news  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year)+avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "as.factor(any_online_news)  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "any_twitter  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+# Combine this all 
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+# add to the list
+logistic_models[['logit_any']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - any attention")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_any_att.docx")
+```
+
+
+### Top 1% attention
+
+Model with a binary indicator of whether the professor was in the top 1% of professors
+within an  attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_1  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_1  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_1  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_1']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 1% of attention")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top1_att.docx")
+```
+
+### Top 5% attention
+
+Model with a binary indicator of whether the professor was in the top 5% of professors
+within a field given the attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_5  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_5  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_5  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_5']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 5% of attention")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top5_att.docx")
+```
+
+
+### Top 10% attention
+
+Model with a binary indicator of whether the professor was in the top 10% of professors
+within an  attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_10  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_10  ~ inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_10  ~ inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_10']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 10% of attention")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top10_att.docx")
+```
+
+### Any attention - first lag
+
+Model with a binary indicator of whether the professor received any attention of
+a certain type in a given year.
+
+```{r warning = T}
+news_formula_main_model <- "any_news  ~ news_all_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l + coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year)+avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "as.factor(any_online_news)  ~ alt_online_all_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "any_twitter  ~ alt_twitter_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+# Combine this all 
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+# add to the list
+logistic_models[['logit_any_lag']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - any attention, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_any_att_lag.docx")
+```
+
+
+
+### Top 1% attention - first lag
+
+Model with a binary indicator of whether the professor was in the top 10% of professors
+within an  attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_1  ~ news_all_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_1  ~ alt_online_all_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_1  ~ alt_twitter_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_1_lag']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 1% of attention, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top1_att_lag.docx")
+```
+
+
+
+### Top 5% attention - first lag
+
+Model with a binary indicator of whether the professor was in the top 5% of professors
+within an  attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_5  ~ news_all_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_5  ~ alt_online_all_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_5  ~ alt_twitter_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_5_lag']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 5% of attention, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top5_att_lag.docx")
+```
+
+
+### Top 10% attention - first lag
+
+Model with a binary indicator of whether the professor was in the top 10% of professors
+within an  attention type in a given year.
+
+```{r, warning=FALSE}
+news_formula_main_model <- "news_all_top_10  ~ news_all_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + alt_online_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                formula_list = news_formula_main_model,
+                                                year_cutoff_upper = 2023,
+                                                year_cutoff_lower = 2012,
+                                                reg_family = "binomial")
+
+online_news_formula_main_model <- "alt_online_all_top_10  ~ alt_online_all_l + inferred_gender + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_twitter_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+online_news_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                       formula_list = online_news_formula_main_model,
+                                                       year_cutoff_upper = 2023,
+                                                       year_cutoff_lower = 2012,
+                                                       reg_family = "binomial")
+
+twitter_formula_main_model <- "alt_twitter_top_10  ~ alt_twitter_l + inferred_gender  + count_pubs_total_l + cited_by_total_all_l + news_all_total_l + alt_online_all_total_l +coa_tot_cited_by_total_l + coa_online_combi_total_l+years_since_first_pub + as.factor(year) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_logit <- glm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                   formula_list = twitter_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   reg_family = "binomial")
+
+### Combined coefficients
+
+options(scipen=999)
+
+table_models_logit <- neat_regression_table_scopus(news_model_logit[[1]],
+                                                   online_news_model_logit[[1]],
+                                                   twitter_model_logit[[1]])
+
+# add to the list
+logistic_models[['logit_top_10_lag']] <- neat_plotting_table_scopus(news_model_logit[[1]],
+                                                             online_news_model_logit[[1]],
+                                                             twitter_model_logit[[1]], 
+                                                             exp = "yes")
+
+(table_models_save <- table_models_logit %>%
+    regulartable() %>%
+    set_caption("Logistic model - top 10% of attention, first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_logistic_model_top10_att_lag.docx")
+```
+
+
+
+
+## OLS models
+
+### Main models - no first lag of attention
+```{r warning = T}
+news_formula_main_model <- "news_all+1 ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+news_model_ols <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                             lm_formula = news_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "alt_online_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+online_news_model_ols <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                    lm_formula = online_news_formula_main_model,
+                                                    year_cutoff_upper = 2023,
+                                                    year_cutoff_lower = 2012)
+
+
+twitter_formula_main_model <- "alt_twitter ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l +
+coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model_ols  <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                 lm_formula = twitter_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+### Combined coefficients
+
+# Combine this all 
+
+table_models_ols <- neat_regression_table_scopus(news_model_ols[[1]],
+                                                 online_news_model_ols[[1]],
+                                                 twitter_model_ols[[1]])
+# add to the list
+ols_models[['linear']] <- neat_plotting_table_scopus(news_model_ols[[1]],
+                                                             online_news_model_ols[[1]],
+                                                             twitter_model_ols[[1]], 
+                                                             exp = "no")
+
+(table_models_save <- table_models_ols %>%
+    regulartable() %>%
+    set_caption("Linear model")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_lin.docx")
+```
+
+
+
+### Main models - lag
+```{r warning = T}
+news_formula_main_model <- "news_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + alt_online_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + news_all_l"
+
+
+news_model_ols <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                             lm_formula = news_formula_main_model,
+                                             year_cutoff_upper = 2023,
+                                             year_cutoff_lower = 2012)
+
+online_news_formula_main_model <- "alt_online_all ~ inferred_gender + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l + coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_twitter_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + alt_online_all_l"
+online_news_model_ols <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                    lm_formula = online_news_formula_main_model,
+                                                    year_cutoff_upper = 2023,
+                                                    year_cutoff_lower = 2012)
+
+
+twitter_formula_main_model <- "alt_twitter ~ inferred_gender  + years_since_first_pub + as.factor(year) + count_pubs_total_l + cited_by_total_all_l +
+coa_tot_cited_by_total_l + coa_online_combi_total_l + news_all_total_l + alt_online_all_total_l + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis + alt_twitter_l"
+
+twitter_model_ols  <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter_stand,
+                                                 lm_formula = twitter_formula_main_model,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+
+### Combined coefficients
+
+# Combine this all 
+
+table_models_ols <- neat_plotting_table_scopus(news_model_ols[[1]],
+                                                             online_news_model_ols[[1]],
+                                                             twitter_model_ols[[1]], 
+                                                             exp = "no")
+# add to the list
+ols_models[['linear_lag']] <- table_models_ols
+
+(table_models_save <- table_models_ols %>%
+    regulartable() %>%
+    set_caption("Linear model - first lag")%>%
+    autofit())
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_lin_lag.docx")
+```
+
+
+
+## Save the models
+```{r}
+saveRDS(main_models_rob, "results/main_models.RDS")
+saveRDS(logistic_models, "results/logit_models.RDS")
+saveRDS(ols_models, "results/ols_models.RDS")
+```
+
+
+
+## Extract gender coefficients
+```{r}
+list_of_lists <- list(main_models_rob,
+                      ols_models,
+                      logistic_models)
+
+coefficients_gender_all <- data.frame(matrix(NA, ncol = 0, nrow = 0))
+
+for (i in 1:length(list_of_lists)){
+  
+  one_list <- list_of_lists[[i]]
+  
+  for (j in 1:length(one_list)){
+    
+    model_name <- names(one_list)[j]
+    
+    coefficients_gender <- one_list[[j]]%>%
+      filter(term == "Inferred gender (reference: man)")%>%
+      mutate_at(c(3:6), as.numeric)
+    
+    #coefficients_gender$field <- ifelse(coefficients_gender$field == "", NA, coefficients_gender$field)
+    
+    coefficients_gender <- coefficients_gender %>%
+      fill(field, .direction ="down")
+    
+    model_type <- ifelse(i == 1, "main models",
+                         ifelse(i == 2, "ols",
+                                ifelse(i == 3, "ols log transformed", "logistic")))
+    
+    
+    coefficients_gender$model_var <- model_name
+    coefficients_gender$model_type <- model_type
+    
+    coefficients_gender_all <- bind_rows(coefficients_gender_all,
+                                     coefficients_gender)
+    
+  }
+  
+  
+}
+
+
+coefficients_gender_all <- coefficients_gender_all %>%
+  arrange(field, term)
+
+write_csv(coefficients_gender_all, "results/supplement_tables/SI_additional_robcheck_gender_coefficients.csv")
+```
+
+
+### Figure S10: Main models
+```{r fig.width=10, fig.height = 12, warning=F}
+coefficients_gender_all$field <- ordered(coefficients_gender_all$field,
+                                 levels = c("Physical Sciences",
+                                            "Life Sciences",
+                                            "Health Sciences",
+                                            "Social Sciences",
+                                            "Arts & Humanities"))
+
+main_model_coefs <- coefficients_gender_all %>%
+  filter(model_type == "main models" & ! model_var %in% c("lag", "poisson", "poisson_lag", "negbin", "negbin_lag"))
+
+main_model_coefs$model_var <- factor(main_model_coefs$model_var,
+                                     levels = c("main", "yearly_inst",
+                                                "main_last_au", "excl_2020_2021",
+                                                "grants", "no_emeritus", "no_public",
+                                                "last_year"))
+
+covariate_names <- c(
+  'main' = "Main model",
+  'yearly_inst' = "Yearly institution control",
+  'main_last_au' = "Share of last-authored publications control",
+  'excl_2020_2021'="Excluding 2020 and 2021",
+  'grants'="Last-year's grant control",
+  'no_emeritus'="Excluding emeritus professors",
+  'no_public'="Excluding professors with public position",
+  'last_year'="Last year's indicators"
+)
+
+
+
+
+(model_plot_controls <- main_model_coefs %>%
+  ggplot(aes(Estimate_exp, fct_rev(model_var), color = model, shape = model, label = stars)) +
+  geom_point(position = position_dodge(width = -0.7), size = 3) +
+  geom_errorbar(aes(xmin = lower_ci_exp, xmax = upper_ci_exp),
+                width=0,
+                size=0.7,
+                position = position_dodge(width = -0.7)) +
+  geom_text(hjust=0, vjust=0, position = position_dodge(width = -0.7), size = 3.5)+
+   scale_y_discrete(labels=covariate_names,
+                       name = "Field")+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_shape_discrete(labels = c("Printed news", "Online news", "Twitter/X"))+
+  geom_vline(xintercept = 1,  colour="black", linetype = "longdash")+
+  facet_grid(field ~ model, scales = "free_x")+
+  theme_minimal_hgrid()+
+   theme(plot.title = element_text(size = 11),
+         axis.text.y = element_text(size = 10),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+         axis.title.x = element_text(size = 10),
+         legend.position = "none")+
+         #strip.text.x=element_text(size = 10))+
+    xlab("Ratio of mean mentions for women compared to men")+
+    panel_border())
+
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S10.png",
+  plot = model_plot_controls,
+  width = 10,
+  height = 12,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+```
+
+
+### Figure S11: Main models + alternative specifications:
+```{r fig.width=10, fig.height = 12, warning = F}
+coefficients_gender_all$field <- ordered(coefficients_gender_all$field,
+                                 levels = c("Physical Sciences",
+                                            "Life Sciences",
+                                            "Health Sciences",
+                                            "Social Sciences",
+                                            "Arts & Humanities"))
+
+main_model_coefs_comp <- coefficients_gender_all %>%
+  filter(model_var %in% c("main", "poisson", "negbin", "logit_any", 
+                          "logit_top_1",
+                          "logit_top_5","logit_top_10"))
+
+main_model_coefs_comp$Estimate_exp <- ifelse(is.na(main_model_coefs_comp$Estimate_exp),
+                                             main_model_coefs_comp$Estimate,
+                                             main_model_coefs_comp$Estimate_exp)
+
+main_model_coefs_comp$upper_ci_exp <- ifelse(is.na(main_model_coefs_comp$upper_ci_exp),
+                                             main_model_coefs_comp$upper_ci,
+                                             main_model_coefs_comp$upper_ci_exp)
+
+main_model_coefs_comp$lower_ci_exp <- ifelse(is.na(main_model_coefs_comp$lower_ci_exp),
+                                             main_model_coefs_comp$lower_ci,
+                                             main_model_coefs_comp$lower_ci_exp)
+
+main_model_coefs_comp$hline <- ifelse(main_model_coefs_comp$model_var == "linear",
+                                      0,
+                                      1)
+
+
+main_model_coefs_comp$model_var <- ordered(main_model_coefs_comp$model_var,
+                                     levels = c("main", "poisson", "negbin",
+                                                "logit_any", "logit_top_1",
+                                                "logit_top_5", "logit_top_10"))
+
+covariate_names <- c(
+  'main' = "Main linear model\n (log-transformed variables)",
+  'poisson' = "Main poisson model",
+  'negbin' = "Main negative binomial model",
+  'linear' = "Main linear model",
+  'logit_any'="Logistic model-\nany attention",
+  'logit_top_1'="Logistic model-\ntop 1% attention",
+  'logit_top_5'="Logistic model-\ntop 5% attention",
+  'logit_top_10'="Logistic model-\ntop 10% attention"
+)
+
+(model_plot_spec <- main_model_coefs_comp %>%
+  ggplot(aes(Estimate_exp, fct_rev(model_var), color = model, shape = model, label = stars)) +
+  geom_point(position = position_dodge(width = -0.7), size = 3) +
+  geom_errorbar(aes(xmin = lower_ci_exp, xmax = upper_ci_exp),
+                width=0,
+                size=0.7,
+                position = position_dodge(width = -0.7)) +
+  geom_text(hjust=0, vjust=0, position = position_dodge(width = -0.7), size = 3.5)+
+   scale_y_discrete(labels=covariate_names,
+                       name = "Field")+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_shape_discrete(labels = c("Printed news", "Online news", "Twitter/X"))+
+  geom_vline(xintercept = 1,  colour="black", linetype = "longdash")+
+  facet_grid(field ~ model, scales = "free_x")+
+  theme_minimal_hgrid()+
+   theme(plot.title = element_text(size = 11),
+         axis.text.y = element_text(size = 10),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+         axis.title.x = element_text(size = 10),
+         legend.position = "none")+
+         #strip.text.x=element_text(size = 10))+
+    xlab("Ratio of mean mentions for women compared to men")+
+    panel_border())
+
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S11.png",
+  plot = model_plot_spec,
+  width = 10,
+  height = 12,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+```
+
+### Figure S7: Main models + lags:
+
+```{r fig.width=10, fig.height = 7, warning = F}
+main_model_coefs_comp_lag <- coefficients_gender_all %>%
+  filter(model_var %in% c("main", "lag"))
+
+main_model_coefs_comp_lag$model_var <- factor(main_model_coefs_comp_lag$model_var,
+                                          levels = c("main", "lag"))
+
+
+main_model_coefs_comp_lag$Estimate_exp <- ifelse(is.na(main_model_coefs_comp_lag$Estimate_exp),
+                                             main_model_coefs_comp_lag$Estimate,
+                                             main_model_coefs_comp_lag$Estimate_exp)
+
+main_model_coefs_comp_lag$upper_ci_exp <- ifelse(is.na(main_model_coefs_comp_lag$upper_ci_exp),
+                                             main_model_coefs_comp_lag$upper_ci,
+                                             main_model_coefs_comp_lag$upper_ci_exp)
+
+main_model_coefs_comp_lag$lower_ci_exp <- ifelse(is.na(main_model_coefs_comp_lag$lower_ci_exp),
+                                             main_model_coefs_comp_lag$lower_ci,
+                                             main_model_coefs_comp_lag$lower_ci_exp)
+
+main_model_coefs_comp_lag$hline <- ifelse(main_model_coefs_comp_lag$model_var %in% c("linear", "linear_lag"),
+                                      0,
+                                      1)
+
+covariate_names <- c(
+  'main' = "Main model",
+  'lag' = "+ first lag"
+)
+
+
+(models_plot_lag <- main_model_coefs_comp_lag %>%
+  ggplot(aes(Estimate_exp, fct_rev(model_var), color = model, shape = model, label = stars)) +
+  geom_point(position = position_dodge(width = -0.7), size = 3) +
+  geom_errorbar(aes(xmin = lower_ci_exp, xmax = upper_ci_exp),
+                width=0,
+                size=0.7,
+                position = position_dodge(width = -0.7)) +
+  geom_text(hjust=0, vjust=0, position = position_dodge(width = -0.7), size = 3.5)+
+   scale_y_discrete(labels=covariate_names,
+                       name = "Field")+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_shape_discrete(labels = c("Printed news", "Online news", "Twitter/X"))+
+  geom_vline(xintercept = 1,  colour="black", linetype = "longdash")+
+  facet_grid(field ~ model, scales = "free_x")+
+  theme_minimal_hgrid()+
+   theme(plot.title = element_text(size = 11),
+         axis.text.y = element_text(size = 10),
+         axis.title.y = element_blank(),
+         axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+         axis.title.x = element_text(size = 10),
+         legend.position = "none")+
+         #strip.text.x=element_text(size = 10))+
+    xlab("Ratio of mean mentions for women compared to men")+
+    panel_border())
+
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S7.png",
+  plot = models_plot_lag,
+  width = 10,
+  height = 8,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+```
+
+
+
+
+
+## Write out all coefficients
+```{r}
+list_of_lists <- list(main_models_rob,
+                      ols_models,
+                      logistic_models)
+
+coefficients_all <- data.frame(matrix(NA, ncol = 0, nrow = 0))
+
+for (i in 1:length(list_of_lists)){
+  
+  one_list <- list_of_lists[[i]]
+  
+  for (j in 1:length(one_list)){
+    
+    model_name <- names(one_list)[j]
+    
+    coefficients <- one_list[[j]]%>%
+      filter(!is.na(term))%>%
+      mutate_at(c(3:6), as.numeric)
+    
+    # coefficients$field <- ifelse(coefficients$field == "", NA, coefficients$field)
+    # coefficients <- coefficients %>%
+    #   fill(field, .direction ="down")
+    
+    model_type <- ifelse(i == 1, "main models",
+                         ifelse(i == 2, "ols",
+                                ifelse(i == 3, "ols log transformed", "logistic")))
+    
+    
+    coefficients$model_var <- model_name
+    coefficients$model_type <- model_type
+    
+    coefficients_all <- bind_rows(coefficients_all,
+                              coefficients)
+    
+  }
+  
+  
+}
+
+
+coefficients_all <- coefficients_all %>%
+  arrange(field, term)
+
+write_csv(coefficients_all, "results/supplement_tables/SI_additional_robcheck_all_coefficients.csv")
+```
+
+## Table S12
+
+Get the R2 table:
+```{r}
+main_r2 <- coefficients_all %>%
+  filter(model_var %in% c("main") & term %in% c("R^2"))%>%
+  dplyr::select(field, Estimate, model)%>%
+  pivot_wider(names_from = model, values_from = Estimate)
+
+write_csv(main_r2, "results/supplement_tables/SI_Table_S12.csv")
+```
+

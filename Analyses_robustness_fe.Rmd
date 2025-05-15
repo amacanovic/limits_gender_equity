@@ -1,0 +1,361 @@
+---
+title: "SI Robustness checks: FE models"
+author: "Ana Macanovic"
+date: "2025-05-10"
+---
+
+# SI Robustness checks: FE models
+
+Robustness checks fitting two-way fixed-effects models. 
+All specifications include standard errors clustered at the professor level.
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "dplyr", "tidyr", 
+                      "ggplot2", "cowplot",
+                      "tidyverse", "RPostgres", 
+                      "lubridate", "lmtest", 
+                      "sandwich", "ggpubr", 
+                      "knitr", "scales", "plm",
+                      "ggeffects", "flextable", 
+                      "officer", "DescTools",
+                      "gglorenz", "corrplot")
+
+fpackage_check(packages_to_load)
+
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Load the panel dataset:
+```{r warning = F, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+
+all_reg_rob_list <- list()
+```
+
+
+## FE models: main
+
+Below, we fit the FE models for all three types of attention and including all the 
+variables included in the main models.
+
+Printed news attention:
+```{r warning = F}
+news_formula_main_model <- "log(news_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                            lm_formula = news_formula_main_model,
+                                            year_cutoff_upper = 2023,
+                                            year_cutoff_lower = 2012,
+                                            index = c("profile_id", "year"),
+                                            fe_re = "fe")
+```
+
+Online news attention:
+```{r}
+online_news_formula_main_model <- "log(alt_online_all+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                   lm_formula = online_news_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   index = c("profile_id", "year"),
+                                                   fe_re = "fe")
+```
+
+Twitter/X:
+```{r}
+twitter_formula_main_model <- "log(alt_twitter+1) ~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                               lm_formula = twitter_formula_main_model,
+                                               year_cutoff_upper = 2023,
+                                               year_cutoff_lower = 2012,
+                                               index = c("profile_id", "year"),
+                                               fe_re = "fe")
+```
+
+
+Write out the result table:
+```{r warning = F}
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]],
+                                             fe = "yes")
+
+# add to the list
+all_reg_rob_list[['fe']] <- table_models
+
+table_models_save <- table_models %>%
+    regulartable() %>% 
+    set_caption("Main model - two-way fixed effects")%>%
+    autofit()
+
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_fe.docx")
+```
+
+Show the table below:
+```{r}
+(table_models_save)
+```
+
+
+## Fixed effects models - first lag
+
+Now, fit the FE models with the first lag of the dependent variable included:
+
+Printed news attention:
+```{r warning = F}
+news_formula_main_model <- "log(news_all+1) ~ log(news_all_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+news_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                            lm_formula = news_formula_main_model,
+                                            year_cutoff_upper = 2023,
+                                            year_cutoff_lower = 2012,
+                                            index = c("profile_id", "year"),
+                                            fe_re = "fe")
+```
+
+
+Online news attention:
+```{r}
+online_news_formula_main_model <- "log(alt_online_all+1) ~ log(alt_online_all_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+
+online_news_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                   lm_formula = online_news_formula_main_model,
+                                                   year_cutoff_upper = 2023,
+                                                   year_cutoff_lower = 2012,
+                                                   index = c("profile_id", "year"),
+                                                   fe_re = "fe")
+```
+
+Twitter/X:
+```{r}
+twitter_formula_main_model <- "log(alt_twitter+1) ~ log(alt_twitter_l+1) + inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_online_all_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+twitter_model <- fe_re_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                               lm_formula = twitter_formula_main_model,
+                                               year_cutoff_upper = 2023,
+                                               year_cutoff_lower = 2012,
+                                               index = c("profile_id", "year"),
+                                               fe_re = "fe")
+```
+
+
+Combine the models and write out the table:
+```{r warning = F}
+options(scipen=999)
+
+table_models <- neat_regression_table_scopus(news_model[[1]],
+                                             online_news_model[[1]],
+                                             twitter_model[[1]],
+                                             fe = "yes")
+
+# add to the list
+all_reg_rob_list[['fe']] <- table_models
+
+table_models_save <- table_models %>%
+    regulartable() %>% 
+    set_caption("Main model - two-way fixed effects with lag")%>%
+    autofit()
+
+
+word_document_name <-
+  read_docx() %>%
+  body_add_flextable(table_models_save) %>%
+  print(target = "results/supplement_tables/SI_online_main_model_table_fe_lag.docx")
+```
+
+Show the table below:
+```{r}
+table_models_save
+```
+
+```{r}
+saveRDS(all_reg_rob_list,  "results/main_models_fe.RDS")
+```
+
+## Figure S9:
+
+Plot out the coefficients.
+
+First, preparing the coefficient dataframe:
+```{r}
+model_news <- news_model[[1]]
+model_online_news <- online_news_model[[1]]
+model_twitter <- twitter_model[[1]]
+
+model_news$model <- "News attention"
+model_online_news$model <- "Online news attention"
+model_twitter$model <- "Twitter attention"
+
+all_models_plot <- rbind(model_news,
+                         model_online_news,
+                         model_twitter)
+
+# do the t-1 of dependent as a single variable
+all_models_plot$term <- ifelse(all_models_plot$term %in% c("log(news_all_l + 1)",
+                                                           "log(alt_online_all_l + 1)",
+                                                           "log(alt_twitter_l + 1)"), 
+                               "t_min_1", 
+                               all_models_plot$term)
+
+
+all_models_plot$term <- ordered(all_models_plot$term,
+                                levels = c(
+                                  "(Intercept)",
+                                  "t_min_1",
+                                  "log(count_pubs_total_l + 1)",
+                                  "share_first_au_total_l",
+                                  "log(cited_by_total_all_l + 1)",
+                                  "avg_sjr_total_l",
+                                  "log(news_all_total_l + 1)",
+                                  "log(alt_online_all_total_l + 1)", 
+                                  "log(alt_twitter_total_l + 1)",
+                                  "log(coa_tot_cited_by_total_l + 1)",
+                                  "log(coa_online_combi_total_l + 1)",
+                                  "years_since_first_pub",
+                                  "as.factor(year)2014",
+                                  "as.factor(year)2015",
+                                  "as.factor(year)2016",
+                                  "as.factor(year)2017",
+                                  "as.factor(year)2018",
+                                  "as.factor(year)2019",
+                                  "as.factor(year)2020",
+                                  "as.factor(year)2021",
+                                  "as.factor(year)2022",
+                                  "as.factor(year)2023",
+                                  "institution_dutch_total_narcisuni_1",
+                                  "institution_dutch_total_narcisuni_2",
+                                  "institution_dutch_total_narcisuni_3",
+                                  "institution_dutch_total_narcisuni_4",
+                                  "institution_dutch_total_narcisuni_5",
+                                  "institution_dutch_total_narcisuni_6",
+                                  "institution_dutch_total_narcisuni_7",
+                                  "institution_dutch_total_narcisuni_8",
+                                  "institution_dutch_total_narcisuni_9",
+                                  "institution_dutch_total_narcisuni_10",
+                                  "institution_dutch_total_narcisuni_11",
+                                  "institution_dutch_total_narcisuni_12",
+                                  "institution_dutch_total_narcisuni_13",
+                                  "institution_dutch_total_narcisuni_14",
+                                  "institution_dutch_total_narcisuni_15",
+                                  "R^2"))
+
+all_models_plot$model <- ordered(all_models_plot$model,
+                                 levels = c("News attention",
+                                            "Online news attention",
+                                            "Twitter attention" ))
+
+all_models_plot$field <- ordered(all_models_plot$field,
+                                 levels = c("phys",
+                                            "life",
+                                            "health",
+                                            "soc_sci",
+                                            "arts"))
+
+covariate_names <- c(
+  't_min_1' = "Dependent variable -\n previous period",
+  'log(cited_by_total_all_l + 1)'="Total citations\n(log-transformed)",
+  'log(count_pubs_total_l + 1)'="Total publications\n(log-transformed)",
+  'log(news_all_total_l + 1)'="Total printed news \nattention (log-transformed)",
+  'log(alt_online_all_total_l + 1)'="Total online news\n attention (log-transformed)",
+  'log(alt_twitter_total_l + 1)'="Total Twitter/X \nattention (log-transformed)",
+  'log(coa_tot_cited_by_total_l + 1)' = "Coauthors' total citations\n(log-transformed)",
+  'log(coa_online_combi_total_l + 1)' = "Coauthors' total online \nnews and Twitter/X attention\n(log-transformed)",
+  'share_first_au_total_l' = "Total share of first- and \nsingle-authored publications",
+  'avg_sjr_total_l' = "Total average SJR \nscore of publications"
+)
+```
+
+Draw the plot:
+```{r fig.width=8, fig.height=13}
+field_names <- c("arts" = "Arts and\n Humanities",
+                 "health" = "Health \nsciences",
+                 "soc_sci" = "Social \nsciences",
+                 "life" = "Life sciences",
+                 "phys" = "Physical \nsciences")
+
+media_names <- c('News attention' = "Printed news",
+                 'Online news attention' = "Online news",
+                 'Twitter attention' = "Twitter/X")
+
+media_field_names <- c(media_names,
+                       field_names)
+
+
+(all_plot <- all_models_plot %>%
+    filter(term %in% c(
+      "t_min_1",
+      "log(count_pubs_total_l + 1)",
+      "share_first_au_total_l",
+      "log(cited_by_total_all_l + 1)",
+      "avg_sjr_total_l",
+      "log(coa_tot_cited_by_total_l + 1)",
+      "log(coa_online_combi_total_l + 1)")) %>%
+    ggplot(aes(Estimate, fct_rev(term), color = model, shape = model, label = stars)) +
+    geom_point(position = position_dodge(width = -0.7), size = 3) +
+    geom_errorbar(aes(xmin = lower_ci, xmax = upper_ci),
+                  width=0,
+                  size=0.7,
+                  position = position_dodge(width = -0.7)) +
+    geom_text(hjust=0, vjust=0, position = position_dodge(width = -0.7), size = 3.5)+
+    scale_y_discrete(labels=covariate_names,
+                     name = "Field")+
+    scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+    scale_shape_discrete(labels = c("Printed news", "Online news", "Twitter/X"))+
+    #scale_x_continuous(limits = c(0, 4.5), breaks = seq(0, 4.5, by = 0.5))+
+    labs(
+      x = "Regression coefficient",
+      y = NULL,
+      color = "Attention type",
+      shape = "Attention type"
+    ) + 
+    geom_vline(xintercept = 0,  colour="black", linetype = "longdash")+
+    facet_grid(field ~ model, labeller = as_labeller(media_field_names), scales = "free_x")+
+    theme_minimal_hgrid()+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 10),
+          legend.position = "none")+
+    panel_border())
+
+
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S9.png",
+  plot = all_plot,
+  width = 8,
+  height = 13,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+
+```

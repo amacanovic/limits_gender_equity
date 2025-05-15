@@ -8,6 +8,9 @@ exclude:
   - "resources"
   - "panel_datasets"
   - "results"
+  - "results_backup"
+  - "temp_data"
+  - "delete_old_scripts"
 
   
 bibliography: references.bib
@@ -34,6 +37,8 @@ navbar:
         href: Online_news_preparation.html
       - text: "NARCIS and OA database comparison"
         href: Data_coverage.html
+      - text: "SJR and CiteScore comparison"
+        href: SJR_CiteScore_comparison.html
     - text: "DPM Panel Dataset"
       icon: glyphicon glyphicon-tasks
       menu:
@@ -44,25 +49,26 @@ navbar:
       menu:
       - text: "Main analyses"
         href: Analyses_main.html
-      - text: "SI S1 Dataset information"
+      - text: "SI S2 Dataset information"
         href: Supplement_data_information.html  
-      - text: "SI S2-S4 Additional results"
-        href: Analyses_supplemental.html
+      - text: "SI S3 Additional descriptive results"
+        href: Analyses_supplemental_descriptive.html
+      - text: "SI S4 Additional regression results"
+        href: Analyses_supplemental_regressions.html
       - text: "Resources and functions"
         href: News_classification_other_functions.html
     - text: "Robustness checks"
       icon: glyphicon glyphicon-info-sign
       menu:
-        - text: "Main linear models"
-          href: Analyses_robustness_ols.html
-        - text: "Main linear models - log-transformed"
-          href: Analyses_robustness_ols_log.html
-        - text: "Poisson models"
-          href: Analyses_robustness_poisson.html
-        - text: "Logistic models"
-          href: Analyses_robustness_logit.html
-        - text: "Fixed and random effect models"
-          href: Analyses_robustness_fe_re.html
+        - text: "Poisson, negative binomial, logistic models"
+          href: Analyses_robustness.html
+        - text: "Fixed effect models"
+          href: Analyses_robustness_fe.html
+    - text: "Additional sample"
+      icon: glyphicon glyphicon-zoom-in
+      menu:
+        - text: "Analyses of the additional sample (N = 980)"
+          href: Additional_sample_analyses.html
 
   right:
   - icon: fab fa-github

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Ana Macanovic" />
+
+<meta name="date" content="2025-05-12" />
+
+<title>SI: Supplemental regression analyses</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+<link rel="stylesheet" href="tweaks.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a>
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="index.html">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-menu-hamburger"></span>
+     
+    DPM preparation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="NARCIS_collection.html">NARCIS data scrape</a>
+    </li>
+    <li>
+      <a href="OpenAlex_Altmetric_data_download.html">Open Alex and Altmetric data download</a>
+    </li>
+    <li>
+      <a href="Gender_inference.html">Gender inference</a>
+    </li>
+    <li>
+      <a href="Grant_parsing.html">Grant parsing</a>
+    </li>
+    <li>
+      <a href="Printed_news_preparation.html">Printed news preparation</a>
+    </li>
+    <li>
+      <a href="Online_news_preparation.html">Online news preparation</a>
+    </li>
+    <li>
+      <a href="Data_coverage.html">NARCIS and OA database comparison</a>
+    </li>
+    <li>
+      <a href="SJR_CiteScore_comparison.html">SJR and CiteScore comparison</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-tasks"></span>
+     
+    DPM Panel Dataset
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Panel_data_compilation.html">Panel dataset preparation</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-ok-sign"></span>
+     
+    Analyses and Results
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_main.html">Main analyses</a>
+    </li>
+    <li>
+      <a href="Supplement_data_information.html">SI S2 Dataset information</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental_descriptive.html">SI S3 Additional descriptive results</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental_regressions.html">SI S4 Additional regression results</a>
+    </li>
+    <li>
+      <a href="News_classification_other_functions.html">Resources and functions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    Robustness checks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_robustness.html">Poisson, negative binomial, logistic models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_fe.html">Fixed effect models</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-zoom-in"></span>
+     
+    Additional sample
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Additional_sample_analyses.html">Analyses of the additional sample (N = 980)</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/amacanovic/limits_gender_equity">
+    <span class="fab fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">SI: Supplemental regression analyses</h1>
+<h4 class="author">Ana Macanovic</h4>
+<h4 class="date">2025-05-12</h4>
+
+</div>
+
+
+<div id="si-supplemental-regression-analyses" class="section level1"
+number="1">
+<h1><span class="header-section-number">1</span> SI: Supplemental
+regression analyses</h1>
+<p>This script produces supplemental regression analyses referred to in
+the main text and presented in the Online SI.</p>
+<p>Load the packages:</p>
+<pre class="r"><code>source(&quot;helper_functions.R&quot;)
+
+packages_to_load &lt;- c(&quot;readr&quot;, &quot;MASS&quot;,
+                      &quot;dplyr&quot;, &quot;tidyr&quot;, 
+                      &quot;ggplot2&quot;, &quot;cowplot&quot;,
+                      &quot;tidyverse&quot;, &quot;RPostgres&quot;, 
+                      &quot;lubridate&quot;, &quot;lmtest&quot;, 
+                      &quot;sandwich&quot;, &quot;ggpubr&quot;, &quot;plm&quot;,
+                      &quot;knitr&quot;, &quot;scales&quot;, 
+                      &quot;ggeffects&quot;, &quot;flextable&quot;, 
+                      &quot;officer&quot;, &quot;DescTools&quot;,
+                      &quot;gglorenz&quot;, &quot;corrplot&quot;)
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = &quot;2024-4-23&quot;)</code></pre>
+<p>Load the panel dataset:</p>
+<pre class="r"><code>prof_panel_filter &lt;- read_csv(&quot;panel_datasets/prof_panel_anonymised.csv&quot;)</code></pre>
+<div id="figure-s4" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Figure S4</h2>
+<div id="s4a-various-dependent-variable-specifications"
+class="section level3" number="1.1.1">
+<h3><span class="header-section-number">1.1.1</span> S4A: various
+dependent variable specifications</h3>
+<p>Plot Figure 2, panel A, but with various dependent variables:</p>
+<pre class="r"><code># list of various dependent variable combinations:
+covariate_list_news &lt;- c(
+  &quot;log(news_all+1)&quot;,
+  &quot;log(news_strict_all+1)&quot;,
+  &quot;log(news_off_all+1)&quot;,
+  &quot;log(news_online_all+1)&quot;,
+  &quot;log(news_ded_all+1)&quot;)
+
+
+# the rest of the formula
+news_formula_rest &lt;- &quot;~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + share_first_au_total_l + log(cited_by_total_all_l+1) + avg_sjr_total_l + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + institution_dutch_total_narcis&quot;
+# combine the formulas
+news_formula_list &lt;- paste(covariate_list_news, news_formula_rest)
+
+news_dep_spec_model &lt;- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                  lm_formula_list = news_formula_list,
+                                                  year_cutoff_upper = 2023,
+                                                  year_cutoff_lower = 2012)</code></pre>
+<p>A faceted plot of gender differences with various dependent
+variables:</p>
+<pre class="r"><code># get the exponentiated model estimates for gender
+gender_estimates &lt;- news_dep_spec_model[[1]]%&gt;%
+  filter(term == &quot;inferred_genderw&quot;)
+
+gender_estimates$Estimate_exp &lt;- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp &lt;- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp &lt;- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate &lt;- factor(gender_estimates$covariate,
+                                     levels = c(&quot;log(news_all+1)&quot;,
+                                                &quot;log(news_off_all+1)&quot;,
+                                                &quot;log(news_online_all+1)&quot;,
+                                                &quot;log(news_ded_all+1)&quot;,
+                                                &quot;log(news_strict_all+1)&quot;))
+covariate_names &lt;- c(
+  &#39;log(news_all+1)&#39; = &quot;All\n news&quot;,
+  &#39;log(news_strict_all+1)&#39; = &quot;News with\n strict keyword\n criterion&quot;,
+  &#39;log(news_off_all+1)&#39; = &quot;Offline\n news&quot;,
+  &#39;log(news_online_all+1)&#39; = &quot;Online\n news&quot;,
+  &#39;log(news_ded_all+1)&#39;=&quot;Dedupl.\n news&quot;
+)
+
+
+news_gender_plot_spec &lt;- gender_estimates %&gt;%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.50, 1.20), breaks = seq(0.50, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype=&quot;dashed&quot;)+
+    scale_x_discrete(labels=c(&quot;arts&quot; = &quot;Arts and Humanities&quot;,
+                              &quot;health&quot; = &quot;Health sciences&quot;,
+                              &quot;soc_sci&quot; = &quot;Social sciences&quot;,
+                              &quot;life&quot; = &quot;Life sciences&quot;,
+                              &quot;phys&quot; = &quot;Physical sciences&quot;))+
+    ylab(&quot;Ratio of mean mentions for women compared to men&quot;)+
+    scale_color_manual(values =  c(&quot;#1F78B4&quot;, &quot;#33A02C&quot;, &quot;#FF7F00&quot;, &quot;#6A3D9A&quot;, &quot;#B15928&quot;))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales=&quot;free_y&quot;, 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position=&quot;none&quot;)+
+    ggtitle(&quot;A Different variable specifications&quot;)+
+    panel_border()</code></pre>
+</div>
+<div id="s4b-various-printed-news-sources" class="section level3"
+number="1.1.2">
+<h3><span class="header-section-number">1.1.2</span> S4B: various
+printed news sources</h3>
+<p>Run the models with various printed news sources:</p>
+<pre class="r"><code># list of various dependent variable combinations:
+covariate_list_news &lt;- c(
+  &quot;log(news_all+1)&quot;,
+  &quot;log(news_national+1)&quot;,
+  &quot;log(news_regional+1)&quot;,
+  &quot;log(news_intl+1)&quot;,
+  &quot;log(news_intl_other_sources+1)&quot;
+)
+
+# the rest of the formula
+news_formula_rest &lt;- &quot;~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + share_first_au_total_l + log(cited_by_total_all_l+1) + avg_sjr_total_l + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + institution_dutch_total_narcis&quot;
+
+# combine the formulas
+news_formula_list &lt;- paste(covariate_list_news, news_formula_rest)
+
+news_dep_var_model &lt;- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula_list = news_formula_list,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)</code></pre>
+<p>A faceted plot of gender differences with various dependent
+variables:</p>
+<pre class="r"><code># get the exponentiated model estimates for gender
+gender_estimates &lt;- news_dep_var_model[[1]]%&gt;%
+  filter(term == &quot;inferred_genderw&quot;)
+
+gender_estimates$Estimate_exp &lt;- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp &lt;- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp &lt;- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate &lt;- factor(gender_estimates$covariate,
+                                     levels = c(&quot;log(news_all+1)&quot;,
+                                                &quot;log(news_national+1)&quot;,
+                                                &quot;log(news_regional+1)&quot;,
+                                                &quot;log(news_intl+1)&quot;,
+                                                &quot;log(news_intl_other_sources+1)&quot;))
+
+
+covariate_names &lt;- c(
+  &#39;log(news_all+1)&#39;= &quot;All\n news&quot;,
+  &#39;log(news_national+1)&#39;=&quot;National\n news (NL)&quot;,
+  &#39;log(news_regional+1)&#39;= &quot;Local\n news (NL)&quot;,
+  &#39;log(news_intl+1)&#39;= &quot;International\n high-profile news&quot;,
+  &#39;log(news_intl_other_sources+1)&#39;= &quot;Other news sources&quot;
+)
+
+news_gender_plot_source &lt;- gender_estimates %&gt;%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.50, 1.20), breaks = seq(0.50, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype=&quot;dashed&quot;)+
+    scale_x_discrete(labels=c(&quot;arts&quot; = &quot;Arts and Humanities&quot;,
+                              &quot;health&quot; = &quot;Health sciences&quot;,
+                              &quot;soc_sci&quot; = &quot;Social sciences&quot;,
+                              &quot;life&quot; = &quot;Life sciences&quot;,
+                              &quot;phys&quot; = &quot;Physical sciences&quot;))+
+    ylab(&quot;Ratio of mean mentions for women compared to men&quot;)+
+    scale_color_manual(values =  c(&quot;#1F78B4&quot;, &quot;#33A02C&quot;, &quot;#FF7F00&quot;, &quot;#6A3D9A&quot;, &quot;#B15928&quot;))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               scales=&quot;free_x&quot;, 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position=&quot;none&quot;)+
+    ggtitle(&quot;B Different printed news sources&quot;)+
+    panel_border()</code></pre>
+<p>Combine the plots:</p>
+<pre class="r"><code>printed_combi_plot &lt;- plot_grid(news_gender_plot_spec + theme(axis.text.x = element_blank() ,
+                                                              axis.title.x = element_blank()),
+                                news_gender_plot_source,
+                                ncol = 1,
+                                align = &#39;h&#39;,
+                                axis = &#39;tb&#39;,
+                                rel_heights = c(1, 1))
+
+ggsave2(
+  filename = &quot;results/supplement_figures/SI_Fig_S4.png&quot;,
+  plot = printed_combi_plot,
+  width = 10,
+  height = 7,
+  units = c(&quot;in&quot;),
+  dpi = 600,
+  bg = &quot;white&quot;
+)
+
+printed_combi_plot</code></pre>
+<p><img src="Analyses_supplemental_regressions_files/figure-html/unnamed-chunk-8-1.png" width="960" /></p>
+</div>
+</div>
+<div id="figure-s5" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Figure S5</h2>
+<div id="s5a-various-dependent-variable-specifications"
+class="section level3" number="1.2.1">
+<h3><span class="header-section-number">1.2.1</span> S5A: various
+dependent variable specifications</h3>
+<p>Plot Figure 2, panel A, but with various dependent variables:</p>
+<pre class="r"><code># list of various dependent variable combinations:
+covariate_list_online_news &lt;- c(
+  &quot;log(alt_online_all+1)&quot;,
+  &quot;log(alt_online_single_all+1)&quot;,
+  &quot;log(alt_online_fname_all+1)&quot;,
+  &quot;log(alt_online_dutch_all+1)&quot;
+)
+
+# the rest of the formula
+online_news_formula_rest &lt;- &quot;~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1)  + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis&quot;
+
+# combine the formulas
+online_news_formula_list &lt;- paste(covariate_list_online_news, online_news_formula_rest)
+
+online_news_dep_spec_model &lt;- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                         lm_formula_list = online_news_formula_list,
+                                                         year_cutoff_upper = 2023,
+                                                         year_cutoff_lower = 2012)</code></pre>
+<p>A faceted plot of gender differences with various dependent
+variables:</p>
+<pre class="r"><code># get the exponentiated model estimates for gender
+gender_estimates &lt;- online_news_dep_spec_model[[1]]%&gt;%
+  filter(term == &quot;inferred_genderw&quot;)
+
+gender_estimates$Estimate_exp &lt;- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp &lt;- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp &lt;- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate &lt;- factor(gender_estimates$covariate,
+                                     levels = c(&quot;log(alt_online_all+1)&quot;,
+                                                &quot;log(alt_online_single_all+1)&quot;,
+                                                &quot;log(alt_online_fname_all+1)&quot;,
+                                                &quot;log(alt_online_dutch_all+1)&quot;))
+covariate_names &lt;- c(
+  &#39;log(alt_online_all+1)&#39; = &quot;All\n online news&quot;,
+  &#39;log(alt_online_single_all+1)&#39; = &quot;Online news - \nsingle-authored \npublications&quot;,
+  &#39;log(alt_online_fname_all+1)&#39; = &quot;Online news - \nincluding full name&quot;,
+  &#39;log(alt_online_dutch_all+1)&#39; = &quot;Online news - \nonly in Dutch&quot;
+)
+
+online_news_gender_plot_spec &lt;- gender_estimates %&gt;%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.80, 1.2), breaks = seq(0.80, 1.2, by = 0.10))+
+    geom_hline(yintercept = 1, linetype=&quot;dashed&quot;)+
+    scale_x_discrete(labels=c(&quot;arts&quot; = &quot;Arts and Humanities&quot;,
+                              &quot;health&quot; = &quot;Health sciences&quot;,
+                              &quot;soc_sci&quot; = &quot;Social sciences&quot;,
+                              &quot;life&quot; = &quot;Life sciences&quot;,
+                              &quot;phys&quot; = &quot;Physical sciences&quot;))+
+    ylab(&quot;Ratio of mean mentions for women compared to men&quot;)+
+    scale_color_manual(values =  c(&quot;#1F78B4&quot;, &quot;#33A02C&quot;, &quot;#FF7F00&quot;, &quot;#6A3D9A&quot;, &quot;#B15928&quot;))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales=&quot;free_x&quot;, 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position=&quot;none&quot;)+   
+    ggtitle(&quot;A Different variable specifications&quot;)+
+    panel_border()</code></pre>
+</div>
+<div id="s5b-various-online-news-sources" class="section level3"
+number="1.2.2">
+<h3><span class="header-section-number">1.2.2</span> S5B: various online
+news sources</h3>
+<p>Plot Figure 2, panel A, but with dependent variables capturing
+various online sources:</p>
+<pre class="r"><code># list of various dependent variable combinations:
+covariate_list_online_news &lt;- c(
+  &quot;log(alt_online_all+1)&quot;,
+  &quot;log(alt_general_interest_combi_news+1)&quot;,
+  &quot;log(alt_science_combi_news+1)&quot;,
+  &quot;log(alt_other_combi_news+1)&quot;
+)
+
+# the rest of the formula
+online_news_formula_rest &lt;- &quot;~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1)  + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis&quot;
+
+# combine the formulas
+online_news_formula_list &lt;- paste(covariate_list_online_news, online_news_formula_rest)
+
+online_news_dep_var_model &lt;- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                        lm_formula_list = online_news_formula_list,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)</code></pre>
+<p>A faceted plot of gender differences with various dependent
+variables:</p>
+<pre class="r"><code># get the exponentiated model estimates for gender
+gender_estimates &lt;- online_news_dep_var_model[[1]]%&gt;%
+  filter(term == &quot;inferred_genderw&quot;)
+
+gender_estimates$Estimate_exp &lt;- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp &lt;- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp &lt;- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate &lt;- factor(gender_estimates$covariate,
+                                     levels = c(&quot;log(alt_online_all+1)&quot;,
+                                                &quot;log(alt_general_interest_combi_news+1)&quot;,
+                                                &quot;log(alt_science_combi_news+1)&quot;,
+                                                &quot;log(alt_other_combi_news+1)&quot;))
+covariate_names &lt;- c(
+  &#39;log(alt_online_all+1)&#39; = &quot;All\n online news&quot;,
+  &#39;log(alt_general_interest_combi_news+1)&#39; = &quot;General interest\n online news&quot;,
+  &#39;log(alt_science_combi_news+1)&#39;=&quot;Science\n online news&quot;,
+  &#39;log(alt_other_combi_news+1)&#39; = &quot;Other\n online news&quot;
+)
+
+online_news_gender_plot_var &lt;- gender_estimates %&gt;%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.80, 1.20), breaks = seq(0.80, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype=&quot;dashed&quot;)+
+    scale_x_discrete(labels=c(&quot;arts&quot; = &quot;Arts and Humanities&quot;,
+                              &quot;health&quot; = &quot;Health sciences&quot;,
+                              &quot;soc_sci&quot; = &quot;Social sciences&quot;,
+                              &quot;life&quot; = &quot;Life sciences&quot;,
+                              &quot;phys&quot; = &quot;Physical sciences&quot;))+
+    ylab(&quot;Ratio of mean mentions for women compared to men&quot;)+
+    scale_color_manual(values =  c(&quot;#1F78B4&quot;, &quot;#33A02C&quot;, &quot;#FF7F00&quot;, &quot;#6A3D9A&quot;, &quot;#B15928&quot;))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales=&quot;free_y&quot;, 
+               ncol = 4,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position=&quot;none&quot;)+
+    ggtitle(&quot;B Different online news sources&quot;)+
+    panel_border()</code></pre>
+<p>Print the plot out:</p>
+<pre class="r"><code>online_combi_plot &lt;- plot_grid(online_news_gender_plot_spec + theme(axis.text.x = element_blank() ,
+                                                                    axis.title.x = element_blank()),
+                               online_news_gender_plot_var,
+                               ncol = 1,
+                               align = &#39;h&#39;,
+                               axis = &#39;tb&#39;,
+                               rel_heights = c(1, 1))
+
+ggsave2(
+  filename = &quot;results/supplement_figures/SI_Fig_S5.png&quot;,
+  plot = online_combi_plot,
+  width = 10,
+  height = 8,
+  units = c(&quot;in&quot;),
+  dpi = 600,
+  bg = &quot;white&quot;
+)
+
+online_combi_plot</code></pre>
+<p><img src="Analyses_supplemental_regressions_files/figure-html/unnamed-chunk-13-1.png" width="960" /></p>
+</div>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlNJOiBTdXBwbGVtZW50YWwgcmVncmVzc2lvbiBhbmFseXNlcyINCmF1dGhvcjogIkFuYSBNYWNhbm92aWMiDQpkYXRlOiAiMjAyNS0wNS0xMiINCi0tLQ0KDQojIFNJOiBTdXBwbGVtZW50YWwgcmVncmVzc2lvbiBhbmFseXNlcw0KDQpUaGlzIHNjcmlwdCBwcm9kdWNlcyBzdXBwbGVtZW50YWwgcmVncmVzc2lvbiBhbmFseXNlcyByZWZlcnJlZCB0byBpbiB0aGUgbWFpbiB0ZXh0IGFuZCBwcmVzZW50ZWQNCmluIHRoZSBPbmxpbmUgU0kuDQoNCkxvYWQgdGhlIHBhY2thZ2VzOg0KYGBge3IgbWVzc2FnZT0gIEYsIHdhcm5pbmcgPSBGLCBldmFsID0gVH0NCnNvdXJjZSgiaGVscGVyX2Z1bmN0aW9ucy5SIikNCg0KcGFja2FnZXNfdG9fbG9hZCA8LSBjKCJyZWFkciIsICJNQVNTIiwNCiAgICAgICAgICAgICAgICAgICAgICAiZHBseXIiLCAidGlkeXIiLCANCiAgICAgICAgICAgICAgICAgICAgICAiZ2dwbG90MiIsICJjb3dwbG90IiwNCiAgICAgICAgICAgICAgICAgICAgICAidGlkeXZlcnNlIiwgIlJQb3N0Z3JlcyIsIA0KICAgICAgICAgICAgICAgICAgICAgICJsdWJyaWRhdGUiLCAibG10ZXN0IiwgDQogICAgICAgICAgICAgICAgICAgICAgInNhbmR3aWNoIiwgImdncHViciIsICJwbG0iLA0KICAgICAgICAgICAgICAgICAgICAgICJrbml0ciIsICJzY2FsZXMiLCANCiAgICAgICAgICAgICAgICAgICAgICAiZ2dlZmZlY3RzIiwgImZsZXh0YWJsZSIsIA0KICAgICAgICAgICAgICAgICAgICAgICJvZmZpY2VyIiwgIkRlc2NUb29scyIsDQogICAgICAgICAgICAgICAgICAgICAgImdnbG9yZW56IiwgImNvcnJwbG90IikNCg0KZnBhY2thZ2VfY2hlY2socGFja2FnZXNfdG9fbG9hZCkNCg0KDQojIEZvciBmdWxsIHJlcHJvZHVjaWJpbGl0eSwgbG9hZCB0aGUgcGFja2FnZXMgd2l0aCBncm91bmRob2cgdXNpbmcgdGhlIGNvZGUgYmVsb3cgaW5zdGVhZA0KIyBvZiB0aGUgZnBhY2thZ2VfY2hlY2sgZnVuY3Rpb24NCg0KIyBsaWJyYXJ5KGdyb3VuZGhvZykNCiMgZ3JvdW5kaG9nLmxpYnJhcnkocGFja2FnZXNfdG9fbG9hZCwgZGF0ZSA9ICIyMDI0LTQtMjMiKQ0KYGBgDQoNCmBgYHtyIGluY2x1ZGU9RkFMU0V9DQpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkNCm9wdHNfY2h1bmskc2V0KGV2YWwgPSBUUlVFKQ0Kb3B0c19jaHVuayRzZXQod2FybmluZyA9IEZBTFNFKQ0Kb3B0c19jaHVuayRzZXQobWVzc2FnZSA9IEZBTFNFKQ0KYGBgDQoNCkxvYWQgdGhlIHBhbmVsIGRhdGFzZXQ6DQpgYGB7ciB3YXJuaW5nID0gRiwgbWVzc2FnZSA9IEZ9DQpwcm9mX3BhbmVsX2ZpbHRlciA8LSByZWFkX2NzdigicGFuZWxfZGF0YXNldHMvcHJvZl9wYW5lbF9hbm9ueW1pc2VkLmNzdiIpDQpgYGANCg0KIyMgRmlndXJlIFM0DQoNCiMjIyBTNEE6IHZhcmlvdXMgZGVwZW5kZW50IHZhcmlhYmxlIHNwZWNpZmljYXRpb25zDQoNClBsb3QgRmlndXJlIDIsIHBhbmVsIEEsIGJ1dCB3aXRoIHZhcmlvdXMgZGVwZW5kZW50IHZhcmlhYmxlczoNCmBgYHtyfQ0KIyBsaXN0IG9mIHZhcmlvdXMgZGVwZW5kZW50IHZhcmlhYmxlIGNvbWJpbmF0aW9uczoNCmNvdmFyaWF0ZV9saXN0X25ld3MgPC0gYygNCiAgImxvZyhuZXdzX2FsbCsxKSIsDQogICJsb2cobmV3c19zdHJpY3RfYWxsKzEpIiwNCiAgImxvZyhuZXdzX29mZl9hbGwrMSkiLA0KICAibG9nKG5ld3Nfb25saW5lX2FsbCsxKSIsDQogICJsb2cobmV3c19kZWRfYWxsKzEpIikNCg0KDQojIHRoZSByZXN0IG9mIHRoZSBmb3JtdWxhDQpuZXdzX2Zvcm11bGFfcmVzdCA8LSAifiBpbmZlcnJlZF9nZW5kZXIgKyB5ZWFyc19zaW5jZV9maXJzdF9wdWIgKyBhcy5mYWN0b3IoeWVhcikgKyBsb2coY291bnRfcHVic190b3RhbF9sKzEpICsgc2hhcmVfZmlyc3RfYXVfdG90YWxfbCArIGxvZyhjaXRlZF9ieV90b3RhbF9hbGxfbCsxKSArIGF2Z19zanJfdG90YWxfbCArIGxvZyhjb2FfdG90X2NpdGVkX2J5X3RvdGFsX2wrMSkgKyBsb2coY29hX29ubGluZV9jb21iaV90b3RhbF9sKzEpICsgbG9nKGFsdF9vbmxpbmVfYWxsX3RvdGFsX2wrMSkgKyBsb2coYWx0X3R3aXR0ZXJfdG90YWxfbCsxKSArIGluc3RpdHV0aW9uX2R1dGNoX3RvdGFsX25hcmNpcyINCiMgY29tYmluZSB0aGUgZm9ybXVsYXMNCm5ld3NfZm9ybXVsYV9saXN0IDwtIHBhc3RlKGNvdmFyaWF0ZV9saXN0X25ld3MsIG5ld3NfZm9ybXVsYV9yZXN0KQ0KDQpuZXdzX2RlcF9zcGVjX21vZGVsIDwtIGxtX2ZpdHRlcl9jbF9yb2J1c3Rfc2NvcHVzKHBhbmVsX2RhdGFzZXQgPSBwcm9mX3BhbmVsX2ZpbHRlciwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbG1fZm9ybXVsYV9saXN0ID0gbmV3c19mb3JtdWxhX2xpc3QsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHllYXJfY3V0b2ZmX3VwcGVyID0gMjAyMywNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgeWVhcl9jdXRvZmZfbG93ZXIgPSAyMDEyKQ0KYGBgDQoNCkEgZmFjZXRlZCBwbG90IG9mIGdlbmRlciBkaWZmZXJlbmNlcyB3aXRoIHZhcmlvdXMgZGVwZW5kZW50IHZhcmlhYmxlczoNCmBgYHtyIGZpZy53aWR0aCA9IDEyLCBmaWcuaGVpZ2h0PTR9DQojIGdldCB0aGUgZXhwb25lbnRpYXRlZCBtb2RlbCBlc3RpbWF0ZXMgZm9yIGdlbmRlcg0KZ2VuZGVyX2VzdGltYXRlcyA8LSBuZXdzX2RlcF9zcGVjX21vZGVsW1sxXV0lPiUNCiAgZmlsdGVyKHRlcm0gPT0gImluZmVycmVkX2dlbmRlcnciKQ0KDQpnZW5kZXJfZXN0aW1hdGVzJEVzdGltYXRlX2V4cCA8LSBleHAoZ2VuZGVyX2VzdGltYXRlcyRFc3RpbWF0ZSkNCmdlbmRlcl9lc3RpbWF0ZXMkdXBwZXJfY2lfZXhwIDwtIGV4cChnZW5kZXJfZXN0aW1hdGVzJHVwcGVyX2NpKQ0KZ2VuZGVyX2VzdGltYXRlcyRsb3dlcl9jaV9leHAgPC0gZXhwKGdlbmRlcl9lc3RpbWF0ZXMkbG93ZXJfY2kpDQoNCmdlbmRlcl9lc3RpbWF0ZXMkY292YXJpYXRlIDwtIGZhY3RvcihnZW5kZXJfZXN0aW1hdGVzJGNvdmFyaWF0ZSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBsZXZlbHMgPSBjKCJsb2cobmV3c19hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX29mZl9hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX29ubGluZV9hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX2RlZF9hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX3N0cmljdF9hbGwrMSkiKSkNCmNvdmFyaWF0ZV9uYW1lcyA8LSBjKA0KICAnbG9nKG5ld3NfYWxsKzEpJyA9ICJBbGxcbiBuZXdzIiwNCiAgJ2xvZyhuZXdzX3N0cmljdF9hbGwrMSknID0gIk5ld3Mgd2l0aFxuIHN0cmljdCBrZXl3b3JkXG4gY3JpdGVyaW9uIiwNCiAgJ2xvZyhuZXdzX29mZl9hbGwrMSknID0gIk9mZmxpbmVcbiBuZXdzIiwNCiAgJ2xvZyhuZXdzX29ubGluZV9hbGwrMSknID0gIk9ubGluZVxuIG5ld3MiLA0KICAnbG9nKG5ld3NfZGVkX2FsbCsxKSc9IkRlZHVwbC5cbiBuZXdzIg0KKQ0KDQoNCm5ld3NfZ2VuZGVyX3Bsb3Rfc3BlYyA8LSBnZW5kZXJfZXN0aW1hdGVzICU+JQ0KICAgIGdncGxvdChhZXMoeCA9IGZjdF9yZXYoZmllbGQpLA0KICAgICAgICAgICAgICAgeSA9IEVzdGltYXRlX2V4cCwNCiAgICAgICAgICAgICAgIHltaW4gPSB1cHBlcl9jaV9leHAsDQogICAgICAgICAgICAgICB5bWF4ID0gbG93ZXJfY2lfZXhwLA0KICAgICAgICAgICAgICAgY29sb3IgPSBmaWVsZCkpICsNCiAgICBnZW9tX3BvaW50cmFuZ2UocG9zaXRpb24gPSBwb3NpdGlvbl9kb2RnZSh3aWR0aCA9IDAuNSksDQogICAgICAgICAgICAgICAgICAgIHNpemUgPSAwLjUpICsNCiAgICBnZW9tX3RleHQoZGF0YSA9IGdlbmRlcl9lc3RpbWF0ZXMsIGFlcyh4ID0gZmN0X3JldihmaWVsZCksIHkgPSBFc3RpbWF0ZV9leHAsIGxhYmVsID0gc3RhcnMpLCBoanVzdCA9IC0wLjgsIHZqdXN0ID0gMC4zKSsNCiAgICBzY2FsZV95X2NvbnRpbnVvdXMobGltaXRzID0gYygwLjUwLCAxLjIwKSwgYnJlYWtzID0gc2VxKDAuNTAsIDEuMjAsIGJ5ID0gMC4xMCkpKw0KICAgIGdlb21faGxpbmUoeWludGVyY2VwdCA9IDEsIGxpbmV0eXBlPSJkYXNoZWQiKSsNCiAgICBzY2FsZV94X2Rpc2NyZXRlKGxhYmVscz1jKCJhcnRzIiA9ICJBcnRzIGFuZCBIdW1hbml0aWVzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJoZWFsdGgiID0gIkhlYWx0aCBzY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAic29jX3NjaSIgPSAiU29jaWFsIHNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJsaWZlIiA9ICJMaWZlIHNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJwaHlzIiA9ICJQaHlzaWNhbCBzY2llbmNlcyIpKSsNCiAgICB5bGFiKCJSYXRpbyBvZiBtZWFuIG1lbnRpb25zIGZvciB3b21lbiBjb21wYXJlZCB0byBtZW4iKSsNCiAgICBzY2FsZV9jb2xvcl9tYW51YWwodmFsdWVzID0gIGMoIiMxRjc4QjQiLCAiIzMzQTAyQyIsICIjRkY3RjAwIiwgIiM2QTNEOUEiLCAiI0IxNTkyOCIpKSsNCiAgICB0aGVtZV9taW5pbWFsX2hncmlkKCkrDQogICAgY29vcmRfZmxpcCgpKw0KICAgIGZhY2V0X3dyYXAoLn5hcy5mYWN0b3IoY292YXJpYXRlKSwgDQogICAgICAgICAgICAgICAjc2NhbGVzPSJmcmVlX3kiLCANCiAgICAgICAgICAgICAgIG5jb2wgPSA1LA0KICAgICAgICAgICAgICAgbGFiZWxsZXIgPSBhc19sYWJlbGxlcihjb3ZhcmlhdGVfbmFtZXMpKSsNCiAgICB0aGVtZShwbG90LnRpdGxlID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgICAgYXhpcy50ZXh0LnkgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEwKSwNCiAgICAgICAgICBheGlzLnRpdGxlLnkgPSBlbGVtZW50X2JsYW5rKCksDQogICAgICAgICAgYXhpcy50ZXh0LnggPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEwLCBhbmdsZSA9IDMwLCBoanVzdCA9IDAuOSkgLA0KICAgICAgICAgIGF4aXMudGl0bGUueCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEpLA0KICAgICAgICAgIGxlZ2VuZC5wb3NpdGlvbj0ibm9uZSIpKw0KICAgIGdndGl0bGUoIkEgRGlmZmVyZW50IHZhcmlhYmxlIHNwZWNpZmljYXRpb25zIikrDQogICAgcGFuZWxfYm9yZGVyKCkNCmBgYA0KDQoNCiMjIyBTNEI6IHZhcmlvdXMgcHJpbnRlZCBuZXdzIHNvdXJjZXMNCg0KUnVuIHRoZSBtb2RlbHMgd2l0aCB2YXJpb3VzIHByaW50ZWQgbmV3cyBzb3VyY2VzOg0KYGBge3J9DQojIGxpc3Qgb2YgdmFyaW91cyBkZXBlbmRlbnQgdmFyaWFibGUgY29tYmluYXRpb25zOg0KY292YXJpYXRlX2xpc3RfbmV3cyA8LSBjKA0KICAibG9nKG5ld3NfYWxsKzEpIiwNCiAgImxvZyhuZXdzX25hdGlvbmFsKzEpIiwNCiAgImxvZyhuZXdzX3JlZ2lvbmFsKzEpIiwNCiAgImxvZyhuZXdzX2ludGwrMSkiLA0KICAibG9nKG5ld3NfaW50bF9vdGhlcl9zb3VyY2VzKzEpIg0KKQ0KDQojIHRoZSByZXN0IG9mIHRoZSBmb3JtdWxhDQpuZXdzX2Zvcm11bGFfcmVzdCA8LSAifiBpbmZlcnJlZF9nZW5kZXIgKyB5ZWFyc19zaW5jZV9maXJzdF9wdWIgKyBhcy5mYWN0b3IoeWVhcikgKyBsb2coY291bnRfcHVic190b3RhbF9sKzEpICsgc2hhcmVfZmlyc3RfYXVfdG90YWxfbCArIGxvZyhjaXRlZF9ieV90b3RhbF9hbGxfbCsxKSArIGF2Z19zanJfdG90YWxfbCArIGxvZyhjb2FfdG90X2NpdGVkX2J5X3RvdGFsX2wrMSkgKyBsb2coY29hX29ubGluZV9jb21iaV90b3RhbF9sKzEpICsgbG9nKGFsdF9vbmxpbmVfYWxsX3RvdGFsX2wrMSkgKyBsb2coYWx0X3R3aXR0ZXJfdG90YWxfbCsxKSArIGluc3RpdHV0aW9uX2R1dGNoX3RvdGFsX25hcmNpcyINCg0KIyBjb21iaW5lIHRoZSBmb3JtdWxhcw0KbmV3c19mb3JtdWxhX2xpc3QgPC0gcGFzdGUoY292YXJpYXRlX2xpc3RfbmV3cywgbmV3c19mb3JtdWxhX3Jlc3QpDQoNCm5ld3NfZGVwX3Zhcl9tb2RlbCA8LSBsbV9maXR0ZXJfY2xfcm9idXN0X3Njb3B1cyhwYW5lbF9kYXRhc2V0ID0gcHJvZl9wYW5lbF9maWx0ZXIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbG1fZm9ybXVsYV9saXN0ID0gbmV3c19mb3JtdWxhX2xpc3QsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgeWVhcl9jdXRvZmZfdXBwZXIgPSAyMDIzLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHllYXJfY3V0b2ZmX2xvd2VyID0gMjAxMikNCmBgYA0KDQpBIGZhY2V0ZWQgcGxvdCBvZiBnZW5kZXIgZGlmZmVyZW5jZXMgd2l0aCB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZXM6DQpgYGB7ciBmaWcud2lkdGg9MTIsIGZpZy5oZWlnaHQ9NH0NCiMgZ2V0IHRoZSBleHBvbmVudGlhdGVkIG1vZGVsIGVzdGltYXRlcyBmb3IgZ2VuZGVyDQpnZW5kZXJfZXN0aW1hdGVzIDwtIG5ld3NfZGVwX3Zhcl9tb2RlbFtbMV1dJT4lDQogIGZpbHRlcih0ZXJtID09ICJpbmZlcnJlZF9nZW5kZXJ3IikNCg0KZ2VuZGVyX2VzdGltYXRlcyRFc3RpbWF0ZV9leHAgPC0gZXhwKGdlbmRlcl9lc3RpbWF0ZXMkRXN0aW1hdGUpDQpnZW5kZXJfZXN0aW1hdGVzJHVwcGVyX2NpX2V4cCA8LSBleHAoZ2VuZGVyX2VzdGltYXRlcyR1cHBlcl9jaSkNCmdlbmRlcl9lc3RpbWF0ZXMkbG93ZXJfY2lfZXhwIDwtIGV4cChnZW5kZXJfZXN0aW1hdGVzJGxvd2VyX2NpKQ0KDQpnZW5kZXJfZXN0aW1hdGVzJGNvdmFyaWF0ZSA8LSBmYWN0b3IoZ2VuZGVyX2VzdGltYXRlcyRjb3ZhcmlhdGUsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYygibG9nKG5ld3NfYWxsKzEpIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJsb2cobmV3c19uYXRpb25hbCsxKSIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAibG9nKG5ld3NfcmVnaW9uYWwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX2ludGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhuZXdzX2ludGxfb3RoZXJfc291cmNlcysxKSIpKQ0KDQoNCmNvdmFyaWF0ZV9uYW1lcyA8LSBjKA0KICAnbG9nKG5ld3NfYWxsKzEpJz0gIkFsbFxuIG5ld3MiLA0KICAnbG9nKG5ld3NfbmF0aW9uYWwrMSknPSJOYXRpb25hbFxuIG5ld3MgKE5MKSIsDQogICdsb2cobmV3c19yZWdpb25hbCsxKSc9ICJMb2NhbFxuIG5ld3MgKE5MKSIsDQogICdsb2cobmV3c19pbnRsKzEpJz0gIkludGVybmF0aW9uYWxcbiBoaWdoLXByb2ZpbGUgbmV3cyIsDQogICdsb2cobmV3c19pbnRsX290aGVyX3NvdXJjZXMrMSknPSAiT3RoZXIgbmV3cyBzb3VyY2VzIg0KKQ0KDQpuZXdzX2dlbmRlcl9wbG90X3NvdXJjZSA8LSBnZW5kZXJfZXN0aW1hdGVzICU+JQ0KICAgIGdncGxvdChhZXMoeCA9IGZjdF9yZXYoZmllbGQpLA0KICAgICAgICAgICAgICAgeSA9IEVzdGltYXRlX2V4cCwNCiAgICAgICAgICAgICAgIHltaW4gPSB1cHBlcl9jaV9leHAsDQogICAgICAgICAgICAgICB5bWF4ID0gbG93ZXJfY2lfZXhwLA0KICAgICAgICAgICAgICAgY29sb3IgPSBmaWVsZCkpICsNCiAgICBnZW9tX3BvaW50cmFuZ2UocG9zaXRpb24gPSBwb3NpdGlvbl9kb2RnZSh3aWR0aCA9IDAuNSksDQogICAgICAgICAgICAgICAgICAgIHNpemUgPSAwLjUpICsNCiAgICBnZW9tX3RleHQoZGF0YSA9IGdlbmRlcl9lc3RpbWF0ZXMsIGFlcyh4ID0gZmN0X3JldihmaWVsZCksIHkgPSBFc3RpbWF0ZV9leHAsIGxhYmVsID0gc3RhcnMpLCBoanVzdCA9IC0wLjgsIHZqdXN0ID0gMC4zKSsNCiAgICBzY2FsZV95X2NvbnRpbnVvdXMobGltaXRzID0gYygwLjUwLCAxLjIwKSwgYnJlYWtzID0gc2VxKDAuNTAsIDEuMjAsIGJ5ID0gMC4xMCkpKw0KICAgIGdlb21faGxpbmUoeWludGVyY2VwdCA9IDEsIGxpbmV0eXBlPSJkYXNoZWQiKSsNCiAgICBzY2FsZV94X2Rpc2NyZXRlKGxhYmVscz1jKCJhcnRzIiA9ICJBcnRzIGFuZCBIdW1hbml0aWVzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJoZWFsdGgiID0gIkhlYWx0aCBzY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAic29jX3NjaSIgPSAiU29jaWFsIHNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJsaWZlIiA9ICJMaWZlIHNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJwaHlzIiA9ICJQaHlzaWNhbCBzY2llbmNlcyIpKSsNCiAgICB5bGFiKCJSYXRpbyBvZiBtZWFuIG1lbnRpb25zIGZvciB3b21lbiBjb21wYXJlZCB0byBtZW4iKSsNCiAgICBzY2FsZV9jb2xvcl9tYW51YWwodmFsdWVzID0gIGMoIiMxRjc4QjQiLCAiIzMzQTAyQyIsICIjRkY3RjAwIiwgIiM2QTNEOUEiLCAiI0IxNTkyOCIpKSsNCiAgICB0aGVtZV9taW5pbWFsX2hncmlkKCkrDQogICAgY29vcmRfZmxpcCgpKw0KICAgIGZhY2V0X3dyYXAoLn5hcy5mYWN0b3IoY292YXJpYXRlKSwgDQogICAgICAgICAgICAgICBzY2FsZXM9ImZyZWVfeCIsIA0KICAgICAgICAgICAgICAgbmNvbCA9IDUsDQogICAgICAgICAgICAgICBsYWJlbGxlciA9IGFzX2xhYmVsbGVyKGNvdmFyaWF0ZV9uYW1lcykpKw0KICAgIHRoZW1lKHBsb3QudGl0bGUgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExKSwNCiAgICAgICAgICBheGlzLnRleHQueSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTApLA0KICAgICAgICAgIGF4aXMudGl0bGUueSA9IGVsZW1lbnRfYmxhbmsoKSwNCiAgICAgICAgICBheGlzLnRleHQueCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTAsIGFuZ2xlID0gMzAsIGhqdXN0ID0gMC45KSAsDQogICAgICAgICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgICAgbGVnZW5kLnBvc2l0aW9uPSJub25lIikrDQogICAgZ2d0aXRsZSgiQiBEaWZmZXJlbnQgcHJpbnRlZCBuZXdzIHNvdXJjZXMiKSsNCiAgICBwYW5lbF9ib3JkZXIoKQ0KYGBgDQoNCg0KQ29tYmluZSB0aGUgcGxvdHM6DQpgYGB7ciBmaWcud2lkdGg9MTAsIGZpZy5oZWlnaHQ9N30NCnByaW50ZWRfY29tYmlfcGxvdCA8LSBwbG90X2dyaWQobmV3c19nZW5kZXJfcGxvdF9zcGVjICsgdGhlbWUoYXhpcy50ZXh0LnggPSBlbGVtZW50X2JsYW5rKCkgLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X2JsYW5rKCkpLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBuZXdzX2dlbmRlcl9wbG90X3NvdXJjZSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbmNvbCA9IDEsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGFsaWduID0gJ2gnLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzID0gJ3RiJywNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVsX2hlaWdodHMgPSBjKDEsIDEpKQ0KDQpnZ3NhdmUyKA0KICBmaWxlbmFtZSA9ICJyZXN1bHRzL3N1cHBsZW1lbnRfZmlndXJlcy9TSV9GaWdfUzQucG5nIiwNCiAgcGxvdCA9IHByaW50ZWRfY29tYmlfcGxvdCwNCiAgd2lkdGggPSAxMCwNCiAgaGVpZ2h0ID0gNywNCiAgdW5pdHMgPSBjKCJpbiIpLA0KICBkcGkgPSA2MDAsDQogIGJnID0gIndoaXRlIg0KKQ0KDQpwcmludGVkX2NvbWJpX3Bsb3QNCmBgYA0KDQoNCiMjIEZpZ3VyZSBTNQ0KDQojIyMgUzVBOiB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZSBzcGVjaWZpY2F0aW9ucw0KDQpQbG90IEZpZ3VyZSAyLCBwYW5lbCBBLCBidXQgd2l0aCB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZXM6DQpgYGB7cn0NCiMgbGlzdCBvZiB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZSBjb21iaW5hdGlvbnM6DQpjb3ZhcmlhdGVfbGlzdF9vbmxpbmVfbmV3cyA8LSBjKA0KICAibG9nKGFsdF9vbmxpbmVfYWxsKzEpIiwNCiAgImxvZyhhbHRfb25saW5lX3NpbmdsZV9hbGwrMSkiLA0KICAibG9nKGFsdF9vbmxpbmVfZm5hbWVfYWxsKzEpIiwNCiAgImxvZyhhbHRfb25saW5lX2R1dGNoX2FsbCsxKSINCikNCg0KIyB0aGUgcmVzdCBvZiB0aGUgZm9ybXVsYQ0Kb25saW5lX25ld3NfZm9ybXVsYV9yZXN0IDwtICJ+IGluZmVycmVkX2dlbmRlciArIHllYXJzX3NpbmNlX2ZpcnN0X3B1YiArIGFzLmZhY3Rvcih5ZWFyKSArIGxvZyhjb3VudF9wdWJzX3RvdGFsX2wrMSkgICsgbG9nKGNpdGVkX2J5X3RvdGFsX2FsbF9sKzEpICsgbG9nKGNvYV90b3RfY2l0ZWRfYnlfdG90YWxfbCsxKSArIGxvZyhjb2Ffb25saW5lX2NvbWJpX3RvdGFsX2wrMSkgKyBsb2cobmV3c19hbGxfdG90YWxfbCsxKSArIGxvZyhhbHRfdHdpdHRlcl90b3RhbF9sKzEpICsgYXZnX3Nqcl90b3RhbF9sICsgc2hhcmVfZmlyc3RfYXVfdG90YWxfbCArIGluc3RpdHV0aW9uX2R1dGNoX3RvdGFsX25hcmNpcyINCg0KIyBjb21iaW5lIHRoZSBmb3JtdWxhcw0Kb25saW5lX25ld3NfZm9ybXVsYV9saXN0IDwtIHBhc3RlKGNvdmFyaWF0ZV9saXN0X29ubGluZV9uZXdzLCBvbmxpbmVfbmV3c19mb3JtdWxhX3Jlc3QpDQoNCm9ubGluZV9uZXdzX2RlcF9zcGVjX21vZGVsIDwtIGxtX2ZpdHRlcl9jbF9yb2J1c3Rfc2NvcHVzKHBhbmVsX2RhdGFzZXQgPSBwcm9mX3BhbmVsX2ZpbHRlciwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxtX2Zvcm11bGFfbGlzdCA9IG9ubGluZV9uZXdzX2Zvcm11bGFfbGlzdCwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHllYXJfY3V0b2ZmX3VwcGVyID0gMjAyMywNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHllYXJfY3V0b2ZmX2xvd2VyID0gMjAxMikNCmBgYA0KDQpBIGZhY2V0ZWQgcGxvdCBvZiBnZW5kZXIgZGlmZmVyZW5jZXMgd2l0aCB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZXM6DQpgYGB7ciBmaWcud2lkdGg9MTAsIGZpZy5oZWlnaHQ9NH0NCiMgZ2V0IHRoZSBleHBvbmVudGlhdGVkIG1vZGVsIGVzdGltYXRlcyBmb3IgZ2VuZGVyDQpnZW5kZXJfZXN0aW1hdGVzIDwtIG9ubGluZV9uZXdzX2RlcF9zcGVjX21vZGVsW1sxXV0lPiUNCiAgZmlsdGVyKHRlcm0gPT0gImluZmVycmVkX2dlbmRlcnciKQ0KDQpnZW5kZXJfZXN0aW1hdGVzJEVzdGltYXRlX2V4cCA8LSBleHAoZ2VuZGVyX2VzdGltYXRlcyRFc3RpbWF0ZSkNCmdlbmRlcl9lc3RpbWF0ZXMkdXBwZXJfY2lfZXhwIDwtIGV4cChnZW5kZXJfZXN0aW1hdGVzJHVwcGVyX2NpKQ0KZ2VuZGVyX2VzdGltYXRlcyRsb3dlcl9jaV9leHAgPC0gZXhwKGdlbmRlcl9lc3RpbWF0ZXMkbG93ZXJfY2kpDQoNCmdlbmRlcl9lc3RpbWF0ZXMkY292YXJpYXRlIDwtIGZhY3RvcihnZW5kZXJfZXN0aW1hdGVzJGNvdmFyaWF0ZSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBsZXZlbHMgPSBjKCJsb2coYWx0X29ubGluZV9hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhhbHRfb25saW5lX3NpbmdsZV9hbGwrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhhbHRfb25saW5lX2ZuYW1lX2FsbCsxKSIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAibG9nKGFsdF9vbmxpbmVfZHV0Y2hfYWxsKzEpIikpDQpjb3ZhcmlhdGVfbmFtZXMgPC0gYygNCiAgJ2xvZyhhbHRfb25saW5lX2FsbCsxKScgPSAiQWxsXG4gb25saW5lIG5ld3MiLA0KICAnbG9nKGFsdF9vbmxpbmVfc2luZ2xlX2FsbCsxKScgPSAiT25saW5lIG5ld3MgLSBcbnNpbmdsZS1hdXRob3JlZCBcbnB1YmxpY2F0aW9ucyIsDQogICdsb2coYWx0X29ubGluZV9mbmFtZV9hbGwrMSknID0gIk9ubGluZSBuZXdzIC0gXG5pbmNsdWRpbmcgZnVsbCBuYW1lIiwNCiAgJ2xvZyhhbHRfb25saW5lX2R1dGNoX2FsbCsxKScgPSAiT25saW5lIG5ld3MgLSBcbm9ubHkgaW4gRHV0Y2giDQopDQoNCm9ubGluZV9uZXdzX2dlbmRlcl9wbG90X3NwZWMgPC0gZ2VuZGVyX2VzdGltYXRlcyAlPiUNCiAgICBnZ3Bsb3QoYWVzKHggPSBmY3RfcmV2KGZpZWxkKSwNCiAgICAgICAgICAgICAgIHkgPSBFc3RpbWF0ZV9leHAsDQogICAgICAgICAgICAgICB5bWluID0gdXBwZXJfY2lfZXhwLA0KICAgICAgICAgICAgICAgeW1heCA9IGxvd2VyX2NpX2V4cCwNCiAgICAgICAgICAgICAgIGNvbG9yID0gZmllbGQpKSArDQogICAgZ2VvbV9wb2ludHJhbmdlKHBvc2l0aW9uID0gcG9zaXRpb25fZG9kZ2Uod2lkdGggPSAwLjUpLA0KICAgICAgICAgICAgICAgICAgICBzaXplID0gMC41KSArDQogICAgZ2VvbV90ZXh0KGRhdGEgPSBnZW5kZXJfZXN0aW1hdGVzLCBhZXMoeCA9IGZjdF9yZXYoZmllbGQpLCB5ID0gRXN0aW1hdGVfZXhwLCBsYWJlbCA9IHN0YXJzKSwgaGp1c3QgPSAtMC44LCB2anVzdCA9IDAuMykrDQogICAgc2NhbGVfeV9jb250aW51b3VzKGxpbWl0cyA9IGMoMC44MCwgMS4yKSwgYnJlYWtzID0gc2VxKDAuODAsIDEuMiwgYnkgPSAwLjEwKSkrDQogICAgZ2VvbV9obGluZSh5aW50ZXJjZXB0ID0gMSwgbGluZXR5cGU9ImRhc2hlZCIpKw0KICAgIHNjYWxlX3hfZGlzY3JldGUobGFiZWxzPWMoImFydHMiID0gIkFydHMgYW5kIEh1bWFuaXRpZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImhlYWx0aCIgPSAiSGVhbHRoIHNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJzb2Nfc2NpIiA9ICJTb2NpYWwgc2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxpZmUiID0gIkxpZmUgc2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInBoeXMiID0gIlBoeXNpY2FsIHNjaWVuY2VzIikpKw0KICAgIHlsYWIoIlJhdGlvIG9mIG1lYW4gbWVudGlvbnMgZm9yIHdvbWVuIGNvbXBhcmVkIHRvIG1lbiIpKw0KICAgIHNjYWxlX2NvbG9yX21hbnVhbCh2YWx1ZXMgPSAgYygiIzFGNzhCNCIsICIjMzNBMDJDIiwgIiNGRjdGMDAiLCAiIzZBM0Q5QSIsICIjQjE1OTI4IikpKw0KICAgIHRoZW1lX21pbmltYWxfaGdyaWQoKSsNCiAgICBjb29yZF9mbGlwKCkrDQogICAgZmFjZXRfd3JhcCgufmFzLmZhY3Rvcihjb3ZhcmlhdGUpLCANCiAgICAgICAgICAgICAgICNzY2FsZXM9ImZyZWVfeCIsIA0KICAgICAgICAgICAgICAgbmNvbCA9IDUsDQogICAgICAgICAgICAgICBsYWJlbGxlciA9IGFzX2xhYmVsbGVyKGNvdmFyaWF0ZV9uYW1lcykpKw0KICAgIHRoZW1lKHBsb3QudGl0bGUgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExKSwNCiAgICAgICAgICBheGlzLnRleHQueSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTApLA0KICAgICAgICAgIGF4aXMudGl0bGUueSA9IGVsZW1lbnRfYmxhbmsoKSwNCiAgICAgICAgICBheGlzLnRleHQueCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTAsIGFuZ2xlID0gMzAsIGhqdXN0ID0gMC45KSAsDQogICAgICAgICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgICAgbGVnZW5kLnBvc2l0aW9uPSJub25lIikrICAgDQogICAgZ2d0aXRsZSgiQSBEaWZmZXJlbnQgdmFyaWFibGUgc3BlY2lmaWNhdGlvbnMiKSsNCiAgICBwYW5lbF9ib3JkZXIoKQ0KDQpgYGANCg0KDQojIyMgUzVCOiB2YXJpb3VzIG9ubGluZSBuZXdzIHNvdXJjZXMNCg0KUGxvdCBGaWd1cmUgMiwgcGFuZWwgQSwgYnV0IHdpdGggZGVwZW5kZW50IHZhcmlhYmxlcyBjYXB0dXJpbmcgdmFyaW91cyBvbmxpbmUgc291cmNlczoNCmBgYHtyfQ0KIyBsaXN0IG9mIHZhcmlvdXMgZGVwZW5kZW50IHZhcmlhYmxlIGNvbWJpbmF0aW9uczoNCmNvdmFyaWF0ZV9saXN0X29ubGluZV9uZXdzIDwtIGMoDQogICJsb2coYWx0X29ubGluZV9hbGwrMSkiLA0KICAibG9nKGFsdF9nZW5lcmFsX2ludGVyZXN0X2NvbWJpX25ld3MrMSkiLA0KICAibG9nKGFsdF9zY2llbmNlX2NvbWJpX25ld3MrMSkiLA0KICAibG9nKGFsdF9vdGhlcl9jb21iaV9uZXdzKzEpIg0KKQ0KDQojIHRoZSByZXN0IG9mIHRoZSBmb3JtdWxhDQpvbmxpbmVfbmV3c19mb3JtdWxhX3Jlc3QgPC0gIn4gaW5mZXJyZWRfZ2VuZGVyICsgeWVhcnNfc2luY2VfZmlyc3RfcHViICsgYXMuZmFjdG9yKHllYXIpICsgbG9nKGNvdW50X3B1YnNfdG90YWxfbCsxKSAgKyBsb2coY2l0ZWRfYnlfdG90YWxfYWxsX2wrMSkgKyBsb2coY29hX3RvdF9jaXRlZF9ieV90b3RhbF9sKzEpICsgbG9nKGNvYV9vbmxpbmVfY29tYmlfdG90YWxfbCsxKSArIGxvZyhuZXdzX2FsbF90b3RhbF9sKzEpICsgbG9nKGFsdF90d2l0dGVyX3RvdGFsX2wrMSkgKyBhdmdfc2pyX3RvdGFsX2wgKyBzaGFyZV9maXJzdF9hdV90b3RhbF9sICsgaW5zdGl0dXRpb25fZHV0Y2hfdG90YWxfbmFyY2lzIg0KDQojIGNvbWJpbmUgdGhlIGZvcm11bGFzDQpvbmxpbmVfbmV3c19mb3JtdWxhX2xpc3QgPC0gcGFzdGUoY292YXJpYXRlX2xpc3Rfb25saW5lX25ld3MsIG9ubGluZV9uZXdzX2Zvcm11bGFfcmVzdCkNCg0Kb25saW5lX25ld3NfZGVwX3Zhcl9tb2RlbCA8LSBsbV9maXR0ZXJfY2xfcm9idXN0X3Njb3B1cyhwYW5lbF9kYXRhc2V0ID0gcHJvZl9wYW5lbF9maWx0ZXIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxtX2Zvcm11bGFfbGlzdCA9IG9ubGluZV9uZXdzX2Zvcm11bGFfbGlzdCwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgeWVhcl9jdXRvZmZfdXBwZXIgPSAyMDIzLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB5ZWFyX2N1dG9mZl9sb3dlciA9IDIwMTIpDQpgYGANCg0KDQpBIGZhY2V0ZWQgcGxvdCBvZiBnZW5kZXIgZGlmZmVyZW5jZXMgd2l0aCB2YXJpb3VzIGRlcGVuZGVudCB2YXJpYWJsZXM6DQpgYGB7ciBmaWcud2lkdGg9OCwgZmlnLmhlaWdodD00fQ0KIyBnZXQgdGhlIGV4cG9uZW50aWF0ZWQgbW9kZWwgZXN0aW1hdGVzIGZvciBnZW5kZXINCmdlbmRlcl9lc3RpbWF0ZXMgPC0gb25saW5lX25ld3NfZGVwX3Zhcl9tb2RlbFtbMV1dJT4lDQogIGZpbHRlcih0ZXJtID09ICJpbmZlcnJlZF9nZW5kZXJ3IikNCg0KZ2VuZGVyX2VzdGltYXRlcyRFc3RpbWF0ZV9leHAgPC0gZXhwKGdlbmRlcl9lc3RpbWF0ZXMkRXN0aW1hdGUpDQpnZW5kZXJfZXN0aW1hdGVzJHVwcGVyX2NpX2V4cCA8LSBleHAoZ2VuZGVyX2VzdGltYXRlcyR1cHBlcl9jaSkNCmdlbmRlcl9lc3RpbWF0ZXMkbG93ZXJfY2lfZXhwIDwtIGV4cChnZW5kZXJfZXN0aW1hdGVzJGxvd2VyX2NpKQ0KDQpnZW5kZXJfZXN0aW1hdGVzJGNvdmFyaWF0ZSA8LSBmYWN0b3IoZ2VuZGVyX2VzdGltYXRlcyRjb3ZhcmlhdGUsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYygibG9nKGFsdF9vbmxpbmVfYWxsKzEpIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJsb2coYWx0X2dlbmVyYWxfaW50ZXJlc3RfY29tYmlfbmV3cysxKSIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAibG9nKGFsdF9zY2llbmNlX2NvbWJpX25ld3MrMSkiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImxvZyhhbHRfb3RoZXJfY29tYmlfbmV3cysxKSIpKQ0KY292YXJpYXRlX25hbWVzIDwtIGMoDQogICdsb2coYWx0X29ubGluZV9hbGwrMSknID0gIkFsbFxuIG9ubGluZSBuZXdzIiwNCiAgJ2xvZyhhbHRfZ2VuZXJhbF9pbnRlcmVzdF9jb21iaV9uZXdzKzEpJyA9ICJHZW5lcmFsIGludGVyZXN0XG4gb25saW5lIG5ld3MiLA0KICAnbG9nKGFsdF9zY2llbmNlX2NvbWJpX25ld3MrMSknPSJTY2llbmNlXG4gb25saW5lIG5ld3MiLA0KICAnbG9nKGFsdF9vdGhlcl9jb21iaV9uZXdzKzEpJyA9ICJPdGhlclxuIG9ubGluZSBuZXdzIg0KKQ0KDQpvbmxpbmVfbmV3c19nZW5kZXJfcGxvdF92YXIgPC0gZ2VuZGVyX2VzdGltYXRlcyAlPiUNCiAgICBnZ3Bsb3QoYWVzKHggPSBmY3RfcmV2KGZpZWxkKSwNCiAgICAgICAgICAgICAgIHkgPSBFc3RpbWF0ZV9leHAsDQogICAgICAgICAgICAgICB5bWluID0gdXBwZXJfY2lfZXhwLA0KICAgICAgICAgICAgICAgeW1heCA9IGxvd2VyX2NpX2V4cCwNCiAgICAgICAgICAgICAgIGNvbG9yID0gZmllbGQpKSArDQogICAgZ2VvbV9wb2ludHJhbmdlKHBvc2l0aW9uID0gcG9zaXRpb25fZG9kZ2Uod2lkdGggPSAwLjUpLA0KICAgICAgICAgICAgICAgICAgICBzaXplID0gMC41KSArDQogICAgZ2VvbV90ZXh0KGRhdGEgPSBnZW5kZXJfZXN0aW1hdGVzLCBhZXMoeCA9IGZjdF9yZXYoZmllbGQpLCB5ID0gRXN0aW1hdGVfZXhwLCBsYWJlbCA9IHN0YXJzKSwgaGp1c3QgPSAtMC44LCB2anVzdCA9IDAuMykrDQogICAgc2NhbGVfeV9jb250aW51b3VzKGxpbWl0cyA9IGMoMC44MCwgMS4yMCksIGJyZWFrcyA9IHNlcSgwLjgwLCAxLjIwLCBieSA9IDAuMTApKSsNCiAgICBnZW9tX2hsaW5lKHlpbnRlcmNlcHQgPSAxLCBsaW5ldHlwZT0iZGFzaGVkIikrDQogICAgc2NhbGVfeF9kaXNjcmV0ZShsYWJlbHM9YygiYXJ0cyIgPSAiQXJ0cyBhbmQgSHVtYW5pdGllcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiaGVhbHRoIiA9ICJIZWFsdGggc2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInNvY19zY2kiID0gIlNvY2lhbCBzY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAibGlmZSIgPSAiTGlmZSBzY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAicGh5cyIgPSAiUGh5c2ljYWwgc2NpZW5jZXMiKSkrDQogICAgeWxhYigiUmF0aW8gb2YgbWVhbiBtZW50aW9ucyBmb3Igd29tZW4gY29tcGFyZWQgdG8gbWVuIikrDQogICAgc2NhbGVfY29sb3JfbWFudWFsKHZhbHVlcyA9ICBjKCIjMUY3OEI0IiwgIiMzM0EwMkMiLCAiI0ZGN0YwMCIsICIjNkEzRDlBIiwgIiNCMTU5MjgiKSkrDQogICAgdGhlbWVfbWluaW1hbF9oZ3JpZCgpKw0KICAgIGNvb3JkX2ZsaXAoKSsNCiAgICBmYWNldF93cmFwKC5+YXMuZmFjdG9yKGNvdmFyaWF0ZSksIA0KICAgICAgICAgICAgICAgI3NjYWxlcz0iZnJlZV95IiwgDQogICAgICAgICAgICAgICBuY29sID0gNCwNCiAgICAgICAgICAgICAgIGxhYmVsbGVyID0gYXNfbGFiZWxsZXIoY292YXJpYXRlX25hbWVzKSkrDQogICAgdGhlbWUocGxvdC50aXRsZSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEpLA0KICAgICAgICAgIGF4aXMudGV4dC55ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCksDQogICAgICAgICAgYXhpcy50aXRsZS55ID0gZWxlbWVudF9ibGFuaygpLA0KICAgICAgICAgIGF4aXMudGV4dC54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCwgYW5nbGUgPSAzMCwgaGp1c3QgPSAwLjkpICwNCiAgICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExKSwNCiAgICAgICAgICBsZWdlbmQucG9zaXRpb249Im5vbmUiKSsNCiAgICBnZ3RpdGxlKCJCIERpZmZlcmVudCBvbmxpbmUgbmV3cyBzb3VyY2VzIikrDQogICAgcGFuZWxfYm9yZGVyKCkNCmBgYA0KDQpQcmludCB0aGUgcGxvdCBvdXQ6DQpgYGB7ciBmaWcud2lkdGg9MTAsIGZpZy5oZWlnaHQ9OH0NCm9ubGluZV9jb21iaV9wbG90IDwtIHBsb3RfZ3JpZChvbmxpbmVfbmV3c19nZW5kZXJfcGxvdF9zcGVjICsgdGhlbWUoYXhpcy50ZXh0LnggPSBlbGVtZW50X2JsYW5rKCkgLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X2JsYW5rKCkpLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG9ubGluZV9uZXdzX2dlbmRlcl9wbG90X3ZhciwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBuY29sID0gMSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBhbGlnbiA9ICdoJywNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzID0gJ3RiJywNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWxfaGVpZ2h0cyA9IGMoMSwgMSkpDQoNCmdnc2F2ZTIoDQogIGZpbGVuYW1lID0gInJlc3VsdHMvc3VwcGxlbWVudF9maWd1cmVzL1NJX0ZpZ19TNS5wbmciLA0KICBwbG90ID0gb25saW5lX2NvbWJpX3Bsb3QsDQogIHdpZHRoID0gMTAsDQogIGhlaWdodCA9IDgsDQogIHVuaXRzID0gYygiaW4iKSwNCiAgZHBpID0gNjAwLA0KICBiZyA9ICJ3aGl0ZSINCikNCg0Kb25saW5lX2NvbWJpX3Bsb3QNCmBgYA0KDQo=</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("Analyses_supplemental_regressions.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

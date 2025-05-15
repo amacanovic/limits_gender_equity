@@ -100,6 +100,121 @@ dbWriteTable(con, "emeritus_info", emeritus_id, row.names=FALSE, append=TRUE)
 ```
 
 
+# Get institution data from NARCIS
+
+```{r}
+metadf$org_lower <- tolower(metadf$Organisation)
+
+metadf$dutch_uni_var <- ifelse(
+  str_detect(metadf$org_lower, "\\(uva\\)|\\(amsterdam umc\\)") == TRUE,
+  "uni_1",
+  ifelse(
+    str_detect(metadf$org_lower, "\\(vu\\)") == TRUE,
+    "uni_2",
+    ifelse(
+      str_detect(metadf$org_lower, "\\(ru\\)") == TRUE,
+      "uni_3",
+      ifelse(
+        str_detect(metadf$org_lower, "\\(ul\\)") == TRUE,
+        "uni_4",
+        ifelse(
+          str_detect(metadf$org_lower, "\\(um\\)") == TRUE,
+          "uni_5",
+          ifelse(
+            str_detect(metadf$org_lower, "\\(rug\\)") == TRUE,
+            "uni_6",
+            ifelse(
+              str_detect(metadf$org_lower, "\\(eur\\)") == TRUE,
+              "uni_7",
+              ifelse(
+                str_detect(metadf$org_lower, "\\(tiu\\)") == TRUE,
+                "uni_8",
+                ifelse(
+                  str_detect(metadf$org_lower, "\\(uu\\)") == TRUE,
+                  "uni_9",
+                  ifelse(
+                    str_detect(metadf$org_lower, "\\(tud\\)") == TRUE,
+                    "uni_10",
+                    ifelse(
+                      str_detect(metadf$org_lower, "\\(tu\\/e\\)") == TRUE,
+                      "uni_11",
+                      ifelse(
+                        str_detect(metadf$org_lower, "\\(ut\\)") == TRUE,
+                        "uni_12",
+                        ifelse(
+                          str_detect(metadf$org_lower, "\\(wur\\)") == TRUE,
+                          "uni_13",
+                          ifelse(
+                            str_detect(metadf$org_lower, "\\(ou\\)") == TRUE,
+                            "uni_14",
+                            ifelse(
+                              str_detect(metadf$org_lower, "\\(nyenrode\\)") == TRUE,
+                              "uni_15",
+                              "other")))))))))))))))
+
+metadf$org_lower <- tolower(metadf$`Organisation.1`)
+
+metadf$dutch_uni_var2 <- ifelse(
+  str_detect(metadf$org_lower, "\\(uva\\)|\\(amsterdam umc\\)") == TRUE,
+  "uni_1",
+  ifelse(
+    str_detect(metadf$org_lower, "\\(vu\\)") == TRUE,
+    "uni_2",
+    ifelse(
+      str_detect(metadf$org_lower, "\\(ru\\)") == TRUE,
+      "uni_3",
+      ifelse(
+        str_detect(metadf$org_lower, "\\(ul\\)") == TRUE,
+        "uni_4",
+        ifelse(
+          str_detect(metadf$org_lower, "\\(um\\)") == TRUE,
+          "uni_5",
+          ifelse(
+            str_detect(metadf$org_lower, "\\(rug\\)") == TRUE,
+            "uni_6",
+            ifelse(
+              str_detect(metadf$org_lower, "\\(eur\\)") == TRUE,
+              "uni_7",
+              ifelse(
+                str_detect(metadf$org_lower, "\\(tiu\\)") == TRUE,
+                "uni_8",
+                ifelse(
+                  str_detect(metadf$org_lower, "\\(uu\\)") == TRUE,
+                  "uni_9",
+                  ifelse(
+                    str_detect(metadf$org_lower, "\\(tud\\)") == TRUE,
+                    "uni_10",
+                    ifelse(
+                      str_detect(metadf$org_lower, "\\(tu\\/e\\)") == TRUE,
+                      "uni_11",
+                      ifelse(
+                        str_detect(metadf$org_lower, "\\(ut\\)") == TRUE,
+                        "uni_12",
+                        ifelse(
+                          str_detect(metadf$org_lower, "\\(wur\\)") == TRUE,
+                          "uni_13",
+                          ifelse(
+                            str_detect(metadf$org_lower, "\\(ou\\)") == TRUE,
+                            "uni_14",
+                            ifelse(
+                              str_detect(metadf$org_lower, "\\(nyenrode\\)") == TRUE,
+                              "uni_15",
+                              "other")))))))))))))))
+
+
+metadf$dutch_uni_var_final <- ifelse(metadf$dutch_uni_var == "other",
+                                     metadf$dutch_uni_var2,
+                                     metadf$dutch_uni_var)
+
+metadf$dutch_uni_var_final[which(is.na(metadf$dutch_uni_var_final))] <- "other"
+
+narcis_institution <- metadf %>%
+  select(profile_id, dutch_uni_var_final)
+
+dbWriteTable(con, "narcis_institution", narcis_institution, row.names=FALSE, append=TRUE)
+```
+
+
 # Tidy up the publication data from NARCIS
 Load the publication data:
 ```{r}
@@ -457,6 +572,85 @@ oa_prof_pubs_unique <- oa_prof_pubs_unique %>%
   select(-c(oa_id:profile_id))
 
 dbWriteTable(con, "oa_prof_pubs_unique", oa_prof_pubs_unique)
+```
+
+## Scimago Journal Ratings
+
+Load publication info for all professors and tidy it up:
+```{r}
+oa_prof_pubs <- dbReadTable(con, "oa_prof_pubs")
+
+oa_prof_pubs_filter <- oa_prof_pubs %>%
+  distinct(id, .keep_all = TRUE)%>% 
+  filter(!is.na(publication_year) & publication_year >= 1973 & publication_year <= 2023 & 
+           type %in% c("article", "book", "book-chapter"))
+
+rm(oa_prof_pubs)
+gc()
+
+# issn here has dashes, remove that
+ oa_prof_pubs_filter$issn <- str_remove_all(oa_prof_pubs_filter$issn_l, "-")
+ 
+ # applicable ones
+ oa_prof_pubs_filter2 <- oa_prof_pubs_filter %>%
+   filter(publication_year >= 1999 & publication_year <= 2023)
+ 
+ # how many do we have no issn for and were published in or after 1999
+ length(which(is.na(oa_prof_pubs_filter2$issn) == TRUE))
+ length(which(is.na(oa_prof_pubs_filter2$issn) == TRUE))/nrow(oa_prof_pubs_filter2)*100
+```
+
+Read in Scimago rankings from 1999 to 2023 and merge them with publications from those years:
+```{r warning = F, message = F}
+years <- c(1999:2023)
+
+oa_pubs_all_scimago <- data.frame(matrix(NA, ncol = 0, nrow = 0))
+
+# for each year, get the pubs from that year and get their scimago ranks
+for (current_year in years){
+  
+  # read the ranking file
+  scimago <- read_delim(paste0("resources/scimago_journal_rankings/scimagojr ", current_year, ".csv"), delim = ";")
+
+  
+  # split the different ISSN numbers and tidy it all up
+  scimago <- scimago %>% 
+    select(Sourceid, Title, Issn, SJR, `H index`, `SJR Best Quartile`)%>%
+    filter(Issn != "-")%>%
+    mutate(Issn = strsplit(Issn, ",")) %>%
+          unnest(Issn) %>%
+          group_by(Title) %>%
+          mutate(row = row_number()) %>%
+          spread(row, Issn)%>%
+    pivot_longer(cols = -c(Sourceid, Title, SJR, `H index`,  `SJR Best Quartile`), values_to = "issn", names_to = "issn_order")%>%
+    filter(!is.na(issn))%>%
+    select(-issn_order)
+  
+  # remove redundant whitespace
+  scimago$issn <- str_remove_all(scimago$issn, " ")
+    
+  colnames(scimago) <- c("source_id_scimago", "scimago_title", "sjr", "h_index", "sjr_best_quartile", "issn")
+  
+  # get the pubs from that year
+  oa_pubs_year <- oa_prof_pubs_filter2 %>%
+    filter(publication_year == current_year & issn %in% scimago$issn)
+
+  # merge them with the scimago ratings
+  oa_pubs_year_scimago <- merge(oa_pubs_year,
+                                scimago[c("issn", "sjr", "sjr_best_quartile", "h_index")],
+                                by = "issn")
+  
+  # add this to the larger data frame
+  oa_pubs_all_scimago <- rbind(oa_pubs_all_scimago,
+                               oa_pubs_year_scimago)
+  
+  #print(current_year)
+
+}
+
+# write this out
+dbWriteTable(con, "oa_prof_pubs_unique_scimago", oa_pubs_all_scimago)
+
 ```
 
 
@@ -1139,6 +1333,66 @@ for (i in 1:length(list_profs)){
 dbWriteTable(con, "oa_affiliation_string_search", all_prof_inst_search)
 
 ```
+
+
+## Yearly institutional affiliations
+
+We need to collect all the institutional information per year.
+
+Load up the OA IDs:
+```{r}
+oa_ids <- dbReadTable(con, "oa_id_mapping")
+```
+
+Reuse our existing code, but now also fetch the year:
+```{r}
+list_profs <- unique(oa_ids$oa_id)
+all_results <- data.frame(matrix(NA, ncol = 7, nrow = 0))
+
+for (i in 7198:length(list_profs)){
+  # get the list
+  prof <- list_profs[i]
+  get_api <- fromJSON(paste0("https://api.openalex.org/authors?filter=ids.openalex:", prof))
+  
+  if ('affiliations' %in% names(get_api[["results"]])){
+    result_institutions <- get_api[["results"]][["affiliations"]][[1]]
+    if (!all(is.na(result_institutions))){
+      result_institutions_unnest <- unnest(result_institutions, cols = c("years"))
+      result_institutions_unnest <- unnest(result_institutions_unnest, cols = c("institution"))
+      result_institutions_unnest$au_id <- prof
+      result_institutions_unnest <- result_institutions_unnest[c( "id", "ror", "display_name", "country_code", "type", "years", "au_id")]
+      all_results <- rbind.data.frame(all_results,
+                                      result_institutions_unnest)
+    }
+  }else{
+    get_api <- fromJSON(paste0("https://api.openalex.org/people/", prof))
+    if ('affiliations' %in% names(get_api)){
+      result_institutions <- get_api[["affiliations"]]
+      if (!all(is.na(result_institutions))){
+        result_institutions_unnest <- unnest(result_institutions, cols = c("years"))
+        result_institutions_unnest <- unnest(result_institutions_unnest, cols = c("institution"))
+        result_institutions_unnest$au_id <- prof
+        result_institutions_unnest <- result_institutions_unnest[c( "id", "ror", "display_name", "country_code", "type", "years", "au_id")]
+        all_results <- rbind.data.frame(all_results,
+                                        result_institutions_unnest)
+      }
+      
+      
+    }
+  }
+  print(i)
+}
+
+# deduplicate
+all_results_sel <- all_results %>% 
+  distinct(au_id, id, years, .keep_all = TRUE)%>%
+  select(id, display_name, country_code, type, years, au_id)
+
+# write out a table
+dbWriteTable(con, "oa_prof_yearly_affiliations", all_results_sel)
+
+```
+
 
 # ORCID career data
 

@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Ana Macanovic" />
+
+<meta name="date" content="2025-05-06" />
+
+<title>Additional_analyses</title>
+
+<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/tabwid-1.1.3/tabwid.css" rel="stylesheet" />
+<script src="site_libs/tabwid-1.1.3/tabwid.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+<link rel="stylesheet" href="tweaks.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a>
+    <span class="fa fa-home"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="index.html">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-menu-hamburger"></span>
+     
+    DPM preparation
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="NARCIS_collection.html">NARCIS data scrape</a>
+    </li>
+    <li>
+      <a href="OpenAlex_Altmetric_data_download.html">Open Alex and Altmetric data download</a>
+    </li>
+    <li>
+      <a href="Gender_inference.html">Gender inference</a>
+    </li>
+    <li>
+      <a href="Grant_parsing.html">Grant parsing</a>
+    </li>
+    <li>
+      <a href="Printed_news_preparation.html">Printed news preparation</a>
+    </li>
+    <li>
+      <a href="Online_news_preparation.html">Online news preparation</a>
+    </li>
+    <li>
+      <a href="Data_coverage.html">NARCIS and OA database comparison</a>
+    </li>
+    <li>
+      <a href="SJR_CiteScore_comparison.html">SJR and CiteScore comparison</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-tasks"></span>
+     
+    DPM Panel Dataset
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Panel_data_compilation.html">Panel dataset preparation</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-ok-sign"></span>
+     
+    Analyses and Results
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_main.html">Main analyses</a>
+    </li>
+    <li>
+      <a href="Supplement_data_information.html">SI S2 Dataset information</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental_descriptive.html">SI S3 Additional descriptive results</a>
+    </li>
+    <li>
+      <a href="Analyses_supplemental_regressions.html">SI S4 Additional regression results</a>
+    </li>
+    <li>
+      <a href="News_classification_other_functions.html">Resources and functions</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-info-sign"></span>
+     
+    Robustness checks
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Analyses_robustness.html">Poisson, negative binomial, logistic models</a>
+    </li>
+    <li>
+      <a href="Analyses_robustness_fe.html">Fixed effect models</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="glyphicon glyphicon glyphicon glyphicon-zoom-in"></span>
+     
+    Additional sample
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Additional_sample_analyses.html">Analyses of the additional sample (N = 980)</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/amacanovic/limits_gender_equity">
+    <span class="fab fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Additional_analyses</h1>
+<h4 class="author">Ana Macanovic</h4>
+<h4 class="date">2025-05-06</h4>
+
+</div>
+
+
+<div id="si-results-of-additinal-analyses-si-appendix-s6"
+class="section level1" number="1">
+<h1><span class="header-section-number">1</span> SI: Results of
+additinal analyses (SI Appendix S6)</h1>
+<pre class="r"><code>source(&quot;helper_functions.R&quot;)
+packages_to_load &lt;- c(&quot;readr&quot;, &quot;dplyr&quot;, &quot;tidyr&quot;, 
+                      &quot;ggplot2&quot;, &quot;cowplot&quot;, &quot;ggpubr&quot;,
+                      &quot;tidyverse&quot;, &quot;flextable&quot;, 
+                      &quot;officer&quot;, &quot;psych&quot;,
+                      &quot;DescTools&quot;, &quot;stevemisc&quot;)
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = &quot;2024-4-23&quot;)</code></pre>
+<p>Load the additional panel first:</p>
+<pre class="r"><code>prof_panel_filter_additional &lt;- read_csv(&quot;panel_datasets/additional_dataset/prof_panel_additional_anonymised.csv&quot;)</code></pre>
+<div id="table-s13" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Table S13</h2>
+<p>Obtained by manual checking of the data sources.</p>
+</div>
+<div id="table-s14" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Table S14</h2>
+<p>Get the numbers of men and women professors in the additional
+dataset. Combined with Table S5, this gives table S14.</p>
+<p>First, get the totals for the last observation for each
+professor:</p>
+<pre class="r"><code>prof_totals &lt;- prof_panel_filter_additional %&gt;%
+  group_by(profile_id)%&gt;%
+  filter(year == max(year) &amp; !is.na(overall_adj_domain))
+
+prof_totals$inferred_gender &lt;- as.factor(prof_totals$inferred_gender)</code></pre>
+<p>Number of profs per field and gender:</p>
+<pre class="r"><code>profs_gender_field &lt;- prof_totals %&gt;% 
+  group_by(overall_adj_domain, inferred_gender)%&gt;%
+  summarise(n = n())%&gt;%
+  pivot_wider(names_from = inferred_gender, values_from = n)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;overall_adj_domain&#39;. You can override
+## using the `.groups` argument.</code></pre>
+<pre class="r"><code>profs_gender_field$overall_adj_domain &lt;- ordered(profs_gender_field$overall_adj_domain,
+                                                levels = c( &quot;Physical Sciences&quot;, 
+                                                            &quot;Life Sciences&quot;,
+                                                            &quot;Health Sciences&quot;,
+                                                            &quot;Social Sciences&quot;,
+                                                            &quot;Arts and Humanities&quot;))
+
+
+profs_gender_field &lt;- profs_gender_field %&gt;%
+  arrange(overall_adj_domain)
+
+profs_gender_field$share_w &lt;- round(profs_gender_field$w/(profs_gender_field$m+profs_gender_field$w)*100,3)
+
+
+(profs_gender_field_save &lt;- profs_gender_field %&gt;%
+  regulartable() %&gt;%
+  set_caption(&quot;Professors per field and gender&quot;)%&gt;%
+  autofit())</code></pre>
+<div class="tabwid"><style>.cl-506b303c{}.cl-5059f4d4{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-5060e67c{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-5060e690{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-50612bfa{width:1.661in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c04{width:0.54in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c18{width:0.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c19{width:1.661in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c22{width:0.54in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c2c{width:0.863in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c36{width:1.661in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c37{width:0.54in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c40{width:0.863in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c4a{width:1.661in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c54{width:0.54in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-50612c5e{width:0.863in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-506b303c'><caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Professors per field and gender</span></caption><thead><tr style="overflow-wrap:break-word;"><th class="cl-50612bfa"><p class="cl-5060e67c"><span class="cl-5059f4d4">overall_adj_domain</span></p></th><th class="cl-50612c04"><p class="cl-5060e690"><span class="cl-5059f4d4">m</span></p></th><th class="cl-50612c04"><p class="cl-5060e690"><span class="cl-5059f4d4">w</span></p></th><th class="cl-50612c18"><p class="cl-5060e690"><span class="cl-5059f4d4">share_w</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-50612c19"><p class="cl-5060e67c"><span class="cl-5059f4d4">Physical Sciences</span></p></td><td class="cl-50612c22"><p class="cl-5060e690"><span class="cl-5059f4d4">192</span></p></td><td class="cl-50612c22"><p class="cl-5060e690"><span class="cl-5059f4d4">65</span></p></td><td class="cl-50612c2c"><p class="cl-5060e690"><span class="cl-5059f4d4">25.292</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-50612c36"><p class="cl-5060e67c"><span class="cl-5059f4d4">Life Sciences</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">79</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">82</span></p></td><td class="cl-50612c40"><p class="cl-5060e690"><span class="cl-5059f4d4">50.932</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-50612c36"><p class="cl-5060e67c"><span class="cl-5059f4d4">Health Sciences</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">179</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">172</span></p></td><td class="cl-50612c40"><p class="cl-5060e690"><span class="cl-5059f4d4">49.003</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-50612c36"><p class="cl-5060e67c"><span class="cl-5059f4d4">Social Sciences</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">80</span></p></td><td class="cl-50612c37"><p class="cl-5060e690"><span class="cl-5059f4d4">98</span></p></td><td class="cl-50612c40"><p class="cl-5060e690"><span class="cl-5059f4d4">55.056</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-50612c4a"><p class="cl-5060e67c"><span class="cl-5059f4d4">Arts and Humanities</span></p></td><td class="cl-50612c54"><p class="cl-5060e690"><span class="cl-5059f4d4">14</span></p></td><td class="cl-50612c54"><p class="cl-5060e690"><span class="cl-5059f4d4">5</span></p></td><td class="cl-50612c5e"><p class="cl-5060e690"><span class="cl-5059f4d4">26.316</span></p></td></tr></tbody></table></div>
+<pre class="r"><code>word_document_name &lt;-
+    read_docx() %&gt;%
+    body_add_flextable(profs_gender_field_save) %&gt;%
+    print(target = &quot;Results/supplement_tables/SI_Table_S14.docx&quot;)</code></pre>
+</div>
+<div id="table-s15" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Table S15</h2>
+<p>Get the additional panel descriptive statitics. Combined with Table
+S6, this gives Table S15.</p>
+<p>Describe groups by gender:</p>
+<pre class="r"><code>prof_panel_filter_descriptives &lt;- prof_panel_filter_additional %&gt;%
+  filter(!is.na(overall_adj_domain) &amp; year &gt;= 2013 &amp; year &lt;= 2023 &amp; years_since_first_pub &gt;= 0)
+
+desc_by_gender &lt;- describeBy(prof_panel_filter_descriptives[c(&quot;years_since_first_pub&quot;, &quot;news_all&quot;, &quot;alt_online_all&quot;, &quot;alt_twitter&quot;,
+                                                              &quot;count_pubs&quot;, &quot;share_first_au&quot;, &quot;cited_by&quot;, &quot;avg_sjr&quot;,
+                                                              &quot;count_pubs_total&quot;, &quot;share_first_au_total&quot;, &quot;cited_by_total_all&quot;,
+                                                              &quot;avg_sjr_total&quot;, &quot;coa_tot_cited_by&quot;,  &quot;coa_tot_cited_by_total&quot;, 
+                                                              &quot;coa_online_combi_total&quot;, &quot;coa_online_combi&quot;,
+                                                              &quot;news_all_total&quot;, &quot;alt_online_all_total&quot;,
+                                                              &quot;alt_twitter_total&quot;)], prof_panel_filter_descriptives$inferred_gender, mat = TRUE) </code></pre>
+<p>Select columns of interest and tidy this up:</p>
+<pre class="r"><code>desc_by_gender$variable &lt;- rownames(desc_by_gender)
+desc_by_gender$variable &lt;- str_sub(desc_by_gender$variable, end = -2)
+
+desc_by_gender_tidy &lt;- desc_by_gender %&gt;%
+  dplyr::select(group1, variable, n, mean, sd, median, min, max)%&gt;%
+  pivot_wider(names_from = group1,
+              values_from = c(n, mean, sd, median, min, max))%&gt;%
+ mutate_if(is.numeric, round, 3)</code></pre>
+<p>Test the means:</p>
+<pre class="r"><code>cols &lt;- c(&quot;years_since_first_pub&quot;, &quot;news_all&quot;, &quot;alt_online_all&quot;, &quot;alt_twitter&quot;,
+          &quot;count_pubs&quot;, &quot;share_first_au&quot;, &quot;cited_by&quot;, &quot;avg_sjr&quot;,
+          &quot;count_pubs_total&quot;, &quot;share_first_au_total&quot;, &quot;cited_by_total_all&quot;,
+          &quot;avg_sjr_total&quot;, &quot;coa_tot_cited_by&quot;,  &quot;coa_tot_cited_by_total&quot;, 
+          &quot;coa_online_combi_total&quot;, &quot;coa_online_combi&quot;,
+          &quot;news_all_total&quot;, &quot;alt_online_all_total&quot;,
+          &quot;alt_twitter_total&quot;)
+
+p_values &lt;- c()
+
+for (col in cols){
+  
+  men_values &lt;- prof_panel_filter_additional[which(prof_panel_filter_additional$inferred_gender == &quot;m&quot;), col]
+  women_values &lt;- prof_panel_filter_additional[which(prof_panel_filter_additional$inferred_gender == &quot;w&quot;), col]
+  p_values &lt;- c(p_values, round(t.test(men_values,women_values, data=data, paired=FALSE)$p.value, 5))
+}
+
+p_val_differences &lt;- data.frame(variable = cols, 
+                                p_value = p_values)</code></pre>
+<p>Merge the two tables:</p>
+<pre class="r"><code>desc_by_gender_tidy &lt;- merge(desc_by_gender_tidy,
+                             p_val_differences,
+                             by = &quot;variable&quot;)
+
+desc_by_gender_tidy$stars &lt;- ifelse(desc_by_gender_tidy$p_value &lt;= 0.001, &quot;***&quot;,
+                             ifelse(desc_by_gender_tidy$p_value &lt;= 0.001, &quot;**&quot;,
+                                    ifelse(desc_by_gender_tidy$p_value &lt;= 0.05, &quot;*&quot;,
+                                           ifelse(desc_by_gender_tidy$p_value &lt;= 0.1, &quot;.&quot;, &quot;&quot;))))
+
+# order the factors
+desc_by_gender_tidy$variable &lt;- factor(desc_by_gender_tidy$variable,
+                                       levels = c(&quot;news_all&quot;,
+                                                  &quot;news_all_total&quot;,
+                                                  &quot;alt_online_all&quot;,
+                                                  &quot;alt_online_all_total&quot;,
+                                                  &quot;alt_twitter&quot;,
+                                                  &quot;alt_twitter_total&quot;,
+                                                  &quot;count_pubs&quot;,
+                                                  &quot;count_pubs_total&quot;,
+                                                  &quot;share_first_au&quot;,
+                                                  &quot;share_first_au_total&quot;, 
+                                                  &quot;cited_by&quot;,
+                                                  &quot;cited_by_total_all&quot;,
+                                                  &quot;avg_sjr&quot;,
+                                                  &quot;avg_sjr_total&quot;,  
+                                                  &quot;coa_tot_cited_by&quot;,
+                                                  &quot;coa_tot_cited_by_total&quot;, 
+                                                  &quot;coa_online_combi&quot;,
+                                                  &quot;coa_online_combi_total&quot;,
+                                                  &quot;years_since_first_pub&quot;))
+
+
+# select the variables
+desc_by_gender_tidy &lt;- desc_by_gender_tidy %&gt;%
+  arrange(variable)%&gt;%
+  dplyr::select(variable, n_m, n_w, mean_m, mean_w, stars, sd_m, sd_w, median_m, median_w, min_m, min_w, max_m, max_w)
+
+(desc_by_gender_tidy_save &lt;- desc_by_gender_tidy %&gt;%
+  regulartable() %&gt;%
+  set_caption(&quot;Descriptive statistics&quot;)%&gt;%
+  autofit())</code></pre>
+<div class="tabwid"><style>.cl-51caebca{}.cl-51b3ae9c{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-51bc1834{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-51bc1848{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-51bc6cf8{width:1.89in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d0c{width:0.668in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d16{width:1.135in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d20{width:0.616in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d2a{width:1.05in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d34{width:0.744in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d35{width:0.727in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d3e{width:1.347in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d48{width:1.89in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d49{width:0.668in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d52{width:1.135in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d5c{width:0.616in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d5d{width:1.05in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d66{width:0.744in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d7a{width:0.727in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d84{width:1.347in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6d8e{width:1.89in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6da2{width:0.668in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6da3{width:1.135in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dac{width:0.616in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dad{width:1.05in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6db6{width:0.744in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dc0{width:0.727in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dca{width:1.347in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dcb{width:1.89in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dd4{width:0.668in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dde{width:1.135in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6de8{width:0.616in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6df2{width:1.05in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6df3{width:0.744in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6dfc{width:0.727in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e06{width:1.347in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e10{width:1.89in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e1a{width:0.668in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e24{width:1.135in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e2e{width:0.616in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e38{width:1.05in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e39{width:0.744in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e42{width:0.727in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51bc6e4c{width:1.347in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing='true' class='cl-51caebca'><caption style="display:table-caption;margin:0pt;text-align:center;border-bottom: 0.00pt solid transparent;border-top: 0.00pt solid transparent;border-left: 0.00pt solid transparent;border-right: 0.00pt solid transparent;padding-top:3pt;padding-bottom:3pt;padding-left:3pt;padding-right:3pt;line-height: 1;background-color:transparent;"><span>Descriptive statistics</span></caption><thead><tr style="overflow-wrap:break-word;"><th class="cl-51bc6cf8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">variable</span></p></th><th class="cl-51bc6d0c"><p class="cl-51bc1848"><span class="cl-51b3ae9c">n_m</span></p></th><th class="cl-51bc6d0c"><p class="cl-51bc1848"><span class="cl-51b3ae9c">n_w</span></p></th><th class="cl-51bc6d16"><p class="cl-51bc1848"><span class="cl-51b3ae9c">mean_m</span></p></th><th class="cl-51bc6d16"><p class="cl-51bc1848"><span class="cl-51b3ae9c">mean_w</span></p></th><th class="cl-51bc6d20"><p class="cl-51bc1834"><span class="cl-51b3ae9c">stars</span></p></th><th class="cl-51bc6d16"><p class="cl-51bc1848"><span class="cl-51b3ae9c">sd_m</span></p></th><th class="cl-51bc6d16"><p class="cl-51bc1848"><span class="cl-51b3ae9c">sd_w</span></p></th><th class="cl-51bc6d2a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">median_m</span></p></th><th class="cl-51bc6d2a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">median_w</span></p></th><th class="cl-51bc6d34"><p class="cl-51bc1848"><span class="cl-51b3ae9c">min_m</span></p></th><th class="cl-51bc6d35"><p class="cl-51bc1848"><span class="cl-51b3ae9c">min_w</span></p></th><th class="cl-51bc6d3e"><p class="cl-51bc1848"><span class="cl-51b3ae9c">max_m</span></p></th><th class="cl-51bc6d3e"><p class="cl-51bc1848"><span class="cl-51b3ae9c">max_w</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">news_all</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,176</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,042</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.280</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.550</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5.615</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.864</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">92.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">67.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">news_all_total</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,176</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,042</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">15.053</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4.476</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">56.051</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">15.508</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">779.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">284.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">alt_online_all</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.417</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.358</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c"></span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11.948</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">12.364</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">403.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">581.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">alt_online_all_total</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">6.079</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5.233</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c"></span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">41.945</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">31.059</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,399.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,203.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">alt_twitter</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5.961</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5.768</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c"></span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">42.139</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">62.123</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">901.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,785.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">alt_twitter_total</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">27.270</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">21.256</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">.</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">185.288</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">161.199</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,025.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,471.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">count_pubs</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.874</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.543</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3.220</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.474</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">46.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">25.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">count_pubs_total</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">40.121</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">19.638</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">63.658</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">27.443</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">16.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">577.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">287.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d8e"><p class="cl-51bc1834"><span class="cl-51b3ae9c">share_first_au</span></p></td><td class="cl-51bc6da2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,887</span></p></td><td class="cl-51bc6da2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,233</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.321</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.390</span></p></td><td class="cl-51bc6dac"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.403</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.427</span></p></td><td class="cl-51bc6dad"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.000</span></p></td><td class="cl-51bc6dad"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.231</span></p></td><td class="cl-51bc6db6"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dc0"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dca"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td><td class="cl-51bc6dca"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d8e"><p class="cl-51bc1834"><span class="cl-51b3ae9c">share_first_au_total</span></p></td><td class="cl-51bc6da2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6da2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.377</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.431</span></p></td><td class="cl-51bc6dac"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.292</span></p></td><td class="cl-51bc6da3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.300</span></p></td><td class="cl-51bc6dad"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.333</span></p></td><td class="cl-51bc6dad"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0.400</span></p></td><td class="cl-51bc6db6"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dc0"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dca"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td><td class="cl-51bc6dca"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">cited_by</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,746</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3,634</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">90.800</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">58.184</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">224.272</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">105.927</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">26.000</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">24.000</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3,685.000</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,776.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">cited_by_total_all</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,746</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3,634</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,210.647</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">550.584</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,997.535</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,033.157</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">294.000</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">210.000</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">37,995.000</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11,101.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">avg_sjr</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,887</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,233</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.544</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.786</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">*</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3.434</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">3.617</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.730</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.048</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">39.270</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">57.010</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">avg_sjr_total</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.827</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.431</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.345</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2.701</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.105</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1.835</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">25.747</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">41.914</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">coa_tot_cited_by</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,831</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,219</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">49,499.335</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">57,335.708</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">.</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">125,659.092</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">157,368.359</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">10,203.000</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">12,178.000</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,923,560.000</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,475,715.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6dcb"><p class="cl-51bc1834"><span class="cl-51b3ae9c">coa_tot_cited_by_total</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,831</span></p></td><td class="cl-51bc6dd4"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,219</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">235,171.808</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">269,806.948</span></p></td><td class="cl-51bc6de8"><p class="cl-51bc1834"><span class="cl-51b3ae9c">.</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">578,273.588</span></p></td><td class="cl-51bc6dde"><p class="cl-51bc1848"><span class="cl-51b3ae9c">724,216.130</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">49,216.000</span></p></td><td class="cl-51bc6df2"><p class="cl-51bc1848"><span class="cl-51b3ae9c">56,794.000</span></p></td><td class="cl-51bc6df3"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6dfc"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11,514,285.000</span></p></td><td class="cl-51bc6e06"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11,276,050.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">coa_online_combi</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,831</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,219</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,220.808</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,293.571</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">*</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">16,829.307</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">17,838.462</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">289.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">404.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">297,360.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">209,408.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6d48"><p class="cl-51bc1834"><span class="cl-51b3ae9c">coa_online_combi_total</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,831</span></p></td><td class="cl-51bc6d49"><p class="cl-51bc1848"><span class="cl-51b3ae9c">2,219</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">14,276.940</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">18,266.030</span></p></td><td class="cl-51bc6d5c"><p class="cl-51bc1834"><span class="cl-51b3ae9c">*</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">54,448.548</span></p></td><td class="cl-51bc6d52"><p class="cl-51bc1848"><span class="cl-51b3ae9c">61,056.802</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">860.000</span></p></td><td class="cl-51bc6d5d"><p class="cl-51bc1848"><span class="cl-51b3ae9c">1,448.000</span></p></td><td class="cl-51bc6d66"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d7a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">949,039.000</span></p></td><td class="cl-51bc6d84"><p class="cl-51bc1848"><span class="cl-51b3ae9c">855,861.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51bc6e10"><p class="cl-51bc1834"><span class="cl-51b3ae9c">years_since_first_pub</span></p></td><td class="cl-51bc6e1a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">5,297</span></p></td><td class="cl-51bc6e1a"><p class="cl-51bc1848"><span class="cl-51b3ae9c">4,096</span></p></td><td class="cl-51bc6e24"><p class="cl-51bc1848"><span class="cl-51b3ae9c">20.846</span></p></td><td class="cl-51bc6e24"><p class="cl-51bc1848"><span class="cl-51b3ae9c">14.216</span></p></td><td class="cl-51bc6e2e"><p class="cl-51bc1834"><span class="cl-51b3ae9c">***</span></p></td><td class="cl-51bc6e24"><p class="cl-51bc1848"><span class="cl-51b3ae9c">14.018</span></p></td><td class="cl-51bc6e24"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11.503</span></p></td><td class="cl-51bc6e38"><p class="cl-51bc1848"><span class="cl-51b3ae9c">20.000</span></p></td><td class="cl-51bc6e38"><p class="cl-51bc1848"><span class="cl-51b3ae9c">11.000</span></p></td><td class="cl-51bc6e39"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e42"><p class="cl-51bc1848"><span class="cl-51b3ae9c">0</span></p></td><td class="cl-51bc6e4c"><p class="cl-51bc1848"><span class="cl-51b3ae9c">50.000</span></p></td><td class="cl-51bc6e4c"><p class="cl-51bc1848"><span class="cl-51b3ae9c">50.000</span></p></td></tr></tbody></table></div>
+<pre class="r"><code>word_document_name &lt;-
+    read_docx() %&gt;%
+    body_add_flextable(desc_by_gender_tidy_save) %&gt;%
+    print(target = &quot;Results/supplement_tables/SI_Table_S15.docx&quot;)</code></pre>
+</div>
+<div id="fig-s12" class="section level2" number="1.4">
+<h2><span class="header-section-number">1.4</span> Fig S12</h2>
+<p>Within-field comparison:</p>
+<pre class="r"><code>fields &lt;- c(&quot;Physical Sciences&quot;,
+            &quot;Life Sciences&quot;,
+            &quot;Health Sciences&quot;,
+            &quot;Social Sciences&quot;,
+            &quot;Arts and Humanities&quot;)
+field_comparisons &lt;- data.frame(matrix(NA, ncol = 5, nrow = length(fields)))
+
+for (i in 1:length(fields)){
+  field &lt;- fields[i]
+  data &lt;- filter(prof_totals, 
+                 overall_adj_domain == field)
+  field_comparisons[i, 1] &lt;- field
+  field_comparisons[i, 2] &lt;- nrow(data)
+  field_comparisons[i, 3] &lt;- round(t.test(news_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 4] &lt;- round(t.test(alt_online_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 5] &lt;- round(t.test(alt_twitter_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+}
+
+colnames(field_comparisons) &lt;- c(&quot;field&quot;, &quot;profs&quot;,
+                                 &quot;total&quot;, &quot;online_total&quot;, &quot;twitter_total&quot;)
+field_comparisons$comparison &lt;-  &quot;ttest&quot;
+
+
+mean_values_field &lt;- prof_totals %&gt;%
+  filter(!is.na(overall_adj_domain))%&gt;%
+  group_by(inferred_gender, overall_adj_domain)%&gt;%
+  summarise(total = mean(news_all_total, na.rm = TRUE),
+            online_total = mean(alt_online_all_total, na.rm = TRUE),
+            twitter_total =  mean(alt_twitter_total, na.rm = TRUE),
+            total_sd = sd(news_all_total, na.rm = TRUE),
+            online_total_sd = sd(alt_online_all_total, na.rm = TRUE),
+            twitter_total_sd =  sd(alt_twitter_total, na.rm = TRUE),
+            all_n = n())%&gt;%
+  mutate(
+            
+            total_se = total_sd / sqrt(all_n),
+            online_total_se = online_total_sd / sqrt(all_n),
+            twitter_total_se =  twitter_total_sd / sqrt(all_n),
+            
+            total_lci = total - qt(1 - (0.05 / 2), all_n - 1) * total_se,
+            online_total_lci = online_total - qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+            twitter_total_lci =  twitter_total - qt(1 - (0.05 / 2), all_n - 1) * twitter_total_se,
+            
+            total_uci = total + qt(1 - (0.05 / 2), all_n - 1) * total_se,
+            online_total_uci = online_total + qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+            twitter_total_uci =  twitter_total + qt(1 - (0.05 / 2), all_n - 1) * twitter_total_se)%&gt;%
+  mutate(across(2:17, \(x) round(x, 3)))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;inferred_gender&#39;. You can override using
+## the `.groups` argument.</code></pre>
+<pre class="r"><code>colnames(mean_values_field)[1] &lt;- &quot;comparison&quot;
+colnames(mean_values_field)[2] &lt;- &quot;field&quot;</code></pre>
+<p>Plot the means comparison:</p>
+<pre class="r"><code>mean_values_field$field &lt;- factor(mean_values_field$field,
+                                   levels = c(&quot;Physical Sciences&quot;,
+                                              &quot;Life Sciences&quot;,
+                                              &quot;Health Sciences&quot;,
+                                              &quot;Social Sciences&quot;,
+                                              &quot;Arts and Humanities&quot;))
+mean_values_field$comparison &lt;- ordered(mean_values_field$comparison,
+                                   levels = c(&quot;m&quot;, &quot;w&quot;))
+
+significance_testing &lt;-  field_comparisons
+
+significance_testing &lt;-  significance_testing %&gt;%
+  filter(comparison == &quot;ttest&quot;)%&gt;%
+  mutate_at(vars(`online_total`, `total`, `twitter_total`), .funs = list(
+    ~case_when(
+      . &lt;= 0.001 ~ &#39;***&#39;,
+      . &lt;= 0.01 ~ &#39;**&#39;,
+      . &lt;= 0.05 ~ &#39;*&#39;,
+      . &lt;= 0.1 ~ &#39;&#39;,
+      . &gt; 0.1 ~ &#39;&#39;
+    )))
+
+significance_testing$field &lt;- factor(significance_testing$field,
+                                   levels = c(&quot;Arts and Humanities&quot;,
+                                              &quot;Social Sciences&quot;,
+                                              &quot;Health Sciences&quot;,
+                                               &quot;Life Sciences&quot;,
+                                              &quot;Physical Sciences&quot;
+                                              ))
+significance_testing &lt;- significance_testing %&gt;%
+  arrange(field)
+
+significance_testing$group1 &lt;- &quot;m&quot;
+significance_testing$group2 &lt;- &quot;w&quot;
+significance_testing$x &lt;- c(1,2,3,4, 5)
+significance_testing$xmin &lt;- c(0.75,1.75,2.75,3.75, 4.75)
+significance_testing$xmax &lt;- c(1.25,2.25, 3.25,4.25, 5.25)
+significance_testing$comparison &lt;- &quot;m&quot;
+
+
+average_news &lt;- mean_values_field %&gt;%
+  ggplot(aes(x=fct_rev(field), y=total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat=&quot;identity&quot;, alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = total_lci, 
+        ymax = total_uci
+    ),
+    width = 0.2,
+    stat=&quot;identity&quot;,
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = &quot;Inferred gender&quot;))+
+  scale_fill_manual(values =  c(&quot;#F5C710&quot;, &quot;#61D04F&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;))+
+  scale_color_manual(values =  c(&quot;#997b06&quot;, &quot;#338a25&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;), guide=&quot;none&quot;)+
+  ggtitle(&quot;Printed news attention&quot;)+
+  stat_pvalue_manual(
+    rev(significance_testing),
+    y.position = rep(150, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = &quot;{total}&quot;,
+    remove.bracket = FALSE,
+    hide.ns = TRUE
+  )+
+  scale_y_continuous(limits = c(-30, 150), breaks = seq(-30, 150, by = 30))+
+  ylab(&quot;Average mentions over lifetime&quot;)+
+  xlab(&quot;Field&quot;)+
+  labs(color = &quot;Inferred gender&quot;)+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+      coord_flip()
+    
+average_online &lt;- mean_values_field %&gt;%
+  ggplot(aes(x=fct_rev(field), y=online_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat=&quot;identity&quot;, alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = online_total_lci, 
+        ymax = online_total_uci
+    ),
+    width = 0.2,
+    stat=&quot;identity&quot;,
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = &quot;Inferred gender&quot;))+
+  scale_fill_manual(values =  c(&quot;#F5C710&quot;, &quot;#61D04F&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;))+
+  scale_color_manual(values =  c(&quot;#997b06&quot;, &quot;#338a25&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;), guide=&quot;none&quot;)+
+  ggtitle(&quot;Online news attention&quot;)+
+  scale_y_continuous(limits = c(-10, 86), breaks = seq(-10, 86, by = 16))+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = rep(84, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = &quot;{online_total}&quot;,
+  )+
+  ylab(&quot;Average mentions over lifetime&quot;)+
+  labs(color = &quot;Inferred gender&quot;)+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab(&quot;Field&quot;)
+
+
+average_twitter &lt;- mean_values_field %&gt;%
+  ggplot(aes(x=fct_rev(field), y=twitter_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat=&quot;identity&quot;, alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = twitter_total_lci, 
+        ymax = twitter_total_uci
+    ),
+    width = 0.2,
+    stat=&quot;identity&quot;,
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = &quot;Inferred gender&quot;))+
+  scale_fill_manual(values =  c(&quot;#F5C710&quot;, &quot;#61D04F&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;))+
+  scale_color_manual(values =  c(&quot;#997b06&quot;, &quot;#338a25&quot;)  , labels = c(&quot;Women&quot;, &quot;Men&quot;), guide=&quot;none&quot;)+
+  ggtitle(&quot;Twitter/X attention&quot;)+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = rep(184, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = &quot;{twitter_total}&quot;,
+    remove.bracket = FALSE,
+  )+
+  scale_y_continuous(limits = c(-25, 185), breaks = seq(-25, 185, by = 35))+
+  ylab(&quot;Average mentions over lifetime&quot;)+
+  labs(color = &quot;Inferred gender&quot;)+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab(&quot;Field&quot;)</code></pre>
+<p>Combine these plots into one (Figure 1, panel A):</p>
+<pre class="r"><code>legend_average &lt;- get_legend(
+  # create some space to the left of the legend
+  average_news
+)
+
+combi_plot_averages &lt;- plot_grid(average_news + 
+                                   theme(legend.position=&quot;none&quot;, 
+                                         axis.title.x = element_blank(),
+                                         axis.title.y=element_blank())
+                                 + panel_border(), 
+                                 average_online + theme(legend.position=&quot;none&quot;,
+                                                        axis.title.x = element_blank(),
+                                                        axis.title.y=element_blank(),
+                                                        axis.text.y = element_blank())
+                                 + panel_border(), 
+                                 average_twitter + theme(legend.position=&quot;none&quot;,
+                                                         axis.title.y=element_blank(),
+                                                         axis.title.x = element_blank(),
+                                                         axis.text.y = element_blank())
+                                 + panel_border(), 
+                                 legend_average,
+                                 ncol = 4,
+                                 rel_widths = c(1.3, 0.9, 0.9, 0.4))
+
+combi_plot_averages</code></pre>
+<p><img src="Additional_sample_analyses_files/figure-html/unnamed-chunk-11-1.png" width="960" /></p>
+<pre class="r"><code>ggsave2(
+  filename = &quot;Results/supplement_figures/SI_Fig_S12.png&quot;,
+  plot = combi_plot_averages,
+  width = 11,
+  height = 3.5,
+  units = c(&quot;in&quot;),
+  dpi = 1200,
+  bg = &quot;white&quot;
+)</code></pre>
+</div>
+<div id="table-s16" class="section level2" number="1.5">
+<h2><span class="header-section-number">1.5</span> Table S16</h2>
+<p>Using the main dataset, get Table S16.</p>
+<p>Load the panel:</p>
+<pre class="r"><code>prof_panel_filter &lt;- read_csv(&quot;panel_datasets/prof_panel_anonymised.csv&quot;)</code></pre>
+<p>Get yearly attention totals:</p>
+<pre class="r"><code>(yearly_prof_totals &lt;- prof_panel_filter %&gt;%
+  group_by(year)%&gt;%
+  summarise(printed_news_total = sum(news_all, na.rm = TRUE),
+            online_news_total = sum(alt_online_all),
+            twitter_total = sum(alt_twitter)))</code></pre>
+<pre><code>## # A tibble: 12 × 4
+##     year printed_news_total online_news_total twitter_total
+##    &lt;dbl&gt;              &lt;dbl&gt;             &lt;dbl&gt;         &lt;dbl&gt;
+##  1  2012              30340              5083         36942
+##  2  2013              34616             12496         61345
+##  3  2014              31190             17746         84858
+##  4  2015              33860             23721        153442
+##  5  2016              33988             54581        202829
+##  6  2017              35612             56067        294281
+##  7  2018              35401             52793        368588
+##  8  2019              43351             56452        404889
+##  9  2020              54839             79667        546604
+## 10  2021              57520             82508        456016
+## 11  2022              56782            122674        388509
+## 12  2023              65425            124550        315461</code></pre>
+<p>Write the result out:</p>
+<pre class="r"><code>write_csv(yearly_prof_totals, &quot;Results/supplement_tables/SI_Table_S16.csv&quot;)</code></pre>
+</div>
+<div id="table-s17" class="section level2" number="1.6">
+<h2><span class="header-section-number">1.6</span> Table S17</h2>
+<p>Get the averages and CIs:</p>
+<pre class="r"><code>(yearly_add_averages &lt;- prof_panel_filter_additional %&gt;%
+  group_by(year)%&gt;%
+  summarise(printed = mean(news_all, na.rm = TRUE),
+            online = mean(alt_online_all, na.rm = TRUE),
+            twitter =  mean(alt_twitter, na.rm = TRUE),
+            printed_sd = sd(news_all, na.rm = TRUE),
+            online_sd = sd(alt_online_all, na.rm = TRUE),
+            twitter_sd =  sd(alt_twitter, na.rm = TRUE),
+            all_n = n())%&gt;%
+  mutate(
+    printed_se = printed / sqrt(all_n),
+    online_se = online_sd / sqrt(all_n),
+    twitter_se =  twitter_sd / sqrt(all_n),
+    
+    printed_lci = printed - qt(1 - (0.05 / 2), all_n - 1) * printed_se,
+    online_lci = online - qt(1 - (0.05 / 2), all_n - 1) * online_se,
+    twitter_lci =  twitter - qt(1 - (0.05 / 2), all_n - 1) * twitter_se,
+    
+    printed_uci = printed + qt(1 - (0.05 / 2), all_n - 1) * printed_se,
+    online_uci = online + qt(1 - (0.05 / 2), all_n - 1) * online_se,
+    twitter_uci =  twitter + qt(1 - (0.05 / 2), all_n - 1) * twitter_se)%&gt;%
+  mutate(across(2:17, \(x) round(x, 2)))%&gt;%
+  dplyr::select(year, printed, printed_lci, printed_uci, online, online_lci, online_uci, twitter, twitter_lci, twitter_uci))</code></pre>
+<pre><code>## # A tibble: 11 × 10
+##     year printed printed_lci printed_uci online online_lci online_uci twitter
+##    &lt;dbl&gt;   &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;
+##  1  2013    0.59        0.55        0.63   0.22       0.1        0.33    0.47
+##  2  2014    0.68        0.64        0.72   0.31       0.12       0.51    1.17
+##  3  2015    0.77        0.72        0.82   0.41       0.25       0.57    1.83
+##  4  2016    0.64        0.6         0.68   0.59       0.32       0.87    2.27
+##  5  2017    0.77        0.72        0.82   1.03       0.39       1.67    3.15
+##  6  2018    0.93        0.87        0.99   1.14       0.48       1.8     3.78
+##  7  2019    1.05        0.98        1.12   1.15       0.72       1.58    7.45
+##  8  2020    0.8         0.75        0.85   2.07       0.85       3.29   12.1 
+##  9  2021    0.75        0.7         0.8    1.57       1.04       2.11    9.8 
+## 10  2022    1.28        1.2         1.36   2.28       1.49       3.08    8.06
+## 11  2023    1.28        1.2         1.37   2.75       1.3        4.2     7.15
+## # ℹ 2 more variables: twitter_lci &lt;dbl&gt;, twitter_uci &lt;dbl&gt;</code></pre>
+<p>Write this out:</p>
+<pre class="r"><code>write_csv(yearly_add_averages, &quot;Results/supplement_tables/SI_Table_S17.csv&quot;)</code></pre>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkFkZGl0aW9uYWxfYW5hbHlzZXMiDQphdXRob3I6ICJBbmEgTWFjYW5vdmljIg0KZGF0ZTogIjIwMjUtMDUtMDYiDQpvdXRwdXQ6IGh0bWxfZG9jdW1lbnQNCi0tLQ0KDQojIFNJOiBSZXN1bHRzIG9mIGFkZGl0aW5hbCBhbmFseXNlcyAoU0kgQXBwZW5kaXggUzYpDQoNCmBgYHtyIHdhcm5pbmcgPSBGLCBtZXNzYWdlID0gRn0NCnNvdXJjZSgiaGVscGVyX2Z1bmN0aW9ucy5SIikNCnBhY2thZ2VzX3RvX2xvYWQgPC0gYygicmVhZHIiLCAiZHBseXIiLCAidGlkeXIiLCANCiAgICAgICAgICAgICAgICAgICAgICAiZ2dwbG90MiIsICJjb3dwbG90IiwgImdncHViciIsDQogICAgICAgICAgICAgICAgICAgICAgInRpZHl2ZXJzZSIsICJmbGV4dGFibGUiLCANCiAgICAgICAgICAgICAgICAgICAgICAib2ZmaWNlciIsICJwc3ljaCIsDQogICAgICAgICAgICAgICAgICAgICAgIkRlc2NUb29scyIsICJzdGV2ZW1pc2MiKQ0KDQpmcGFja2FnZV9jaGVjayhwYWNrYWdlc190b19sb2FkKQ0KDQoNCiMgRm9yIGZ1bGwgcmVwcm9kdWNpYmlsaXR5LCBsb2FkIHRoZSBwYWNrYWdlcyB3aXRoIGdyb3VuZGhvZyB1c2luZyB0aGUgY29kZSBiZWxvdyBpbnN0ZWFkDQojIG9mIHRoZSBmcGFja2FnZV9jaGVjayBmdW5jdGlvbg0KDQojIGxpYnJhcnkoZ3JvdW5kaG9nKQ0KIyBncm91bmRob2cubGlicmFyeShwYWNrYWdlc190b19sb2FkLCBkYXRlID0gIjIwMjQtNC0yMyIpDQpgYGANCg0KDQpMb2FkIHRoZSBhZGRpdGlvbmFsIHBhbmVsIGZpcnN0Og0KYGBge3IgbWVzc2FnZSA9IEYsIHdhcm5pbmcgPSBGfQ0KcHJvZl9wYW5lbF9maWx0ZXJfYWRkaXRpb25hbCA8LSByZWFkX2NzdigicGFuZWxfZGF0YXNldHMvYWRkaXRpb25hbF9kYXRhc2V0L3Byb2ZfcGFuZWxfYWRkaXRpb25hbF9hbm9ueW1pc2VkLmNzdiIpDQpgYGANCg0KIyMgVGFibGUgUzEzDQoNCk9idGFpbmVkIGJ5IG1hbnVhbCBjaGVja2luZyBvZiB0aGUgZGF0YSBzb3VyY2VzLg0KDQojIyBUYWJsZSBTMTQNCg0KR2V0IHRoZSBudW1iZXJzIG9mIG1lbiBhbmQgd29tZW4gcHJvZmVzc29ycyBpbiB0aGUgYWRkaXRpb25hbCBkYXRhc2V0LiANCkNvbWJpbmVkIHdpdGggVGFibGUgUzUsIHRoaXMgZ2l2ZXMgdGFibGUgUzE0Lg0KDQpGaXJzdCwgZ2V0IHRoZSB0b3RhbHMgZm9yIHRoZSBsYXN0IG9ic2VydmF0aW9uIGZvciBlYWNoIHByb2Zlc3NvcjoNCmBgYHtyfQ0KcHJvZl90b3RhbHMgPC0gcHJvZl9wYW5lbF9maWx0ZXJfYWRkaXRpb25hbCAlPiUNCiAgZ3JvdXBfYnkocHJvZmlsZV9pZCklPiUNCiAgZmlsdGVyKHllYXIgPT0gbWF4KHllYXIpICYgIWlzLm5hKG92ZXJhbGxfYWRqX2RvbWFpbikpDQoNCnByb2ZfdG90YWxzJGluZmVycmVkX2dlbmRlciA8LSBhcy5mYWN0b3IocHJvZl90b3RhbHMkaW5mZXJyZWRfZ2VuZGVyKQ0KYGBgDQoNCk51bWJlciBvZiBwcm9mcyBwZXIgZmllbGQgYW5kIGdlbmRlcjoNCmBgYHtyfQ0KcHJvZnNfZ2VuZGVyX2ZpZWxkIDwtIHByb2ZfdG90YWxzICU+JSANCiAgZ3JvdXBfYnkob3ZlcmFsbF9hZGpfZG9tYWluLCBpbmZlcnJlZF9nZW5kZXIpJT4lDQogIHN1bW1hcmlzZShuID0gbigpKSU+JQ0KICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gaW5mZXJyZWRfZ2VuZGVyLCB2YWx1ZXNfZnJvbSA9IG4pDQoNCnByb2ZzX2dlbmRlcl9maWVsZCRvdmVyYWxsX2Fkal9kb21haW4gPC0gb3JkZXJlZChwcm9mc19nZW5kZXJfZmllbGQkb3ZlcmFsbF9hZGpfZG9tYWluLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYyggIlBoeXNpY2FsIFNjaWVuY2VzIiwgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiTGlmZSBTY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiSGVhbHRoIFNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJTb2NpYWwgU2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIkFydHMgYW5kIEh1bWFuaXRpZXMiKSkNCg0KDQpwcm9mc19nZW5kZXJfZmllbGQgPC0gcHJvZnNfZ2VuZGVyX2ZpZWxkICU+JQ0KICBhcnJhbmdlKG92ZXJhbGxfYWRqX2RvbWFpbikNCg0KcHJvZnNfZ2VuZGVyX2ZpZWxkJHNoYXJlX3cgPC0gcm91bmQocHJvZnNfZ2VuZGVyX2ZpZWxkJHcvKHByb2ZzX2dlbmRlcl9maWVsZCRtK3Byb2ZzX2dlbmRlcl9maWVsZCR3KSoxMDAsMykNCg0KDQoocHJvZnNfZ2VuZGVyX2ZpZWxkX3NhdmUgPC0gcHJvZnNfZ2VuZGVyX2ZpZWxkICU+JQ0KICByZWd1bGFydGFibGUoKSAlPiUNCiAgc2V0X2NhcHRpb24oIlByb2Zlc3NvcnMgcGVyIGZpZWxkIGFuZCBnZW5kZXIiKSU+JQ0KICBhdXRvZml0KCkpDQoNCndvcmRfZG9jdW1lbnRfbmFtZSA8LQ0KICAgIHJlYWRfZG9jeCgpICU+JQ0KICAgIGJvZHlfYWRkX2ZsZXh0YWJsZShwcm9mc19nZW5kZXJfZmllbGRfc2F2ZSkgJT4lDQogICAgcHJpbnQodGFyZ2V0ID0gIlJlc3VsdHMvc3VwcGxlbWVudF90YWJsZXMvU0lfVGFibGVfUzE0LmRvY3giKQ0KYGBgDQoNCg0KIyMgVGFibGUgUzE1DQoNCkdldCB0aGUgYWRkaXRpb25hbCBwYW5lbCBkZXNjcmlwdGl2ZSBzdGF0aXRpY3MuDQpDb21iaW5lZCB3aXRoIFRhYmxlIFM2LCB0aGlzIGdpdmVzIFRhYmxlIFMxNS4NCg0KRGVzY3JpYmUgZ3JvdXBzIGJ5IGdlbmRlcjoNCmBgYHtyfQ0KcHJvZl9wYW5lbF9maWx0ZXJfZGVzY3JpcHRpdmVzIDwtIHByb2ZfcGFuZWxfZmlsdGVyX2FkZGl0aW9uYWwgJT4lDQogIGZpbHRlcighaXMubmEob3ZlcmFsbF9hZGpfZG9tYWluKSAmIHllYXIgPj0gMjAxMyAmIHllYXIgPD0gMjAyMyAmIHllYXJzX3NpbmNlX2ZpcnN0X3B1YiA+PSAwKQ0KDQpkZXNjX2J5X2dlbmRlciA8LSBkZXNjcmliZUJ5KHByb2ZfcGFuZWxfZmlsdGVyX2Rlc2NyaXB0aXZlc1tjKCJ5ZWFyc19zaW5jZV9maXJzdF9wdWIiLCAibmV3c19hbGwiLCAiYWx0X29ubGluZV9hbGwiLCAiYWx0X3R3aXR0ZXIiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiY291bnRfcHVicyIsICJzaGFyZV9maXJzdF9hdSIsICJjaXRlZF9ieSIsICJhdmdfc2pyIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImNvdW50X3B1YnNfdG90YWwiLCAic2hhcmVfZmlyc3RfYXVfdG90YWwiLCAiY2l0ZWRfYnlfdG90YWxfYWxsIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImF2Z19zanJfdG90YWwiLCAiY29hX3RvdF9jaXRlZF9ieSIsICAiY29hX3RvdF9jaXRlZF9ieV90b3RhbCIsIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiY29hX29ubGluZV9jb21iaV90b3RhbCIsICJjb2Ffb25saW5lX2NvbWJpIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIm5ld3NfYWxsX3RvdGFsIiwgImFsdF9vbmxpbmVfYWxsX3RvdGFsIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImFsdF90d2l0dGVyX3RvdGFsIildLCBwcm9mX3BhbmVsX2ZpbHRlcl9kZXNjcmlwdGl2ZXMkaW5mZXJyZWRfZ2VuZGVyLCBtYXQgPSBUUlVFKSANCmBgYA0KDQpTZWxlY3QgY29sdW1ucyBvZiBpbnRlcmVzdCBhbmQgdGlkeSB0aGlzIHVwOg0KYGBge3J9DQpkZXNjX2J5X2dlbmRlciR2YXJpYWJsZSA8LSByb3duYW1lcyhkZXNjX2J5X2dlbmRlcikNCmRlc2NfYnlfZ2VuZGVyJHZhcmlhYmxlIDwtIHN0cl9zdWIoZGVzY19ieV9nZW5kZXIkdmFyaWFibGUsIGVuZCA9IC0yKQ0KDQpkZXNjX2J5X2dlbmRlcl90aWR5IDwtIGRlc2NfYnlfZ2VuZGVyICU+JQ0KICBkcGx5cjo6c2VsZWN0KGdyb3VwMSwgdmFyaWFibGUsIG4sIG1lYW4sIHNkLCBtZWRpYW4sIG1pbiwgbWF4KSU+JQ0KICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gZ3JvdXAxLA0KICAgICAgICAgICAgICB2YWx1ZXNfZnJvbSA9IGMobiwgbWVhbiwgc2QsIG1lZGlhbiwgbWluLCBtYXgpKSU+JQ0KIG11dGF0ZV9pZihpcy5udW1lcmljLCByb3VuZCwgMykNCiAgDQpgYGANCg0KVGVzdCB0aGUgbWVhbnM6DQpgYGB7cn0NCmNvbHMgPC0gYygieWVhcnNfc2luY2VfZmlyc3RfcHViIiwgIm5ld3NfYWxsIiwgImFsdF9vbmxpbmVfYWxsIiwgImFsdF90d2l0dGVyIiwNCiAgICAgICAgICAiY291bnRfcHVicyIsICJzaGFyZV9maXJzdF9hdSIsICJjaXRlZF9ieSIsICJhdmdfc2pyIiwNCiAgICAgICAgICAiY291bnRfcHVic190b3RhbCIsICJzaGFyZV9maXJzdF9hdV90b3RhbCIsICJjaXRlZF9ieV90b3RhbF9hbGwiLA0KICAgICAgICAgICJhdmdfc2pyX3RvdGFsIiwgImNvYV90b3RfY2l0ZWRfYnkiLCAgImNvYV90b3RfY2l0ZWRfYnlfdG90YWwiLCANCiAgICAgICAgICAiY29hX29ubGluZV9jb21iaV90b3RhbCIsICJjb2Ffb25saW5lX2NvbWJpIiwNCiAgICAgICAgICAibmV3c19hbGxfdG90YWwiLCAiYWx0X29ubGluZV9hbGxfdG90YWwiLA0KICAgICAgICAgICJhbHRfdHdpdHRlcl90b3RhbCIpDQoNCnBfdmFsdWVzIDwtIGMoKQ0KDQpmb3IgKGNvbCBpbiBjb2xzKXsNCiAgDQogIG1lbl92YWx1ZXMgPC0gcHJvZl9wYW5lbF9maWx0ZXJfYWRkaXRpb25hbFt3aGljaChwcm9mX3BhbmVsX2ZpbHRlcl9hZGRpdGlvbmFsJGluZmVycmVkX2dlbmRlciA9PSAibSIpLCBjb2xdDQogIHdvbWVuX3ZhbHVlcyA8LSBwcm9mX3BhbmVsX2ZpbHRlcl9hZGRpdGlvbmFsW3doaWNoKHByb2ZfcGFuZWxfZmlsdGVyX2FkZGl0aW9uYWwkaW5mZXJyZWRfZ2VuZGVyID09ICJ3IiksIGNvbF0NCiAgcF92YWx1ZXMgPC0gYyhwX3ZhbHVlcywgcm91bmQodC50ZXN0KG1lbl92YWx1ZXMsd29tZW5fdmFsdWVzLCBkYXRhPWRhdGEsIHBhaXJlZD1GQUxTRSkkcC52YWx1ZSwgNSkpDQp9DQoNCnBfdmFsX2RpZmZlcmVuY2VzIDwtIGRhdGEuZnJhbWUodmFyaWFibGUgPSBjb2xzLCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcF92YWx1ZSA9IHBfdmFsdWVzKQ0KYGBgDQoNCg0KTWVyZ2UgdGhlIHR3byB0YWJsZXM6DQpgYGB7cn0NCmRlc2NfYnlfZ2VuZGVyX3RpZHkgPC0gbWVyZ2UoZGVzY19ieV9nZW5kZXJfdGlkeSwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcF92YWxfZGlmZmVyZW5jZXMsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJ5ID0gInZhcmlhYmxlIikNCg0KZGVzY19ieV9nZW5kZXJfdGlkeSRzdGFycyA8LSBpZmVsc2UoZGVzY19ieV9nZW5kZXJfdGlkeSRwX3ZhbHVlIDw9IDAuMDAxLCAiKioqIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaWZlbHNlKGRlc2NfYnlfZ2VuZGVyX3RpZHkkcF92YWx1ZSA8PSAwLjAwMSwgIioqIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZXNjX2J5X2dlbmRlcl90aWR5JHBfdmFsdWUgPD0gMC4wNSwgIioiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZXNjX2J5X2dlbmRlcl90aWR5JHBfdmFsdWUgPD0gMC4xLCAiLiIsICIiKSkpKQ0KDQojIG9yZGVyIHRoZSBmYWN0b3JzDQpkZXNjX2J5X2dlbmRlcl90aWR5JHZhcmlhYmxlIDwtIGZhY3RvcihkZXNjX2J5X2dlbmRlcl90aWR5JHZhcmlhYmxlLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYygibmV3c19hbGwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAibmV3c19hbGxfdG90YWwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYWx0X29ubGluZV9hbGwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYWx0X29ubGluZV9hbGxfdG90YWwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYWx0X3R3aXR0ZXIiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYWx0X3R3aXR0ZXJfdG90YWwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiY291bnRfcHVicyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJjb3VudF9wdWJzX3RvdGFsIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInNoYXJlX2ZpcnN0X2F1IiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInNoYXJlX2ZpcnN0X2F1X3RvdGFsIiwgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJjaXRlZF9ieSIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJjaXRlZF9ieV90b3RhbF9hbGwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYXZnX3NqciIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJhdmdfc2pyX3RvdGFsIiwgIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiY29hX3RvdF9jaXRlZF9ieSIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJjb2FfdG90X2NpdGVkX2J5X3RvdGFsIiwgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJjb2Ffb25saW5lX2NvbWJpIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImNvYV9vbmxpbmVfY29tYmlfdG90YWwiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAieWVhcnNfc2luY2VfZmlyc3RfcHViIikpDQoNCg0KIyBzZWxlY3QgdGhlIHZhcmlhYmxlcw0KZGVzY19ieV9nZW5kZXJfdGlkeSA8LSBkZXNjX2J5X2dlbmRlcl90aWR5ICU+JQ0KICBhcnJhbmdlKHZhcmlhYmxlKSU+JQ0KICBkcGx5cjo6c2VsZWN0KHZhcmlhYmxlLCBuX20sIG5fdywgbWVhbl9tLCBtZWFuX3csIHN0YXJzLCBzZF9tLCBzZF93LCBtZWRpYW5fbSwgbWVkaWFuX3csIG1pbl9tLCBtaW5fdywgbWF4X20sIG1heF93KQ0KDQooZGVzY19ieV9nZW5kZXJfdGlkeV9zYXZlIDwtIGRlc2NfYnlfZ2VuZGVyX3RpZHkgJT4lDQogIHJlZ3VsYXJ0YWJsZSgpICU+JQ0KICBzZXRfY2FwdGlvbigiRGVzY3JpcHRpdmUgc3RhdGlzdGljcyIpJT4lDQogIGF1dG9maXQoKSkNCg0Kd29yZF9kb2N1bWVudF9uYW1lIDwtDQogICAgcmVhZF9kb2N4KCkgJT4lDQogICAgYm9keV9hZGRfZmxleHRhYmxlKGRlc2NfYnlfZ2VuZGVyX3RpZHlfc2F2ZSkgJT4lDQogICAgcHJpbnQodGFyZ2V0ID0gIlJlc3VsdHMvc3VwcGxlbWVudF90YWJsZXMvU0lfVGFibGVfUzE1LmRvY3giKQ0KYGBgDQojIyBGaWcgUzEyDQoNCldpdGhpbi1maWVsZCBjb21wYXJpc29uOg0KYGBge3J9DQpmaWVsZHMgPC0gYygiUGh5c2ljYWwgU2NpZW5jZXMiLA0KICAgICAgICAgICAgIkxpZmUgU2NpZW5jZXMiLA0KICAgICAgICAgICAgIkhlYWx0aCBTY2llbmNlcyIsDQogICAgICAgICAgICAiU29jaWFsIFNjaWVuY2VzIiwNCiAgICAgICAgICAgICJBcnRzIGFuZCBIdW1hbml0aWVzIikNCmZpZWxkX2NvbXBhcmlzb25zIDwtIGRhdGEuZnJhbWUobWF0cml4KE5BLCBuY29sID0gNSwgbnJvdyA9IGxlbmd0aChmaWVsZHMpKSkNCg0KZm9yIChpIGluIDE6bGVuZ3RoKGZpZWxkcykpew0KICBmaWVsZCA8LSBmaWVsZHNbaV0NCiAgZGF0YSA8LSBmaWx0ZXIocHJvZl90b3RhbHMsIA0KICAgICAgICAgICAgICAgICBvdmVyYWxsX2Fkal9kb21haW4gPT0gZmllbGQpDQogIGZpZWxkX2NvbXBhcmlzb25zW2ksIDFdIDwtIGZpZWxkDQogIGZpZWxkX2NvbXBhcmlzb25zW2ksIDJdIDwtIG5yb3coZGF0YSkNCiAgZmllbGRfY29tcGFyaXNvbnNbaSwgM10gPC0gcm91bmQodC50ZXN0KG5ld3NfYWxsX3RvdGFsIH4gaW5mZXJyZWRfZ2VuZGVyLCBkYXRhPWRhdGEsIHBhaXJlZD1GQUxTRSkkcC52YWx1ZSwgNSkNCiAgZmllbGRfY29tcGFyaXNvbnNbaSwgNF0gPC0gcm91bmQodC50ZXN0KGFsdF9vbmxpbmVfYWxsX3RvdGFsIH4gaW5mZXJyZWRfZ2VuZGVyLCBkYXRhPWRhdGEsIHBhaXJlZD1GQUxTRSkkcC52YWx1ZSwgNSkNCiAgZmllbGRfY29tcGFyaXNvbnNbaSwgNV0gPC0gcm91bmQodC50ZXN0KGFsdF90d2l0dGVyX3RvdGFsIH4gaW5mZXJyZWRfZ2VuZGVyLCBkYXRhPWRhdGEsIHBhaXJlZD1GQUxTRSkkcC52YWx1ZSwgNSkNCn0NCg0KY29sbmFtZXMoZmllbGRfY29tcGFyaXNvbnMpIDwtIGMoImZpZWxkIiwgInByb2ZzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0b3RhbCIsICJvbmxpbmVfdG90YWwiLCAidHdpdHRlcl90b3RhbCIpDQpmaWVsZF9jb21wYXJpc29ucyRjb21wYXJpc29uIDwtICAidHRlc3QiDQoNCg0KbWVhbl92YWx1ZXNfZmllbGQgPC0gcHJvZl90b3RhbHMgJT4lDQogIGZpbHRlcighaXMubmEob3ZlcmFsbF9hZGpfZG9tYWluKSklPiUNCiAgZ3JvdXBfYnkoaW5mZXJyZWRfZ2VuZGVyLCBvdmVyYWxsX2Fkal9kb21haW4pJT4lDQogIHN1bW1hcmlzZSh0b3RhbCA9IG1lYW4obmV3c19hbGxfdG90YWwsIG5hLnJtID0gVFJVRSksDQogICAgICAgICAgICBvbmxpbmVfdG90YWwgPSBtZWFuKGFsdF9vbmxpbmVfYWxsX3RvdGFsLCBuYS5ybSA9IFRSVUUpLA0KICAgICAgICAgICAgdHdpdHRlcl90b3RhbCA9ICBtZWFuKGFsdF90d2l0dGVyX3RvdGFsLCBuYS5ybSA9IFRSVUUpLA0KICAgICAgICAgICAgdG90YWxfc2QgPSBzZChuZXdzX2FsbF90b3RhbCwgbmEucm0gPSBUUlVFKSwNCiAgICAgICAgICAgIG9ubGluZV90b3RhbF9zZCA9IHNkKGFsdF9vbmxpbmVfYWxsX3RvdGFsLCBuYS5ybSA9IFRSVUUpLA0KICAgICAgICAgICAgdHdpdHRlcl90b3RhbF9zZCA9ICBzZChhbHRfdHdpdHRlcl90b3RhbCwgbmEucm0gPSBUUlVFKSwNCiAgICAgICAgICAgIGFsbF9uID0gbigpKSU+JQ0KICBtdXRhdGUoDQogICAgICAgICAgICANCiAgICAgICAgICAgIHRvdGFsX3NlID0gdG90YWxfc2QgLyBzcXJ0KGFsbF9uKSwNCiAgICAgICAgICAgIG9ubGluZV90b3RhbF9zZSA9IG9ubGluZV90b3RhbF9zZCAvIHNxcnQoYWxsX24pLA0KICAgICAgICAgICAgdHdpdHRlcl90b3RhbF9zZSA9ICB0d2l0dGVyX3RvdGFsX3NkIC8gc3FydChhbGxfbiksDQogICAgICAgICAgICANCiAgICAgICAgICAgIHRvdGFsX2xjaSA9IHRvdGFsIC0gcXQoMSAtICgwLjA1IC8gMiksIGFsbF9uIC0gMSkgKiB0b3RhbF9zZSwNCiAgICAgICAgICAgIG9ubGluZV90b3RhbF9sY2kgPSBvbmxpbmVfdG90YWwgLSBxdCgxIC0gKDAuMDUgLyAyKSwgYWxsX24gLSAxKSAqIG9ubGluZV90b3RhbF9zZSwNCiAgICAgICAgICAgIHR3aXR0ZXJfdG90YWxfbGNpID0gIHR3aXR0ZXJfdG90YWwgLSBxdCgxIC0gKDAuMDUgLyAyKSwgYWxsX24gLSAxKSAqIHR3aXR0ZXJfdG90YWxfc2UsDQogICAgICAgICAgICANCiAgICAgICAgICAgIHRvdGFsX3VjaSA9IHRvdGFsICsgcXQoMSAtICgwLjA1IC8gMiksIGFsbF9uIC0gMSkgKiB0b3RhbF9zZSwNCiAgICAgICAgICAgIG9ubGluZV90b3RhbF91Y2kgPSBvbmxpbmVfdG90YWwgKyBxdCgxIC0gKDAuMDUgLyAyKSwgYWxsX24gLSAxKSAqIG9ubGluZV90b3RhbF9zZSwNCiAgICAgICAgICAgIHR3aXR0ZXJfdG90YWxfdWNpID0gIHR3aXR0ZXJfdG90YWwgKyBxdCgxIC0gKDAuMDUgLyAyKSwgYWxsX24gLSAxKSAqIHR3aXR0ZXJfdG90YWxfc2UpJT4lDQogIG11dGF0ZShhY3Jvc3MoMjoxNywgXCh4KSByb3VuZCh4LCAzKSkpDQoNCmNvbG5hbWVzKG1lYW5fdmFsdWVzX2ZpZWxkKVsxXSA8LSAiY29tcGFyaXNvbiINCmNvbG5hbWVzKG1lYW5fdmFsdWVzX2ZpZWxkKVsyXSA8LSAiZmllbGQiDQpgYGANCg0KUGxvdCB0aGUgbWVhbnMgY29tcGFyaXNvbjoNCmBgYHtyfQ0KbWVhbl92YWx1ZXNfZmllbGQkZmllbGQgPC0gZmFjdG9yKG1lYW5fdmFsdWVzX2ZpZWxkJGZpZWxkLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBsZXZlbHMgPSBjKCJQaHlzaWNhbCBTY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIkxpZmUgU2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJIZWFsdGggU2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJTb2NpYWwgU2NpZW5jZXMiLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJBcnRzIGFuZCBIdW1hbml0aWVzIikpDQptZWFuX3ZhbHVlc19maWVsZCRjb21wYXJpc29uIDwtIG9yZGVyZWQobWVhbl92YWx1ZXNfZmllbGQkY29tcGFyaXNvbiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYygibSIsICJ3IikpDQoNCnNpZ25pZmljYW5jZV90ZXN0aW5nIDwtICBmaWVsZF9jb21wYXJpc29ucw0KDQpzaWduaWZpY2FuY2VfdGVzdGluZyA8LSAgc2lnbmlmaWNhbmNlX3Rlc3RpbmcgJT4lDQogIGZpbHRlcihjb21wYXJpc29uID09ICJ0dGVzdCIpJT4lDQogIG11dGF0ZV9hdCh2YXJzKGBvbmxpbmVfdG90YWxgLCBgdG90YWxgLCBgdHdpdHRlcl90b3RhbGApLCAuZnVucyA9IGxpc3QoDQogICAgfmNhc2Vfd2hlbigNCiAgICAgIC4gPD0gMC4wMDEgfiAnKioqJywNCiAgICAgIC4gPD0gMC4wMSB+ICcqKicsDQogICAgICAuIDw9IDAuMDUgfiAnKicsDQogICAgICAuIDw9IDAuMSB+ICcnLA0KICAgICAgLiA+IDAuMSB+ICcnDQogICAgKSkpDQoNCnNpZ25pZmljYW5jZV90ZXN0aW5nJGZpZWxkIDwtIGZhY3RvcihzaWduaWZpY2FuY2VfdGVzdGluZyRmaWVsZCwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGV2ZWxzID0gYygiQXJ0cyBhbmQgSHVtYW5pdGllcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIlNvY2lhbCBTY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIkhlYWx0aCBTY2llbmNlcyIsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJMaWZlIFNjaWVuY2VzIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiUGh5c2ljYWwgU2NpZW5jZXMiDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKSkNCnNpZ25pZmljYW5jZV90ZXN0aW5nIDwtIHNpZ25pZmljYW5jZV90ZXN0aW5nICU+JQ0KICBhcnJhbmdlKGZpZWxkKQ0KDQpzaWduaWZpY2FuY2VfdGVzdGluZyRncm91cDEgPC0gIm0iDQpzaWduaWZpY2FuY2VfdGVzdGluZyRncm91cDIgPC0gInciDQpzaWduaWZpY2FuY2VfdGVzdGluZyR4IDwtIGMoMSwyLDMsNCwgNSkNCnNpZ25pZmljYW5jZV90ZXN0aW5nJHhtaW4gPC0gYygwLjc1LDEuNzUsMi43NSwzLjc1LCA0Ljc1KQ0Kc2lnbmlmaWNhbmNlX3Rlc3RpbmckeG1heCA8LSBjKDEuMjUsMi4yNSwgMy4yNSw0LjI1LCA1LjI1KQ0Kc2lnbmlmaWNhbmNlX3Rlc3RpbmckY29tcGFyaXNvbiA8LSAibSINCg0KDQphdmVyYWdlX25ld3MgPC0gbWVhbl92YWx1ZXNfZmllbGQgJT4lDQogIGdncGxvdChhZXMoeD1mY3RfcmV2KGZpZWxkKSwgeT10b3RhbCwgZmlsbCA9IGZjdF9yZXYoY29tcGFyaXNvbiksIGNvbG9yID0gZmN0X3Jldihjb21wYXJpc29uKSkpICsgDQogIGdlb21fYmFyKHBvc2l0aW9uPXBvc2l0aW9uX2RvZGdlKC41KSxzdGF0PSJpZGVudGl0eSIsIGFscGhhPTEsIHdpZHRoID0gMC41KSsNCiAgZ2VvbV9lcnJvcmJhcigNCiAgICBhZXMoeT10b3RhbCwgDQogICAgICAgIHggPSBmY3RfcmV2KGZpZWxkKSwNCiAgICAgICAgZ3JvdXAgPSBmY3RfcmV2KGNvbXBhcmlzb24pLA0KICAgICAgICB5bWluID0gdG90YWxfbGNpLCANCiAgICAgICAgeW1heCA9IHRvdGFsX3VjaQ0KICAgICksDQogICAgd2lkdGggPSAwLjIsDQogICAgc3RhdD0iaWRlbnRpdHkiLA0KICAgIHBvc2l0aW9uPXBvc2l0aW9uX2RvZGdlKC41KSwpKw0KICBndWlkZXMoZmlsbCA9IGd1aWRlX2xlZ2VuZChyZXZlcnNlID0gVFJVRSwgdGl0bGUgPSAiSW5mZXJyZWQgZ2VuZGVyIikpKw0KICBzY2FsZV9maWxsX21hbnVhbCh2YWx1ZXMgPSAgYygiI0Y1QzcxMCIsICIjNjFEMDRGIikgICwgbGFiZWxzID0gYygiV29tZW4iLCAiTWVuIikpKw0KICBzY2FsZV9jb2xvcl9tYW51YWwodmFsdWVzID0gIGMoIiM5OTdiMDYiLCAiIzMzOGEyNSIpICAsIGxhYmVscyA9IGMoIldvbWVuIiwgIk1lbiIpLCBndWlkZT0ibm9uZSIpKw0KICBnZ3RpdGxlKCJQcmludGVkIG5ld3MgYXR0ZW50aW9uIikrDQogIHN0YXRfcHZhbHVlX21hbnVhbCgNCiAgICByZXYoc2lnbmlmaWNhbmNlX3Rlc3RpbmcpLA0KICAgIHkucG9zaXRpb24gPSByZXAoMTUwLCA1KSwNCiAgICBsYWJlbC5zaXplID0gMywNCiAgICBjb29yZC5mbGlwID0gVFJVRSwNCiAgICB0aXAubGVuZ3RoID0gMC4wMDUsDQogICAgbGFiZWwgPSAie3RvdGFsfSIsDQogICAgcmVtb3ZlLmJyYWNrZXQgPSBGQUxTRSwNCiAgICBoaWRlLm5zID0gVFJVRQ0KICApKw0KICBzY2FsZV95X2NvbnRpbnVvdXMobGltaXRzID0gYygtMzAsIDE1MCksIGJyZWFrcyA9IHNlcSgtMzAsIDE1MCwgYnkgPSAzMCkpKw0KICB5bGFiKCJBdmVyYWdlIG1lbnRpb25zIG92ZXIgbGlmZXRpbWUiKSsNCiAgeGxhYigiRmllbGQiKSsNCiAgbGFicyhjb2xvciA9ICJJbmZlcnJlZCBnZW5kZXIiKSsNCiAgdGhlbWVfbWluaW1hbF92Z3JpZCgpKw0KICB0aGVtZShwbG90LnRpdGxlID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCksDQogICAgICAgIGF4aXMudGV4dC55ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCksDQogICAgICAgIGF4aXMudGl0bGUueSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEpLA0KICAgICAgICBheGlzLnRleHQueCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTApICwNCiAgICAgICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgIGxlZ2VuZC50aXRsZT1lbGVtZW50X3RleHQoc2l6ZT0xMSksIA0KICAgICAgICBsZWdlbmQudGV4dD1lbGVtZW50X3RleHQoc2l6ZT0xMCkpKw0KICAgICAgY29vcmRfZmxpcCgpDQogICAgDQphdmVyYWdlX29ubGluZSA8LSBtZWFuX3ZhbHVlc19maWVsZCAlPiUNCiAgZ2dwbG90KGFlcyh4PWZjdF9yZXYoZmllbGQpLCB5PW9ubGluZV90b3RhbCwgZmlsbCA9IGZjdF9yZXYoY29tcGFyaXNvbiksIGNvbG9yID0gZmN0X3Jldihjb21wYXJpc29uKSkpICsgDQogIGdlb21fYmFyKHBvc2l0aW9uPXBvc2l0aW9uX2RvZGdlKC41KSxzdGF0PSJpZGVudGl0eSIsIGFscGhhPTEsIHdpZHRoID0gMC41KSsNCiAgZ2VvbV9lcnJvcmJhcigNCiAgICBhZXMoeT10b3RhbCwgDQogICAgICAgIHggPSBmY3RfcmV2KGZpZWxkKSwNCiAgICAgICAgZ3JvdXAgPSBmY3RfcmV2KGNvbXBhcmlzb24pLA0KICAgICAgICB5bWluID0gb25saW5lX3RvdGFsX2xjaSwgDQogICAgICAgIHltYXggPSBvbmxpbmVfdG90YWxfdWNpDQogICAgKSwNCiAgICB3aWR0aCA9IDAuMiwNCiAgICBzdGF0PSJpZGVudGl0eSIsDQogICAgcG9zaXRpb249cG9zaXRpb25fZG9kZ2UoLjUpLCkrDQogIGd1aWRlcyhmaWxsID0gZ3VpZGVfbGVnZW5kKHJldmVyc2UgPSBUUlVFLCB0aXRsZSA9ICJJbmZlcnJlZCBnZW5kZXIiKSkrDQogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9ICBjKCIjRjVDNzEwIiwgIiM2MUQwNEYiKSAgLCBsYWJlbHMgPSBjKCJXb21lbiIsICJNZW4iKSkrDQogIHNjYWxlX2NvbG9yX21hbnVhbCh2YWx1ZXMgPSAgYygiIzk5N2IwNiIsICIjMzM4YTI1IikgICwgbGFiZWxzID0gYygiV29tZW4iLCAiTWVuIiksIGd1aWRlPSJub25lIikrDQogIGdndGl0bGUoIk9ubGluZSBuZXdzIGF0dGVudGlvbiIpKw0KICBzY2FsZV95X2NvbnRpbnVvdXMobGltaXRzID0gYygtMTAsIDg2KSwgYnJlYWtzID0gc2VxKC0xMCwgODYsIGJ5ID0gMTYpKSsNCiAgc3RhdF9wdmFsdWVfbWFudWFsKA0KICAgIHNpZ25pZmljYW5jZV90ZXN0aW5nLA0KICAgIHkucG9zaXRpb24gPSByZXAoODQsIDUpLA0KICAgIGxhYmVsLnNpemUgPSAzLA0KICAgIGNvb3JkLmZsaXAgPSBUUlVFLA0KICAgIHRpcC5sZW5ndGggPSAwLjAwNSwNCiAgICBsYWJlbCA9ICJ7b25saW5lX3RvdGFsfSIsDQogICkrDQogIHlsYWIoIkF2ZXJhZ2UgbWVudGlvbnMgb3ZlciBsaWZldGltZSIpKw0KICBsYWJzKGNvbG9yID0gIkluZmVycmVkIGdlbmRlciIpKw0KICB0aGVtZV9taW5pbWFsX3ZncmlkKCkrDQogIHRoZW1lKHBsb3QudGl0bGUgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEwKSwNCiAgICAgICAgYXhpcy50ZXh0LnkgPSBlbGVtZW50X3RleHQoc2l6ZSA9IDEwKSwNCiAgICAgICAgYXhpcy50aXRsZS55ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgIGF4aXMudGV4dC54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCkgLA0KICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X3RleHQoc2l6ZSA9IDExKSwNCiAgICAgICAgbGVnZW5kLnRpdGxlPWVsZW1lbnRfdGV4dChzaXplPTExKSwgDQogICAgICAgIGxlZ2VuZC50ZXh0PWVsZW1lbnRfdGV4dChzaXplPTEwKSkrDQogIGNvb3JkX2ZsaXAoKSsNCiAgeGxhYigiRmllbGQiKQ0KDQoNCmF2ZXJhZ2VfdHdpdHRlciA8LSBtZWFuX3ZhbHVlc19maWVsZCAlPiUNCiAgZ2dwbG90KGFlcyh4PWZjdF9yZXYoZmllbGQpLCB5PXR3aXR0ZXJfdG90YWwsIGZpbGwgPSBmY3RfcmV2KGNvbXBhcmlzb24pLCBjb2xvciA9IGZjdF9yZXYoY29tcGFyaXNvbikpKSArIA0KICBnZW9tX2Jhcihwb3NpdGlvbj1wb3NpdGlvbl9kb2RnZSguNSksc3RhdD0iaWRlbnRpdHkiLCBhbHBoYT0xLCB3aWR0aCA9IDAuNSkrDQogIGdlb21fZXJyb3JiYXIoDQogICAgYWVzKHk9dG90YWwsIA0KICAgICAgICB4ID0gZmN0X3JldihmaWVsZCksDQogICAgICAgIGdyb3VwID0gZmN0X3Jldihjb21wYXJpc29uKSwNCiAgICAgICAgeW1pbiA9IHR3aXR0ZXJfdG90YWxfbGNpLCANCiAgICAgICAgeW1heCA9IHR3aXR0ZXJfdG90YWxfdWNpDQogICAgKSwNCiAgICB3aWR0aCA9IDAuMiwNCiAgICBzdGF0PSJpZGVudGl0eSIsDQogICAgcG9zaXRpb249cG9zaXRpb25fZG9kZ2UoLjUpLCkrDQogIGd1aWRlcyhmaWxsID0gZ3VpZGVfbGVnZW5kKHJldmVyc2UgPSBUUlVFLCB0aXRsZSA9ICJJbmZlcnJlZCBnZW5kZXIiKSkrDQogIHNjYWxlX2ZpbGxfbWFudWFsKHZhbHVlcyA9ICBjKCIjRjVDNzEwIiwgIiM2MUQwNEYiKSAgLCBsYWJlbHMgPSBjKCJXb21lbiIsICJNZW4iKSkrDQogIHNjYWxlX2NvbG9yX21hbnVhbCh2YWx1ZXMgPSAgYygiIzk5N2IwNiIsICIjMzM4YTI1IikgICwgbGFiZWxzID0gYygiV29tZW4iLCAiTWVuIiksIGd1aWRlPSJub25lIikrDQogIGdndGl0bGUoIlR3aXR0ZXIvWCBhdHRlbnRpb24iKSsNCiAgc3RhdF9wdmFsdWVfbWFudWFsKA0KICAgIHNpZ25pZmljYW5jZV90ZXN0aW5nLA0KICAgIHkucG9zaXRpb24gPSByZXAoMTg0LCA1KSwNCiAgICBsYWJlbC5zaXplID0gMywNCiAgICBjb29yZC5mbGlwID0gVFJVRSwNCiAgICB0aXAubGVuZ3RoID0gMC4wMDUsDQogICAgbGFiZWwgPSAie3R3aXR0ZXJfdG90YWx9IiwNCiAgICByZW1vdmUuYnJhY2tldCA9IEZBTFNFLA0KICApKw0KICBzY2FsZV95X2NvbnRpbnVvdXMobGltaXRzID0gYygtMjUsIDE4NSksIGJyZWFrcyA9IHNlcSgtMjUsIDE4NSwgYnkgPSAzNSkpKw0KICB5bGFiKCJBdmVyYWdlIG1lbnRpb25zIG92ZXIgbGlmZXRpbWUiKSsNCiAgbGFicyhjb2xvciA9ICJJbmZlcnJlZCBnZW5kZXIiKSsNCiAgdGhlbWVfbWluaW1hbF92Z3JpZCgpKw0KICB0aGVtZShwbG90LnRpdGxlID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCksDQogICAgICAgIGF4aXMudGV4dC55ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMCksDQogICAgICAgIGF4aXMudGl0bGUueSA9IGVsZW1lbnRfdGV4dChzaXplID0gMTEpLA0KICAgICAgICBheGlzLnRleHQueCA9IGVsZW1lbnRfdGV4dChzaXplID0gMTApICwNCiAgICAgICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF90ZXh0KHNpemUgPSAxMSksDQogICAgICAgIGxlZ2VuZC50aXRsZT1lbGVtZW50X3RleHQoc2l6ZT0xMSksIA0KICAgICAgICBsZWdlbmQudGV4dD1lbGVtZW50X3RleHQoc2l6ZT0xMCkpKw0KICBjb29yZF9mbGlwKCkrDQogIHhsYWIoIkZpZWxkIikNCmBgYA0KDQpDb21iaW5lIHRoZXNlIHBsb3RzIGludG8gb25lIChGaWd1cmUgMSwgcGFuZWwgQSk6DQpgYGB7ciBmaWcud2lkdGg9MTAsIGZpZy5oZWlnaHQ9M30NCmxlZ2VuZF9hdmVyYWdlIDwtIGdldF9sZWdlbmQoDQogICMgY3JlYXRlIHNvbWUgc3BhY2UgdG8gdGhlIGxlZnQgb2YgdGhlIGxlZ2VuZA0KICBhdmVyYWdlX25ld3MNCikNCg0KY29tYmlfcGxvdF9hdmVyYWdlcyA8LSBwbG90X2dyaWQoYXZlcmFnZV9uZXdzICsgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRoZW1lKGxlZ2VuZC5wb3NpdGlvbj0ibm9uZSIsIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X2JsYW5rKCksDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGF4aXMudGl0bGUueT1lbGVtZW50X2JsYW5rKCkpDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICArIHBhbmVsX2JvcmRlcigpLCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGF2ZXJhZ2Vfb25saW5lICsgdGhlbWUobGVnZW5kLnBvc2l0aW9uPSJub25lIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYXhpcy50aXRsZS54ID0gZWxlbWVudF9ibGFuaygpLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRpdGxlLnk9ZWxlbWVudF9ibGFuaygpLA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRleHQueSA9IGVsZW1lbnRfYmxhbmsoKSkNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICsgcGFuZWxfYm9yZGVyKCksIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYXZlcmFnZV90d2l0dGVyICsgdGhlbWUobGVnZW5kLnBvc2l0aW9uPSJub25lIiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGF4aXMudGl0bGUueT1lbGVtZW50X2JsYW5rKCksDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRpdGxlLnggPSBlbGVtZW50X2JsYW5rKCksDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBheGlzLnRleHQueSA9IGVsZW1lbnRfYmxhbmsoKSkNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICsgcGFuZWxfYm9yZGVyKCksIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGVnZW5kX2F2ZXJhZ2UsDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBuY29sID0gNCwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlbF93aWR0aHMgPSBjKDEuMywgMC45LCAwLjksIDAuNCkpDQoNCmNvbWJpX3Bsb3RfYXZlcmFnZXMNCg0KDQpnZ3NhdmUyKA0KICBmaWxlbmFtZSA9ICJSZXN1bHRzL3N1cHBsZW1lbnRfZmlndXJlcy9TSV9GaWdfUzEyLnBuZyIsDQogIHBsb3QgPSBjb21iaV9wbG90X2F2ZXJhZ2VzLA0KICB3aWR0aCA9IDExLA0KICBoZWlnaHQgPSAzLjUsDQogIHVuaXRzID0gYygiaW4iKSwNCiAgZHBpID0gMTIwMCwNCiAgYmcgPSAid2hpdGUiDQopDQpgYGANCg0KIyMgVGFibGUgUzE2DQpVc2luZyB0aGUgbWFpbiBkYXRhc2V0LCBnZXQgVGFibGUgUzE2Lg0KDQpMb2FkIHRoZSBwYW5lbDoNCmBgYHtyIHdhcm5pbmcgPSBGLCBtZXNzYWdlID0gRn0NCnByb2ZfcGFuZWxfZmlsdGVyIDwtIHJlYWRfY3N2KCJwYW5lbF9kYXRhc2V0cy9wcm9mX3BhbmVsX2Fub255bWlzZWQuY3N2IikNCmBgYA0KDQoNCkdldCB5ZWFybHkgYXR0ZW50aW9uIHRvdGFsczoNCmBgYHtyfQ0KKHllYXJseV9wcm9mX3RvdGFscyA8LSBwcm9mX3BhbmVsX2ZpbHRlciAlPiUNCiAgZ3JvdXBfYnkoeWVhciklPiUNCiAgc3VtbWFyaXNlKHByaW50ZWRfbmV3c190b3RhbCA9IHN1bShuZXdzX2FsbCwgbmEucm0gPSBUUlVFKSwNCiAgICAgICAgICAgIG9ubGluZV9uZXdzX3RvdGFsID0gc3VtKGFsdF9vbmxpbmVfYWxsKSwNCiAgICAgICAgICAgIHR3aXR0ZXJfdG90YWwgPSBzdW0oYWx0X3R3aXR0ZXIpKSkNCiAgDQpgYGANCg0KV3JpdGUgdGhlIHJlc3VsdCBvdXQ6DQpgYGB7cn0NCndyaXRlX2Nzdih5ZWFybHlfcHJvZl90b3RhbHMsICJSZXN1bHRzL3N1cHBsZW1lbnRfdGFibGVzL1NJX1RhYmxlX1MxNi5jc3YiKQ0KYGBgDQoNCg0KIyMgVGFibGUgUzE3DQpHZXQgdGhlIGF2ZXJhZ2VzIGFuZCBDSXM6DQpgYGB7cn0NCih5ZWFybHlfYWRkX2F2ZXJhZ2VzIDwtIHByb2ZfcGFuZWxfZmlsdGVyX2FkZGl0aW9uYWwgJT4lDQogIGdyb3VwX2J5KHllYXIpJT4lDQogIHN1bW1hcmlzZShwcmludGVkID0gbWVhbihuZXdzX2FsbCwgbmEucm0gPSBUUlVFKSwNCiAgICAgICAgICAgIG9ubGluZSA9IG1lYW4oYWx0X29ubGluZV9hbGwsIG5hLnJtID0gVFJVRSksDQogICAgICAgICAgICB0d2l0dGVyID0gIG1lYW4oYWx0X3R3aXR0ZXIsIG5hLnJtID0gVFJVRSksDQogICAgICAgICAgICBwcmludGVkX3NkID0gc2QobmV3c19hbGwsIG5hLnJtID0gVFJVRSksDQogICAgICAgICAgICBvbmxpbmVfc2QgPSBzZChhbHRfb25saW5lX2FsbCwgbmEucm0gPSBUUlVFKSwNCiAgICAgICAgICAgIHR3aXR0ZXJfc2QgPSAgc2QoYWx0X3R3aXR0ZXIsIG5hLnJtID0gVFJVRSksDQogICAgICAgICAgICBhbGxfbiA9IG4oKSklPiUNCiAgbXV0YXRlKA0KICAgIHByaW50ZWRfc2UgPSBwcmludGVkIC8gc3FydChhbGxfbiksDQogICAgb25saW5lX3NlID0gb25saW5lX3NkIC8gc3FydChhbGxfbiksDQogICAgdHdpdHRlcl9zZSA9ICB0d2l0dGVyX3NkIC8gc3FydChhbGxfbiksDQogICAgDQogICAgcHJpbnRlZF9sY2kgPSBwcmludGVkIC0gcXQoMSAtICgwLjA1IC8gMiksIGFsbF9uIC0gMSkgKiBwcmludGVkX3NlLA0KICAgIG9ubGluZV9sY2kgPSBvbmxpbmUgLSBxdCgxIC0gKDAuMDUgLyAyKSwgYWxsX24gLSAxKSAqIG9ubGluZV9zZSwNCiAgICB0d2l0dGVyX2xjaSA9ICB0d2l0dGVyIC0gcXQoMSAtICgwLjA1IC8gMiksIGFsbF9uIC0gMSkgKiB0d2l0dGVyX3NlLA0KICAgIA0KICAgIHByaW50ZWRfdWNpID0gcHJpbnRlZCArIHF0KDEgLSAoMC4wNSAvIDIpLCBhbGxfbiAtIDEpICogcHJpbnRlZF9zZSwNCiAgICBvbmxpbmVfdWNpID0gb25saW5lICsgcXQoMSAtICgwLjA1IC8gMiksIGFsbF9uIC0gMSkgKiBvbmxpbmVfc2UsDQogICAgdHdpdHRlcl91Y2kgPSAgdHdpdHRlciArIHF0KDEgLSAoMC4wNSAvIDIpLCBhbGxfbiAtIDEpICogdHdpdHRlcl9zZSklPiUNCiAgbXV0YXRlKGFjcm9zcygyOjE3LCBcKHgpIHJvdW5kKHgsIDIpKSklPiUNCiAgZHBseXI6OnNlbGVjdCh5ZWFyLCBwcmludGVkLCBwcmludGVkX2xjaSwgcHJpbnRlZF91Y2ksIG9ubGluZSwgb25saW5lX2xjaSwgb25saW5lX3VjaSwgdHdpdHRlciwgdHdpdHRlcl9sY2ksIHR3aXR0ZXJfdWNpKSkNCmBgYA0KDQpXcml0ZSB0aGlzIG91dDoNCmBgYHtyfQ0Kd3JpdGVfY3N2KHllYXJseV9hZGRfYXZlcmFnZXMsICJSZXN1bHRzL3N1cHBsZW1lbnRfdGFibGVzL1NJX1RhYmxlX1MxNy5jc3YiKQ0KYGBgDQoNCg==</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("Additional_sample_analyses.Rmd");
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

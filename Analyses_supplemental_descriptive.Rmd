@@ -1,0 +1,1620 @@
+---
+title: "SI: Supplemental descriptive analyses"
+author: "Ana Macanovic"
+date: "2025-05-10"
+---
+
+# SI: Supplemental descriptive analyses
+
+This script produces descriptive supplemental analyses referred to in the main text and presented in the Online SI.
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "dplyr", "tidyr", 
+                      "ggplot2", "cowplot",
+                      "tidyverse", "RPostgres", 
+                      "lubridate", "lmtest", 
+                      "sandwich", "ggpubr", "plm",
+                      "knitr", "scales","psych",
+                      "ggeffects", "flextable", 
+                      "officer", "DescTools",
+                      "gglorenz", "corrplot")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Load the panel dataset:
+```{r warning = F, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+```
+
+Get the totals for the last observation for each professor:
+```{r}
+prof_totals <- prof_panel_filter %>%
+  group_by(profile_id)%>%
+  filter(year == max(year) & !is.na(overall_adj_domain))
+
+prof_totals$inferred_gender <- as.factor(prof_totals$inferred_gender)
+```
+
+## Table S5: Descriptive statistics for men and women
+
+Number of profs per field and gender:
+```{r}
+profs_gender_field <- prof_totals %>% 
+  group_by(overall_adj_domain, inferred_gender)%>%
+  summarise(n = n())%>%
+  pivot_wider(names_from = inferred_gender, values_from = n)
+
+profs_gender_field$overall_adj_domain <- ordered(profs_gender_field$overall_adj_domain,
+                                                levels = c( "Physical Sciences", 
+                                                            "Life Sciences",
+                                                            "Health Sciences",
+                                                            "Social Sciences",
+                                                            "Arts and Humanities"))
+
+
+profs_gender_field <- profs_gender_field %>%
+  arrange(overall_adj_domain)
+
+profs_gender_field$share_w <- round(profs_gender_field$w/(profs_gender_field$m+profs_gender_field$w)*100,3)
+
+profs_gender_field_save <- profs_gender_field %>%
+  regulartable() %>%
+  set_caption("Professors per field and gender")%>%
+  autofit()
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(profs_gender_field_save) %>%
+    print(target = "results/supplement_tables/SI_Table_S5.docx")
+
+(profs_gender_field_save)
+```
+
+## Table S6: Panel descriptive statistics
+
+Describe groups by gender:
+```{r}
+prof_panel_filter_descriptives <- prof_panel_filter %>%
+  filter(!is.na(overall_adj_domain) & year >= 2012 & year <= 2023 & years_since_first_pub >= 0)
+
+desc_by_gender <- describeBy(prof_panel_filter_descriptives[c("years_since_first_pub", "news_all", "alt_online_all", "alt_twitter",
+                                                              "count_pubs", "share_first_au", "cited_by", "avg_sjr",
+                                                              "count_pubs_total", "share_first_au_total", "cited_by_total_all",
+                                                              "avg_sjr_total", "coa_tot_cited_by",  "coa_tot_cited_by_total", 
+                                                              "coa_online_combi_total", "coa_online_combi",
+                                                              "news_all_total", "alt_online_all_total",
+                                                              "alt_twitter_total")], prof_panel_filter_descriptives$inferred_gender, mat = TRUE) 
+```
+
+Select columns of interest and tidy this up:
+```{r}
+desc_by_gender$variable <- rownames(desc_by_gender)
+desc_by_gender$variable <- str_sub(desc_by_gender$variable, end = -2)
+
+desc_by_gender_tidy <- desc_by_gender %>%
+  dplyr::select(group1, variable, n, mean, sd, median, min, max)%>%
+  pivot_wider(names_from = group1,
+              values_from = c(n, mean, sd, median, min, max))%>%
+ mutate_if(is.numeric, round, 3)
+  
+```
+
+Test the mean differences using a t-test:
+```{r}
+cols <- c("years_since_first_pub", "news_all", "alt_online_all", "alt_twitter",
+          "count_pubs", "share_first_au", "cited_by", "avg_sjr",
+          "count_pubs_total", "share_first_au_total", "cited_by_total_all",
+          "avg_sjr_total", "coa_tot_cited_by",  "coa_tot_cited_by_total", 
+          "coa_online_combi_total", "coa_online_combi",
+          "news_all_total", "alt_online_all_total",
+          "alt_twitter_total")
+
+p_values <- c()
+
+for (col in cols){
+  
+  men_values <- prof_panel_filter[which(prof_panel_filter$inferred_gender == "m"), col]
+  women_values <- prof_panel_filter[which(prof_panel_filter$inferred_gender == "w"), col]
+  p_values <- c(p_values, round(t.test(men_values,women_values, data=data, paired=FALSE)$p.value, 5))
+}
+
+p_val_differences <- data.frame(variable = cols, 
+                                p_value = p_values)
+```
+
+Merge the two tables:
+```{r}
+desc_by_gender_tidy <- merge(desc_by_gender_tidy,
+                             p_val_differences,
+                             by = "variable")
+
+desc_by_gender_tidy$stars <- ifelse(desc_by_gender_tidy$p_value <= 0.001, "***",
+                             ifelse(desc_by_gender_tidy$p_value <= 0.001, "**",
+                                    ifelse(desc_by_gender_tidy$p_value <= 0.05, "*",
+                                           ifelse(desc_by_gender_tidy$p_value <= 0.1, ".", ""))))
+
+# order the factors
+desc_by_gender_tidy$variable <- factor(desc_by_gender_tidy$variable,
+                                       levels = c("news_all",
+                                                  "news_all_total",
+                                                  "alt_online_all",
+                                                  "alt_online_all_total",
+                                                  "alt_twitter",
+                                                  "alt_twitter_total",
+                                                  "count_pubs",
+                                                  "count_pubs_total",
+                                                  "share_first_au",
+                                                  "share_first_au_total", 
+                                                  "cited_by",
+                                                  "cited_by_total_all",
+                                                  "avg_sjr",
+                                                  "avg_sjr_total",  
+                                                  "coa_tot_cited_by",
+                                                  "coa_tot_cited_by_total", 
+                                                  "coa_online_combi",
+                                                  "coa_online_combi_total",
+                                                  "years_since_first_pub"))
+
+
+# select the variables
+desc_by_gender_tidy <- desc_by_gender_tidy %>%
+  arrange(variable)%>%
+  dplyr::select(variable, n_m, n_w, mean_m, mean_w, stars, sd_m, sd_w, median_m, median_w, min_m, min_w, max_m, max_w)
+
+(desc_by_gender_tidy_save <- desc_by_gender_tidy %>%
+  regulartable() %>%
+  set_caption("Descriptive statistics")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(desc_by_gender_tidy_save) %>%
+    print(target = "results/supplement_tables/SI_Table_S6.docx")
+```
+
+
+## Figure S1: Averages of online mentions with name
+
+Different online news types comparisons:
+```{r}
+fields <- unique(prof_panel_filter$overall_adj_domain)
+fields <- fields[!is.na(fields)]
+field_comparisons <- data.frame(matrix(NA, ncol = 4, nrow = length(fields)))
+
+for (i in 1:length(fields)){
+  field <- fields[i]
+  data <- filter(prof_totals, 
+                 overall_adj_domain == field)
+  field_comparisons[i, 1] <- field
+  field_comparisons[i, 2] <- nrow(data)
+  field_comparisons[i, 3] <- round(t.test(alt_online_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 4] <- round(t.test(alt_online_fname_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+}
+
+colnames(field_comparisons) <- c("field", "profs", "online_total", "online_names_total")
+field_comparisons$comparison <-  "ttest"
+
+mean_values_field <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, overall_adj_domain)%>%
+  summarise(online_total = mean(alt_online_all_total, na.rm = TRUE),
+            online_names_total =  mean(alt_online_fname_all_total, na.rm = TRUE),
+            online_total_sd = sd(alt_online_all_total, na.rm = TRUE),
+            online_names_total_sd =  sd(alt_online_fname_all_total, na.rm = TRUE),
+            all_n = n())%>%
+  mutate(online_total_se = online_total_sd / sqrt(all_n),
+         online_names_total_se =  online_names_total_sd / sqrt(all_n),
+         online_total_lci = online_total - qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+         online_names_total_lci =  online_names_total - qt(1 - (0.05 / 2), all_n - 1) * online_names_total_se,
+         online_total_uci = online_total + qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+         online_names_total_uci =  online_names_total + qt(1 - (0.05 / 2), all_n - 1) * online_names_total_se)%>%
+  mutate(across(2:9, \(x) round(x, 3)))
+
+#mean_values_field$field <- "overall"
+colnames(mean_values_field)[1] <- "comparison"
+colnames(mean_values_field)[2] <- "field"
+#mean_values_field <- mean_values_field[c("comparison", "field", "online_total", "online_names_total")]
+
+field_comparisons <- field_comparisons[c("comparison", "field", "online_total", "online_names_total")]
+
+field_comparisons <- rbind(mean_values_field,
+                           field_comparisons)
+
+field_comparisons <- field_comparisons %>%
+  arrange(field)
+```
+
+Plot the means comparison:
+```{r}
+mean_values_field$field <- factor(mean_values_field$field,
+                                       levels = c("Physical Sciences",
+                                                  "Life Sciences",
+                                                  "Health Sciences",
+                                                  "Social Sciences",
+                                                  "Arts and Humanities"))
+mean_values_field$comparison <- ordered(mean_values_field$comparison,
+                                   levels = c("m", "w"))
+
+significance_testing <-  field_comparisons
+
+significance_testing <-  significance_testing %>%
+  filter(comparison == "ttest")%>%
+  mutate_at(vars(`online_total`, `online_names_total`), .funs = list(
+    ~case_when(
+      . <= 0.001 ~ '***',
+      . <= 0.01 ~ '**',
+      . <= 0.05 ~ '*',
+      . <= 0.1 ~ '.',
+      . > 0.1 ~ ''
+    )))
+
+significance_testing$field <- factor(significance_testing$field,
+                                   levels = c("Physical Sciences",
+                                              "Life Sciences",
+                                              "Health Sciences",
+                                              "Social Sciences",
+                                              "Arts and Humanities"))
+
+significance_testing <- significance_testing %>%
+  arrange(field)
+
+significance_testing$group1 <- "m"
+significance_testing$group2 <- "w"
+significance_testing$x <- c(1,2,3,4, 5)
+significance_testing$xmin <- c(0.75,1.75,2.75,3.75, 4.75)
+significance_testing$xmax <- c(1.25,2.25, 3.25,4.25, 5.25)
+significance_testing$comparison <- "m"
+
+
+
+average_online <- mean_values_field %>%
+  ggplot(aes(x=fct_rev(field), y=online_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat="identity", alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=online_total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = online_total_lci, 
+        ymax = online_total_uci
+    ),
+    width = 0.2,
+    stat="identity",
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = "Inferred gender"))+
+  scale_fill_manual(values =  c("#F5C710", "#61D04F")  , labels = c("Women", "Men"))+
+  scale_color_manual(values =  c("#997b06", "#338a25")  , labels = c("Women", "Men"), guide="none")+
+  ggtitle("Online news attention")+
+  scale_y_continuous(limits = c(0, 240), breaks = seq(0, 240, by = 60))+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = c(230, 230, 230, 230, 230),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = "{online_total}",
+  )+
+  ylab("Average mentions over lifetime")+
+  labs(color = "Inferred gender")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab("Field")
+
+# for plotting, round the lower CI of arts to 0
+mean_values_field$online_names_total_lci[which(mean_values_field$field == "Arts and Humanities" & mean_values_field$comparison == "w")] <- 0
+
+
+average_online_names <- mean_values_field %>%
+  ggplot(aes(x=fct_rev(field), y=online_names_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat="identity", alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=online_names_total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = online_names_total_lci, 
+        ymax = online_names_total_uci
+    ),
+    width = 0.2,
+    stat="identity",
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = "Inferred gender"))+
+  scale_fill_manual(values =  c("#F5C710", "#61D04F")  , labels = c("Women", "Men"))+
+  scale_color_manual(values =  c("#997b06", "#338a25")  , labels = c("Women", "Men"), guide="none")+
+  ggtitle("Online news attention - including full names")+
+  scale_y_continuous(limits = c(0, 15), breaks = seq(0, 15, by = 4))+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = rep(14,5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = "{online_total}",
+  )+
+  ylab("Average mentions over lifetime")+
+  labs(color = "Inferred gender")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab("Field")
+
+```
+
+Combine these plots into one (Figure 1, panel A):
+```{r fig.width=8, fig.height=3}
+legend_average <- get_legend(
+  # create some space to the left of the legend
+  average_online
+)
+
+combi_plot_averages <- plot_grid(average_online + 
+                                   theme(legend.position="none", 
+                                         axis.title.x = element_blank(),
+                                         axis.title.y=element_blank())
+                                 + panel_border(), 
+                                 average_online_names + theme(legend.position="none",
+                                                        axis.title.x = element_blank(),
+                                                        axis.title.y=element_blank(),
+                                                        axis.text.y = element_blank())
+                                 + panel_border(), 
+                                 legend_average,
+                                 ncol = 3,
+                                 rel_widths = c(1.55, 1.11, 0.6))
+
+combi_plot_averages
+```
+Write this out:
+```{r}
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S1.png",
+  plot = combi_plot_averages,
+  width = 8,
+  height = 3,
+  units = c("in"),
+  dpi = 600,
+  bg = "white"
+)
+
+```
+
+## Figure S2: Figure 1B per cohort
+
+Produce a variant of Figure 1B, but per cohort:
+
+First, get representation per field in our dataset:
+(6791 professors)
+```{r}
+repr_field_2023 <- prof_panel_filter %>%
+  group_by(profile_id)%>%
+  filter(year == max(year))%>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(overall_adj_domain, entry_batch_2023, inferred_gender)%>%
+  summarise(n = n())%>%
+  pivot_wider(values_from = n, names_from = inferred_gender)
+
+repr_field_2023$share_women_field <- repr_field_2023$w/(repr_field_2023$m+repr_field_2023$w)
+
+```
+Now get the representation of women among the top 10% and 20% of researchers in terms
+of total fame in their field in 2023 (based on their entry batch):
+```{r}
+# first, get the latest year in the panel for each prof
+women_field_2023 <- prof_panel_filter %>%
+  group_by(profile_id)%>%
+  filter(year == max(year))
+
+# and now set the final year as 2023, assuming there was no attention after
+# whatever the last year is in the dataset (quite some professors with
+# 0 mentions even in this last year, so we want to keep them for correct
+# shares)
+women_field_2023$year <- 2023
+
+# get their decile based on their total performance within their entry batch
+women_field_2023 <- women_field_2023 %>%
+  filter(!is.na(overall_adj_domain) & !is.na(entry_batch_2023))%>%
+  dplyr::select(profile_id, year, inferred_gender, overall_adj_domain, entry_batch_2023, count_pubs_total,
+         cited_by_total_all, news_all_total, alt_online_all_total, alt_twitter_total)%>%
+  mutate_if(is.numeric, replace_na, replace = 0)%>%
+  group_by(overall_adj_domain, entry_batch_2023)%>%
+  mutate(`News` = ntile(-news_all_total, 10),
+         `Online news` = ntile(-alt_online_all_total, 10),
+         `Twitter` = ntile(-alt_twitter_total, 10))
+```
+
+Get shares of women among top n% scientists per attention domain:
+```{r}
+# rearrange the dataset to get counts of women and men in each decile
+# then leave only top 10 and 20
+share_women_field_2023 <- women_field_2023 %>%
+  ungroup()%>%
+  dplyr::select(profile_id, year, inferred_gender, overall_adj_domain,entry_batch_2023, `News`:`Twitter`)%>%
+  pivot_longer(`News`:`Twitter`)%>%
+  group_by(overall_adj_domain, entry_batch_2023, inferred_gender, name, value)%>%
+  summarise(n = n())%>%
+  pivot_wider(values_from = n, names_from = inferred_gender)%>%
+  mutate_if(is.numeric, replace_na, replace = 0)%>%
+  group_by(overall_adj_domain, entry_batch_2023, name)%>%
+  mutate(m = cumsum(m),
+         w = cumsum(w))%>%
+  filter(value %in% c(1, 2))
+ 
+share_women_field_2023$share_women <- share_women_field_2023$w/(share_women_field_2023$m+share_women_field_2023$w) 
+```
+Combine the field representation with the attention representation:
+```{r}
+repr_field_2023$name <- "overall"
+repr_field_2023$value <- 0
+
+repr_field_2023 <- repr_field_2023[c(colnames(share_women_field_2023)[1:5],"share_women_field")]
+
+share_women_field_2023 <- merge(share_women_field_2023,
+                                repr_field_2023[c("overall_adj_domain", "entry_batch_2023", "share_women_field")],
+                                by = c("overall_adj_domain", "entry_batch_2023"))
+
+share_women_field_2023$share_diff <- (share_women_field_2023$share_women - share_women_field_2023$share_women_field)*100
+```
+
+Plot this out:
+
+Top 10%:
+```{r warning = F}
+
+share_women_field_2023$overall_adj_domain <- factor(share_women_field_2023$overall_adj_domain,
+                                                      levels = c("Physical Sciences",
+                                                                 "Life Sciences",
+                                                                 "Health Sciences",
+                                                                 "Social Sciences",
+                                                                 "Arts and Humanities"))
+
+repr_attn_10 <- share_women_field_2023 %>%
+  filter(value == 1 & name %in% c("News", "Online news", "Twitter"))%>%
+  ggplot(aes(y=share_diff, x=fct_rev(overall_adj_domain), fill=name, color=name)) + 
+  geom_bar(position = position_dodge2(reverse = TRUE, width = 1.4), stat="identity", width = 1.4)+
+  guides(fill = guide_legend(reverse=FALSE, title = "Attention type"),
+         color = guide_legend(reverse=FALSE, title = "Attention type"))+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_fill_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_y_continuous(limits = c(-45, 25), breaks = seq(-40, 25, by = 5))+
+  scale_x_discrete(limits = c(levels(share_women_field_2023$overall_adj_domain)[5],
+                              "A",
+                              levels(share_women_field_2023$overall_adj_domain)[4],
+                              "B",
+                              levels(share_women_field_2023$overall_adj_domain)[3],
+                              "C",
+                              levels(share_women_field_2023$overall_adj_domain)[2],
+                              "D",
+                              levels(share_women_field_2023$overall_adj_domain)[1]),
+                   labels = c("A" = "",
+                              "B" = "",
+                              "C" = "",
+                              "D" = ""))+
+  geom_hline(yintercept=0, 
+             color = "black", size=0.7)+
+  coord_flip()+
+  facet_grid(entry_batch_2023 ~ .)+
+  xlab("")+
+  ylab("Under-/overrepresentation of women (in %)")+
+  labs(color = "Attention type",
+       fill = "Attention type")+
+  ggtitle("Top 10% of attention type")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10, angle = 30) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  panel_border()
+
+
+
+repr_attn_20 <- share_women_field_2023 %>%
+  filter(value == 2 & name %in% c("News", "Online news", "Twitter"))%>%
+  ggplot(aes(y=share_diff, x=fct_rev(overall_adj_domain), fill=name, color=name)) + 
+  geom_bar(position = position_dodge2(reverse = TRUE, width = 1.4), stat="identity", width = 1.4)+
+  guides(fill = guide_legend(reverse=FALSE, title = "Attention type"),
+         color = guide_legend(reverse=FALSE, title = "Attention type"))+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_fill_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_y_continuous(limits = c(-45, 25), breaks = seq(-40, 25, by = 5))+
+  scale_x_discrete(limits = c(levels(share_women_field_2023$overall_adj_domain)[5],
+                              "A",
+                              levels(share_women_field_2023$overall_adj_domain)[4],
+                              "B",
+                              levels(share_women_field_2023$overall_adj_domain)[3],
+                              "C",
+                              levels(share_women_field_2023$overall_adj_domain)[2],
+                              "D",
+                              levels(share_women_field_2023$overall_adj_domain)[1]),
+                   labels = c("A" = "",
+                              "B" = "",
+                              "C" = "",
+                              "D" = ""))+
+  geom_hline(yintercept=0, 
+             color = "black", size=0.7)+
+  coord_flip()+
+  facet_grid(entry_batch_2023 ~ .)+
+  xlab("")+
+  ylab("Under-/overrepresentation of women (in %)")+
+  labs(color = "Attention type",
+       fill = "Attention type")+
+  ggtitle("Top 20% of attention type")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10, angle = 30) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  panel_border()
+```
+
+Now get the shares of attention given to women compared to their share in the
+field:
+```{r}
+# first, get the latest year in the panel for each prof
+women_field_2023 <- prof_panel_filter %>%
+  group_by(profile_id)%>%
+  filter(year == max(year))
+
+# and now set the final year as 2023, assuming there was no attention after
+# whatever the last year is in the dataset (quite some professors with
+# 0 mentions even in this last year, so we want to keep them for correct
+# shares)
+women_field_2023$year <- 2023
+
+# get their share based on their total performance within their entry batch
+women_field_2023_attn_share <- women_field_2023 %>%
+  filter(!is.na(overall_adj_domain) & !is.na(entry_batch_2023))%>%
+  dplyr::select(profile_id, year, inferred_gender, overall_adj_domain, entry_batch_2023, count_pubs_total,
+         cited_by_total_all, alt_online_all_total, news_all_total, alt_twitter_total)%>%
+  mutate_if(is.numeric, replace_na, replace = 0)%>%
+  group_by(overall_adj_domain, entry_batch_2023)%>%
+  summarise( 
+    news_w = sum(news_all_total[inferred_gender == "w"]),
+    online_w = sum(alt_online_all_total[inferred_gender == "w"]),
+    twitter_w = sum(alt_twitter_total[inferred_gender == "w"]),
+    news = sum(news_all_total),
+    online = sum(alt_online_all_total),
+    twitter = sum(alt_twitter_total)
+  )%>%
+  mutate(`News` = news_w/news,
+         `Online news` = online_w/online,
+         `Twitter` = twitter_w/twitter)%>%
+  dplyr::select(overall_adj_domain, entry_batch_2023, `News`:`Twitter`)%>%
+  pivot_longer(`News`:`Twitter`, names_to = "name", values_to = "share_women")
+
+women_field_2023_attn_share$share_women <- ifelse(is.nan(women_field_2023_attn_share$share_women), 
+                                                  0,
+                                                  women_field_2023_attn_share$share_women)
+```
+Combine the field representation with the attention representation:
+```{r}
+share_women_field_2023_attn_share <- merge(women_field_2023_attn_share,
+                                           repr_field_2023[c("overall_adj_domain", "entry_batch_2023", "share_women_field")],
+                                           by = c("overall_adj_domain", "entry_batch_2023"))
+
+share_women_field_2023_attn_share$share_diff <- (share_women_field_2023_attn_share$share_women - share_women_field_2023_attn_share$share_women_field)*100
+```
+
+Plot this out:
+```{r warning = F}
+share_women_field_2023_attn_share$overall_adj_domain <- factor(share_women_field_2023_attn_share$overall_adj_domain,
+                                                                 levels = c("Physical Sciences",
+                                                                            "Life Sciences",
+                                                                            "Health Sciences",
+                                                                            "Social Sciences",
+                                                                            "Arts and Humanities"))
+
+repr_attn_share <- share_women_field_2023_attn_share %>%
+  filter(name %in% c("News", "Online news", "Twitter"))%>%
+ggplot(aes(y=share_diff, x=fct_rev(overall_adj_domain), fill=name, color=name)) + 
+  geom_bar(position = position_dodge2(reverse = TRUE, width = 1.4), stat="identity", width = 1.4)+
+  guides(fill = guide_legend(reverse=FALSE, title = "Attention type"),
+         color = guide_legend(reverse=FALSE, title = "Attention type"))+
+  scale_color_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_fill_manual(labels = c("Printed news", "Online news", "Twitter/X"), values = c("#bb7693", "#ef6f6a", "#6388b4"))+
+  scale_y_continuous(limits = c(-45, 25), breaks = seq(-40, 25, by = 5))+
+  scale_x_discrete(limits = c(levels(share_women_field_2023$overall_adj_domain)[5],
+                              "A",
+                              levels(share_women_field_2023$overall_adj_domain)[4],
+                              "B",
+                              levels(share_women_field_2023$overall_adj_domain)[3],
+                              "C",
+                              levels(share_women_field_2023$overall_adj_domain)[2],
+                              "D",
+                              levels(share_women_field_2023$overall_adj_domain)[1]),
+                   labels = c("A" = "",
+                              "B" = "",
+                              "C" = "",
+                              "D" = ""))+
+  geom_hline(yintercept=0, 
+             color = "black", size=0.7)+
+  coord_flip()+
+   facet_grid(entry_batch_2023 ~ .)+
+  xlab("")+
+  ylab("Under-/overrepresentation of women (in %)")+
+  labs(color = "Attention type",
+       fill = "Attention type")+
+  ggtitle("Total attention")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10, angle = 30) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  panel_border()
+```
+
+Combine the plots for Figure 1, panel B:
+```{r fig.width=10, fig.height=4}
+legend_share <- get_legend(
+  repr_attn_share
+)
+
+
+combi_plot <- plot_grid(repr_attn_share + theme(legend.position="none", 
+                                                axis.title.x = element_blank(),
+                                                axis.title.y=element_blank(),
+                                                strip.text.y = element_blank()), 
+                        repr_attn_10 + theme(legend.position="none",
+                                             axis.title.x = element_blank(),
+                                             axis.title.y=element_blank(),
+                                             axis.text.y = element_blank(),
+                                             strip.text.y = element_blank()),
+                        repr_attn_20 + theme(legend.position="none",
+                                             axis.title.y=element_blank(),
+                                             axis.title.x = element_blank(),
+                                             axis.text.y = element_blank()),
+                        legend_share,
+                        
+                        
+                        ncol = 4,
+                        rel_widths = c(1.3, 0.9, 1., 0.4))
+
+combi_plot
+
+```
+
+Print out the figure (Figure 1B per cohort; Figure S2 in the appendix):
+```{r fig.width= 11, fig.height = 8, warning = F, message = F}
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S2.png",
+  plot = combi_plot,
+  width = 11,
+  height = 10,
+  units = c("in"),
+  dpi = 600,
+  bg = "white"
+)
+```
+
+
+## Tables S7 and S8: Average numbers of mentions per gender, field, and cohort
+
+The code below outputs all necessary information for populating tables S7 and S8 in the SI Appendix.
+
+Overall comparison between men and women, including a t-test of means:
+```{r}
+overall_comparisons <- data.frame(matrix(NA, ncol = 4, nrow = 1))
+i <- 1
+overall_comparisons[i, 1] <- "overall"
+overall_comparisons[i, 2] <- round(t.test(news_all_total ~ inferred_gender, data=prof_totals, paired=FALSE)$p.value, 5)
+overall_comparisons[i, 3] <- round(t.test(alt_online_all_total ~ inferred_gender, data=prof_totals, paired=FALSE)$p.value, 5)
+overall_comparisons[i, 4] <- round(t.test(alt_twitter_total ~ inferred_gender, data=prof_totals, paired=FALSE)$p.value, 5)
+
+colnames(overall_comparisons) <-  c("field",  "printed_total", 
+                                    "online_total", "twitter_total")
+
+overall_comparisons$comparison <-  "ttest"
+
+
+mean_values <- prof_totals %>%
+  group_by(inferred_gender)%>%
+  filter(!is.na(overall_adj_domain))%>%
+  summarise(printed_total = mean(news_all_total, na.rm = TRUE),
+            online_total = mean(alt_online_all_total, na.rm = TRUE),
+            twitter_total =  mean(alt_twitter_total, na.rm = TRUE))%>%
+  mutate(across(2:4, \(x) round(x, 2)))
+
+mean_values$field <- "overall"
+colnames(mean_values)[1] <- "comparison"
+mean_values <- mean_values[c("comparison", "field",
+                             "printed_total", "online_total", "twitter_total")]
+
+overall_comparisons <- overall_comparisons[c("comparison", "field", 
+                                             "printed_total", "online_total",
+                                             "twitter_total")]
+
+overall_comparisons <- rbind(mean_values,
+                             overall_comparisons)
+
+overall_comparisons
+```
+
+Within-field comparison:
+```{r}
+fields <- unique(as.character(prof_panel_filter$overall_adj_domain))
+fields <- fields[!is.na(fields)]
+field_comparisons <- data.frame(matrix(NA, ncol = 5, nrow = length(fields)))
+
+for (i in 1:length(fields)){
+  field <- fields[i]
+  data <- filter(prof_totals, 
+                 overall_adj_domain == field)
+  field_comparisons[i, 1] <- field
+  field_comparisons[i, 2] <- nrow(data)
+  field_comparisons[i, 3] <- round(t.test(news_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 4] <- round(t.test(alt_online_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 5] <- round(t.test(alt_twitter_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+}
+
+colnames(field_comparisons) <- c("field", "profs", 
+                                 "printed_total", "online_total", "twitter_total")
+field_comparisons$comparison <-  "ttest"
+
+
+mean_values_field <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, overall_adj_domain)%>%
+  summarise(printed_total = mean(news_all_total, na.rm = TRUE),
+            online_total = mean(alt_online_all_total, na.rm = TRUE),
+            twitter_total =  mean(alt_twitter_total, na.rm = TRUE))%>%
+  mutate(across(2:4, \(x) round(x, 2)))
+
+#mean_values_field$field <- "overall"
+colnames(mean_values_field)[1] <- "comparison"
+colnames(mean_values_field)[2] <- "field"
+mean_values_field <- mean_values_field[c("comparison", "field", 
+                                         "printed_total", "online_total",
+                                         "twitter_total")]
+
+field_comparisons <- field_comparisons[c("comparison", "field", 
+                                         "printed_total", "online_total",
+                                         "twitter_total")]
+
+field_comparisons <- rbind(mean_values_field,
+                           field_comparisons)
+
+field_comparisons$field <- factor(field_comparisons$field,
+                                  levels = c("Physical Sciences",
+                                              "Life Sciences",
+                                              "Health Sciences",
+                                              "Social Sciences",
+                                              "Arts and Humanities"))
+
+field_comparisons <- field_comparisons %>%
+  arrange(field)
+```
+
+Within-field and year group comparison:
+```{r warning = F}
+year_groups <- unique(prof_totals$entry_batch_2023)
+year_groups <- year_groups[! year_groups == "up to NA"]
+year_groups <- year_groups[! is.na(year_groups)]
+years <- c("up to 10","up to 20", "up to 30", "up to 40", "up to 50")
+year_groups <- year_groups[order(match(year_groups,years))]
+
+year_groups_field_comparisons <- data.frame(matrix(NA, ncol = 6, nrow = length(year_groups)*length(fields)))
+row_index <- 0
+
+for (i in 1:length(year_groups)){
+  year_group <- year_groups[i]
+  
+  for (j in 1:length(fields)){
+    field <- fields[j]
+    data <- filter(prof_totals, 
+                   entry_batch_2023 == year_group & overall_adj_domain == field)
+    
+    women <- filter(data, inferred_gender == "w")
+    men <- filter(data, inferred_gender == "m")
+    
+    if (length(unique(data$inferred_gender)) != 2){
+      year_groups_field_comparisons[row_index+j, 1] <- year_group
+      year_groups_field_comparisons[row_index+j, 2] <- field
+      year_groups_field_comparisons[row_index+j, 3] <- nrow(data)
+      year_groups_field_comparisons[row_index+j, 4] <- NA
+      year_groups_field_comparisons[row_index+j, 5] <- NA
+      year_groups_field_comparisons[row_index+j, 6] <- NA
+    }else{
+      if (length(which(colSums(data[c("alt_online_all_total", "news_all_total", "alt_twitter_total", "cited_by_total_all", "count_pubs_total")]) == 0)) > 0){
+        year_groups_field_comparisons[row_index+j, 1] <- year_group
+        year_groups_field_comparisons[row_index+j, 2] <- field
+        year_groups_field_comparisons[row_index+j, 3] <- nrow(data)
+        year_groups_field_comparisons[row_index+j, 4] <- NA
+        year_groups_field_comparisons[row_index+j, 5] <- NA
+        year_groups_field_comparisons[row_index+j, 6] <- NA
+        
+      }else{
+        year_groups_field_comparisons[row_index+j, 1] <- year_group
+        year_groups_field_comparisons[row_index+j, 2] <- field
+        year_groups_field_comparisons[row_index+j, 3] <- nrow(data)
+        year_groups_field_comparisons[row_index+j, 4] <- try(round(t.test(news_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5))
+        year_groups_field_comparisons[row_index+j, 5] <- try(round(t.test(alt_online_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5))
+        year_groups_field_comparisons[row_index+j, 6] <- try(round(t.test(alt_twitter_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5))
+      }
+    }
+  }
+  row_index <- row_index + 5 
+}
+
+colnames(year_groups_field_comparisons) <- c("year_group", "field", "profs", 
+                                             "printed_total", "online_total", 
+                                             "twitter_total")
+year_groups_field_comparisons$comparison <- "ttest"
+
+mean_values_year_field <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, entry_batch_2023, overall_adj_domain)%>%
+  summarise(printed_total = mean(news_all_total, na.rm = TRUE),
+            online_total = mean(alt_online_all_total, na.rm = TRUE),
+            twitter_total =  mean(alt_twitter_total, na.rm = TRUE))%>%
+  mutate(across(2:4, \(x) round(x, 2)))
+
+colnames(mean_values_year_field)[1] <- "comparison"
+colnames(mean_values_year_field)[2] <- "year_group"
+colnames(mean_values_year_field)[3] <- "field"
+mean_values_year_field <- mean_values_year_field[c("comparison", "year_group", "field", "printed_total", 
+                                                   "online_total", "twitter_total")]
+
+year_groups_field_comparisons <- year_groups_field_comparisons[c("comparison", "year_group","field", 
+                                                                 "printed_total", "online_total", "twitter_total")]
+
+year_groups_field_comparisons[1, 4:6] <- NaN
+year_groups_field_comparisons$printed_total <- as.numeric(year_groups_field_comparisons$printed_total)
+year_groups_field_comparisons$online_total <- as.numeric(year_groups_field_comparisons$online_total)
+year_groups_field_comparisons$twitter_total <- as.numeric(year_groups_field_comparisons$twitter_total)
+
+year_groups_field_comparisons <- rbind(mean_values_year_field,
+                           year_groups_field_comparisons)
+
+year_groups_field_comparisons$field <- factor(year_groups_field_comparisons$field,
+                                              levels = c("Physical Sciences",
+                                                         "Life Sciences",
+                                                         "Health Sciences",
+                                                         "Social Sciences",
+                                                         "Arts and Humanities"))
+
+year_groups_field_comparisons <- year_groups_field_comparisons %>%
+  arrange(year_group, field)
+```
+
+Rearrange the tables for writing out:
+```{r}
+overall_comparisons_out <- overall_comparisons %>%
+  pivot_wider(
+    names_from = comparison,
+    values_from = c(printed_total, online_total, twitter_total)
+  )%>%
+  mutate_at(vars(`online_total_ttest`, `printed_total_ttest`, `twitter_total_ttest`), .funs = list(
+    ~case_when(
+      . <= 0.001 ~ '***',
+      . <= 0.01 ~ '**',
+      . <= 0.05 ~ '*',
+      . <= 0.1 ~ '.',
+      . > 0.1 ~ ''
+    )
+  ))
+
+field_comparisons_out <- field_comparisons %>%
+  pivot_wider(
+    names_from = comparison,
+    values_from = c(printed_total, online_total, twitter_total)
+  )%>%
+  mutate_at(vars(`online_total_ttest`, `printed_total_ttest`, `twitter_total_ttest`), .funs = list(
+    ~case_when(
+      . <= 0.001 ~ '***',
+      . <= 0.01 ~ '**',
+      . <= 0.05 ~ '*',
+      . <= 0.1 ~ '.',
+      . > 0.1 ~ ''
+    )
+  ))
+
+field_comparisons_out$field <- ordered(field_comparisons_out$field,
+                                       levels = c("Physical Sciences",
+                                                  "Life Sciences",
+                                                  "Health Sciences",
+                                                  "Social Sciences",
+                                                  "Arts and Humanities"))
+
+
+field_comparisons_out <- field_comparisons_out %>%
+  arrange(field)
+
+year_groups_field_comparisons_out <- year_groups_field_comparisons %>%
+  filter(!is.na(printed_total))%>%
+  pivot_wider(
+    names_from = comparison,
+    values_from = c(printed_total, online_total, twitter_total)
+  )%>%
+  mutate_at(vars(`online_total_ttest`, `printed_total_ttest`, `twitter_total_ttest`), .funs = list(
+    ~case_when(
+      . <= 0.001 ~ '***',
+      . <= 0.01 ~ '**',
+      . <= 0.05 ~ '*',
+      . <= 0.1 ~ '.',
+      . > 0.1 ~ ''
+    )
+  ))
+
+year_groups_field_comparisons_out$field <- ordered(year_groups_field_comparisons_out$field,
+                                                   levels = c("Physical Sciences",
+                                                              "Life Sciences",
+                                                              "Health Sciences",
+                                                              "Social Sciences",
+                                                              "Arts and Humanities"))
+
+
+year_groups_field_comparisons_out <- year_groups_field_comparisons_out %>%
+  filter(!is.na(year_group))%>%
+  dplyr::select(field, year_group, printed_total_m:twitter_total_ttest)%>%
+  arrange(field, year_group)
+
+## write this out
+write_csv(overall_comparisons_out, "results/supplement_tables/SI_Table_S7A.csv")
+write_csv(field_comparisons_out, "results/supplement_tables/SI_Table_S7b.csv")
+write_csv(year_groups_field_comparisons_out, "results/supplement_tables/SI_Table_S8.csv")
+
+(overall_comparisons_out%>%
+  regulartable() %>%
+  set_caption("Mean comparisons - overall (Table S7, part1)")%>%
+  autofit())
+```
+
+```{r}
+(field_comparisons_out%>%
+  regulartable() %>%
+  set_caption("Mean comparisons - per field (Table S7, part2)")%>%
+  autofit())
+```
+
+```{r}
+(year_groups_field_comparisons_out%>%
+  regulartable() %>%
+  set_caption("Mean comparisons - per yeargroup and field (Table S8)")%>%
+  autofit())
+```
+
+
+
+## Table S9: News source breakdown per field
+
+Get the average numbers of mentions per news source type, and do a comparison per source and gender:
+```{r warning = F, mention = F}
+prof_totals$overall_adj_domain <- ordered(prof_totals$overall_adj_domain,
+                                              levels = c("Physical Sciences",
+                                                         "Life Sciences",
+                                                         "Health Sciences",
+                                                         "Social Sciences",
+                                                         "Arts and Humanities"))
+
+# t-test for average number of mentions per resource
+t_test_breakdown_news <- prof_totals %>%
+  dplyr::select(inferred_gender, overall_adj_domain, news_all_total,news_national_total,
+         news_regional_total, news_intl_total, news_intl_other_sources_total)%>%
+  pivot_longer(news_all_total:news_intl_other_sources_total)
+
+t_test_breakdown_news$name <- ordered(t_test_breakdown_news$name,
+                                     levels = c("news_all_total",
+                                                "news_national_total",
+                                                "news_regional_total",
+                                                "news_intl_total",
+                                                "news_intl_other_sources_total"))
+
+t_test_breakdown_news <-  t_test_breakdown_news %>%
+  group_by(overall_adj_domain, name) %>%
+  group_map(~ t.test(value ~ inferred_gender, .x, paired = FALSE))
+
+# extract the p-values
+p_values_news <- round(unlist(lapply(t_test_breakdown_news,  function(x) x[names(x) == "p.value"])), 3)
+
+source_breakdown <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, overall_adj_domain)%>%
+  summarise(
+    n_total = n(),
+    national_total = sum(news_national_total, na.rm = TRUE),
+    regional_total = sum(news_regional_total, na.rm = TRUE),
+    intl_total = sum(news_intl_total, na.rm = TRUE),
+    other_total = sum(news_intl_other_sources_total, na.rm = TRUE),
+    total_total =  sum(news_all_total, na.rm = TRUE),
+    national_ave = mean(news_national_total, na.rm = TRUE),
+    regional_ave = mean(news_regional_total, na.rm = TRUE),
+    intl_ave = mean(news_intl_total, na.rm = TRUE),
+    other_ave = mean(news_intl_other_sources_total, na.rm = TRUE),
+    total_ave =  mean(news_all_total, na.rm = TRUE))%>%
+  mutate(across(contains('_ave'), \(x) round(x, 2)))
+
+
+source_breakdown$national_share <- source_breakdown$national_total/source_breakdown$total_total
+source_breakdown$regional_share <- source_breakdown$regional_total/source_breakdown$total_total
+source_breakdown$intl_share <- source_breakdown$intl_total/source_breakdown$total_total
+source_breakdown$other_share <- source_breakdown$other_total/source_breakdown$total_total
+source_breakdown$total_share <- source_breakdown$total_total/source_breakdown$total_total
+
+source_breakdown_news <- source_breakdown %>%
+   pivot_longer(national_total:total_share, 
+               names_to = c('news_type', '.value'),
+               names_pattern = '(.*?)_(.*)')%>%
+  dplyr::select(overall_adj_domain, inferred_gender,news_type, n_total, total:share)%>%
+  mutate(across(5:6, \(x) round(x, 2)))%>%
+  pivot_wider(
+    names_from = inferred_gender,
+    values_from = c(n_total:share)
+  )%>%
+  arrange(overall_adj_domain)
+
+# arrange the news types
+source_breakdown_news$news_type <- factor(source_breakdown_news$news_type,
+                                     levels = c("total",  
+                                                "national",
+                                                "regional",
+                                                "intl", 
+                                                "other"))
+
+source_breakdown_news <- source_breakdown_news %>%
+  arrange(overall_adj_domain, news_type)
+
+# add in the p-values of men/women comparisons
+source_breakdown_news$p_value <- p_values_news
+
+source_breakdown_news <- source_breakdown_news %>%
+   mutate(news_type = recode(news_type, 
+                             `total` = "All printed news", 
+                             `national` = "National news (NL)",
+                             `regional` = "Local news (NL)",
+                             `intl` = "International news (top outlets)",
+                             `other` = "Other news"),
+          p_sig = case_when(
+            p_value <= 0.001 ~ '***',
+            p_value <= 0.01 ~ '**',
+            p_value <= 0.05 ~ '*',
+            p_value <= 0.1 ~ '.',
+            p_value > 0.1 ~ '' ))%>%
+  dplyr::select(overall_adj_domain:ave_w, p_sig, share_m:share_w)
+
+
+## write this out
+write_csv(source_breakdown_news, "results/supplement_tables/SI_Table_S9.csv")
+
+(source_breakdown_news%>%
+  regulartable() %>%
+  set_caption("Source breakdown - printed news")%>%
+  autofit())
+```
+
+## Table S10: Online news source breakdown per field
+
+Get average mentions per online news source type, gender and field:
+```{r}
+# t-test for average number of mentions per resource
+t_test_breakdown_online_news <- prof_totals %>%
+  dplyr::select(inferred_gender, overall_adj_domain, alt_online_all_total,
+         alt_general_interest_combi_news_total, alt_science_combi_news_total,
+         alt_other_combi_news_total)%>%
+  pivot_longer(alt_online_all_total:alt_other_combi_news_total)
+
+
+t_test_breakdown_online_news$name <- ordered(t_test_breakdown_online_news$name,
+                                             levels = c("alt_online_all_total",
+                                                        "alt_general_interest_combi_news_total",
+                                                        "alt_science_combi_news_total",
+                                                        "alt_other_combi_news_total"))
+
+t_test_breakdown_online_news <-  t_test_breakdown_online_news %>%
+  group_by(overall_adj_domain, name) %>%
+  group_map(~ t.test(value ~ inferred_gender, .x, paired = FALSE))
+
+# extract the p-values
+p_values_online_news <- round(unlist(lapply(t_test_breakdown_online_news,  function(x) x[names(x) == "p.value"])), 3)
+
+
+source_breakdown <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, overall_adj_domain)%>%
+  summarise(
+    n_total = n(),
+    all_total = sum(alt_online_all_total, na.rm = TRUE),
+    gen_total = sum(alt_general_interest_combi_news_total, na.rm = TRUE),
+    sci_total = sum(alt_science_combi_news_total, na.rm = TRUE),
+    other_total = sum(alt_other_combi_news_total, na.rm = TRUE),
+    all_ave = mean(alt_online_all_total, na.rm = TRUE),
+    gen_ave = mean(alt_general_interest_combi_news_total, na.rm = TRUE),
+    sci_ave = mean(alt_science_combi_news_total, na.rm = TRUE),
+    other_ave = mean(alt_other_combi_news_total, na.rm = TRUE))%>%
+  mutate(across(contains('_ave'), \(x) round(x, 2)))
+
+source_breakdown$all_share <- source_breakdown$all_total/source_breakdown$all_total
+source_breakdown$gen_share <- source_breakdown$gen_total/source_breakdown$all_total
+source_breakdown$sci_share <- source_breakdown$sci_total/source_breakdown$all_total
+source_breakdown$other_share <- source_breakdown$other_total/source_breakdown$all_total
+
+source_breakdown_online_news <- source_breakdown %>%
+   pivot_longer(all_total:other_share, 
+               names_to = c('news_type', '.value'),
+               names_pattern = '(.*?)_(.*)')%>%
+  dplyr::select(overall_adj_domain, inferred_gender,news_type, n_total, total:share)%>%
+  mutate(across(5:6, \(x) round(x, 2)))%>%
+  pivot_wider(
+    names_from = inferred_gender,
+    values_from = c(n_total:share)
+  )%>%
+  arrange(overall_adj_domain)
+
+# arrange the news types
+source_breakdown_online_news$news_type <- ordered(source_breakdown_online_news$news_type,
+                                     levels = c("all", 
+                                                "gen",
+                                                "sci",
+                                                "other"))
+
+source_breakdown_online_news <- source_breakdown_online_news %>%
+  arrange(overall_adj_domain, news_type)
+
+# add in the p-values of men/women comparisons
+source_breakdown_online_news$p_value <- p_values_online_news
+
+source_breakdown_online_news <- source_breakdown_online_news %>%
+   mutate(news_type = recode(news_type, 
+                             `all` = "All online news", 
+                             `gen` = "General interest news",
+                             `sci` = "Science news",
+                             `other` = "Other news"),
+          p_sig = case_when(
+            p_value <= 0.001 ~ '***',
+            p_value <= 0.01 ~ '**',
+            p_value <= 0.05 ~ '*',
+            p_value <= 0.1 ~ '.',
+            p_value > 0.1 ~ '' ))%>%
+  dplyr::select(overall_adj_domain:ave_w, p_sig, share_m:share_w)
+ 
+
+# write this out
+write_csv(source_breakdown_online_news, "results/supplement_tables/SI_Table_S10.csv")
+
+(source_breakdown_online_news%>%
+  regulartable() %>%
+  set_caption("Source breakdown - online news")%>%
+  autofit())
+```
+
+## Table S11: Proportion of online news mentions that contain mentions of professors’ first and last names
+
+For this, we need to get the shares among the mentions for which we did retrieve
+the full text.
+
+First, get these data:
+```{r}
+# fill in own credentials
+port <- 5432
+user <- "postgres"
+password <- "dutchmediaprofssql"
+database_name <- "postgres"
+
+
+con <- dbConnect(Postgres(),
+                 dbname= database_name,
+                 port = port,
+                 user = user, 
+                 password = password)
+
+con # Checks connection is working
+altmetric_prepared <- dbReadTable(con, "altmetric_att_prepared")
+content_altmetric <- dbGetQuery(con, "select \"url\" from pub_att_news_full_text where \"response\"='200'")
+
+# content found?
+altmetric_prepared$content_found <- ifelse(altmetric_prepared$url %in% content_altmetric$url, TRUE, FALSE)
+
+# merge with professor gender
+prof_gender <- dbReadTable(con, "gender_table")
+
+new_id_mapping <- dbReadTable(con, "anonymous_id_mapping")
+
+prof_gender_merge <- merge(prof_gender,
+                           new_id_mapping,
+                           by = "profile_id",
+                           all.x = TRUE)
+
+prof_gender_merge <- prof_gender_merge %>%
+  dplyr::select(-profile_id)
+
+colnames(prof_gender_merge)[16] <- "profile_id"
+
+```
+
+Compile the counts we need:
+```{r}
+# get a year from the "posted on" string
+altmetric_prepared$year <- year(as_date(altmetric_prepared$posted_on))
+
+prof_year_attention_online <- altmetric_prepared %>%
+  # filter out those without any text...
+  filter(year >= 2011 & year <= 2023 & content_found == TRUE)%>%
+  group_by(profile_id, source_type, year)%>%
+  summarise(alt_attn = n())%>%
+  arrange(profile_id, source_type, year)%>%
+  pivot_wider(names_from = source_type, values_from = c(alt_attn))%>%
+  replace(is.na(.), 0)%>%
+  arrange(profile_id, year)
+
+colnames(prof_year_attention_online)[-c(1:2)] <- paste0("alt_", colnames(prof_year_attention_online)[-c(1:2)])
+# rearrange to match the column order of the other dataframe above
+prof_year_attention_online <- prof_year_attention_online[c("profile_id", "year", "alt_news_aggregator", "alt_online_blog", "alt_sci_news_aggregator" , "alt_finance_news" , "alt_general_interest_local_news", "alt_general_interest_news", "alt_medical_news", "alt_other_news", "alt_popsci_news", "alt_science_news")]
+
+## those where we have names last included:
+
+prof_year_attention_online_names <- altmetric_prepared %>%
+  filter(year >= 2011 & year <= 2023 & last_name_mention == TRUE & content_found == TRUE)%>%
+  group_by(profile_id, source_type, year)%>%
+  summarise(alt_attn = n())%>%
+  arrange(profile_id, source_type, year)%>%
+  pivot_wider(names_from = source_type, values_from = c(alt_attn))%>%
+  replace(is.na(.), 0)%>%
+  arrange(profile_id, year)
+
+colnames(prof_year_attention_online_names)[-c(1:2)] <- paste0("alt_name_", colnames(prof_year_attention_online_names)[-c(1:2)])
+
+# rearrange to match the column order of the other dataframe above
+prof_year_attention_online_names <- prof_year_attention_online_names[c("profile_id", "year", "alt_name_news_aggregator", "alt_name_online_blog", "alt_name_sci_news_aggregator" , "alt_name_finance_news" , "alt_name_general_interest_local_news", "alt_name_general_interest_news", "alt_name_medical_news", "alt_name_other_news", "alt_name_popsci_news", "alt_name_science_news")]
+
+## And for the full name included:
+
+prof_year_attention_online_full_names <- altmetric_prepared %>%
+  filter(year >= 2011 & year <= 2023 & first_last_mention == TRUE & content_found == TRUE)%>%
+  group_by(profile_id, source_type, year)%>%
+  summarise(alt_attn = n())%>%
+  arrange(profile_id, source_type, year)%>%
+  pivot_wider(names_from = source_type, values_from = c(alt_attn))%>%
+  replace(is.na(.), 0)%>%
+  arrange(profile_id, year)
+
+colnames(prof_year_attention_online_full_names)[-c(1:2)] <- paste0("alt_fname_", colnames(prof_year_attention_online_full_names)[-c(1:2)])
+
+# rearrange to match the column order of the other dataframe above
+prof_year_attention_online_full_names <- prof_year_attention_online_full_names[c("profile_id", "year", "alt_fname_news_aggregator", "alt_fname_online_blog", "alt_fname_sci_news_aggregator" , "alt_fname_finance_news" , "alt_fname_general_interest_local_news", "alt_fname_general_interest_news", "alt_fname_medical_news", "alt_fname_other_news", "alt_fname_popsci_news", "alt_fname_science_news")]
+
+
+prof_year_attention_online <- merge(prof_year_attention_online,
+                                    prof_year_attention_online_names,
+                                    by = c("profile_id", "year"),
+                                    all.x = TRUE)
+
+prof_year_attention_online <- merge(prof_year_attention_online,
+                                    prof_year_attention_online_full_names,
+                                    by = c("profile_id", "year"),
+                                    all.x = TRUE)
+
+
+# get the cumulatives
+# As Altmetric data goes back to 2011 in principle, set attention to 0 if year >= 2011, leave as NA
+# otherwise:
+prof_year_attention_online_total <- prof_year_attention_online %>%
+  arrange(profile_id, year)%>%
+  mutate_at(vars(contains('alt_')), ~ifelse(is.na(.), 0, .))%>%
+  group_by(profile_id)%>%
+  mutate(across(alt_news_aggregator:alt_fname_science_news, ~cumsum(.x), .names = "{col}_total"))%>%
+  mutate_at(vars(contains('alt_')), ~ifelse(. == 0 & year < 2011, NA, .))
+
+
+prof_year_attention_online_total <- merge(prof_year_attention_online_total,
+                                          new_id_mapping,
+                                          by = "profile_id")
+
+# drop the profile_id, replace it with the anonymized one, and adjust the column name back
+prof_year_attention_online_total <- prof_year_attention_online_total %>%
+  dplyr::select(-profile_id)
+
+colnames(prof_year_attention_online_total)[which(colnames(prof_year_attention_online_total)=="prof_id")] <- "profile_id"
+
+
+# and get the final years for further analysis
+prof_year_attention_online_total <- merge(prof_year_attention_online_total,
+                                          prof_totals[c("profile_id", "overall_adj_domain")],
+                                          by = "profile_id",
+                                          all.x = TRUE)
+
+
+## totals
+prof_year_attention_online_total$alt_online_all <- rowSums(prof_year_attention_online_total[,c("alt_news_aggregator",
+                                                                "alt_online_blog",
+                                                                "alt_sci_news_aggregator",
+                                                                "alt_finance_news",
+                                                                "alt_general_interest_local_news",
+                                                                "alt_general_interest_news",            
+                                                                "alt_medical_news",
+                                                                "alt_other_news",
+                                                                "alt_popsci_news",
+                                                                "alt_science_news")])
+
+
+
+prof_year_attention_online_total$alt_name_online_all <- rowSums(prof_year_attention_online_total[,c("alt_name_news_aggregator",
+                                                                      "alt_name_online_blog",
+                                                                      "alt_name_sci_news_aggregator",
+                                                                      "alt_name_finance_news",
+                                                                      "alt_name_general_interest_local_news",
+                                                                      "alt_name_general_interest_news",            
+                                                                      "alt_name_medical_news",
+                                                                      "alt_name_other_news",
+                                                                      "alt_name_popsci_news",
+                                                                      "alt_name_science_news")])
+
+prof_year_attention_online_total$alt_online_fname_all <- rowSums(prof_year_attention_online_total[,c("alt_fname_news_aggregator",
+                                                                           "alt_fname_online_blog",
+                                                                           "alt_fname_sci_news_aggregator",
+                                                                           "alt_fname_finance_news",
+                                                                           "alt_fname_general_interest_local_news",
+                                                                           "alt_fname_general_interest_news",            
+                                                                           "alt_fname_medical_news",
+                                                                           "alt_fname_other_news",
+                                                                           "alt_fname_popsci_news",
+                                                                           "alt_fname_science_news")])
+
+
+prof_year_attention_online_total$alt_online_all_total <- rowSums(prof_year_attention_online_total[,c("alt_news_aggregator_total",
+                                                                "alt_online_blog_total",
+                                                                "alt_sci_news_aggregator_total",
+                                                                "alt_finance_news_total",
+                                                                "alt_general_interest_local_news_total",
+                                                                "alt_general_interest_news_total",            
+                                                                "alt_medical_news_total",
+                                                                "alt_other_news_total",
+                                                                "alt_popsci_news_total",
+                                                                "alt_science_news_total")])
+
+
+prof_year_attention_online_total$alt_online_name_all_total <- rowSums(prof_year_attention_online_total[,c("alt_name_news_aggregator_total",
+                                                                      "alt_name_online_blog_total",
+                                                                      "alt_name_sci_news_aggregator_total",
+                                                                      "alt_name_finance_news_total",
+                                                                      "alt_name_general_interest_local_news_total",
+                                                                      "alt_name_general_interest_news_total",            
+                                                                      "alt_name_medical_news_total",
+                                                                      "alt_name_other_news_total",
+                                                                      "alt_name_popsci_news_total",
+                                                                      "alt_name_science_news_total")])
+
+prof_year_attention_online_total$alt_online_fname_all_total <- rowSums(prof_year_attention_online_total[,c("alt_fname_news_aggregator_total",
+                                                                      "alt_fname_online_blog_total",
+                                                                      "alt_fname_sci_news_aggregator_total",
+                                                                      "alt_fname_finance_news_total",
+                                                                      "alt_fname_general_interest_local_news_total",
+                                                                      "alt_fname_general_interest_news_total",            
+                                                                      "alt_fname_medical_news_total",
+                                                                      "alt_fname_other_news_total",
+                                                                      "alt_fname_popsci_news_total",
+                                                                      "alt_fname_science_news_total")])
+
+prof_year_attention_online_total <- merge(prof_year_attention_online_total,
+                            prof_gender_merge[c("profile_id", "inferred_gender")],
+                            by = "profile_id",
+                            all.x = TRUE)
+
+```
+
+Get the final year:
+```{r}
+prof_totals_online <- prof_year_attention_online_total %>%
+  group_by(profile_id)%>%
+  filter(year == max(year) & !is.na(overall_adj_domain))
+```
+
+Proportions of both who are mentioned:
+```{r}
+online_mentions_overall <- prof_totals_online %>%
+  filter(!is.na(overall_adj_domain) & alt_online_all_total > 0)%>%
+  group_by(overall_adj_domain) %>%
+  bind_rows(., prof_totals_online %>% filter(!is.na(overall_adj_domain) & alt_online_all_total > 0)%>% mutate(overall_adj_domain = as.character("All"))) %>%
+  summarise(
+    n_total = n(),
+    all_total = sum(alt_online_all_total, na.rm = TRUE))
+
+online_mentions_fname_overall <- prof_totals_online %>%
+  filter(!is.na(overall_adj_domain) & alt_online_fname_all_total > 0)%>%
+  group_by(overall_adj_domain) %>%
+  bind_rows(., prof_totals_online %>% filter(!is.na(overall_adj_domain) & alt_online_fname_all_total > 0)%>% mutate(overall_adj_domain = as.character("All"))) %>%
+  summarise(
+    n_fname_total = n(),
+    all_fname_total = sum(alt_online_fname_all_total, na.rm = TRUE))
+
+online_mentions_combi_overall <- merge(online_mentions_overall,
+                               online_mentions_fname_overall,
+                               by = c("overall_adj_domain"))
+
+online_mentions_combi_overall$overall_adj_domain <- factor(online_mentions_combi_overall$overall_adj_domain,
+                                                           levels = c("All",
+                                                                      "Physical Sciences",
+                                                                      "Life Sciences",
+                                                                      "Health Sciences",
+                                                                      "Social Sciences",
+                                                                      "Arts and Humanities"))
+
+online_mentions_combi_overall$share <- round(online_mentions_combi_overall$all_fname_total/online_mentions_combi_overall$all_total , 5)
+
+(prop_table_online_overall_save <- online_mentions_combi_overall %>%
+  arrange(overall_adj_domain)%>%
+  dplyr::select(overall_adj_domain, share)%>%
+  regulartable() %>%
+  set_caption("Share of mentions of men's and women's paper mentions containing professors' full names - across all fields")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(prop_table_online_overall_save) %>%
+    print(target = "results/supplement_tables/SI_Table_S11A.docx")
+
+
+```
+
+
+Now, get the proportions of mentions that contain name mentions as well:
+```{r}
+online_mentions <- prof_totals_online %>%
+  filter(!is.na(overall_adj_domain) & alt_online_all_total > 0)%>%
+  group_by(inferred_gender, overall_adj_domain) %>%
+  bind_rows(., prof_totals_online %>% filter(!is.na(overall_adj_domain) & alt_online_all_total > 0)%>% mutate(overall_adj_domain = as.character("All"))) %>%
+  summarise(
+    n_total = n(),
+    all_total = sum(alt_online_all_total, na.rm = TRUE))
+
+
+online_mentions_fname <- prof_totals_online %>%
+  filter(!is.na(overall_adj_domain) & alt_online_fname_all_total > 0)%>%
+  group_by(inferred_gender, overall_adj_domain) %>%
+  bind_rows(., prof_totals_online %>% filter(!is.na(overall_adj_domain) & alt_online_fname_all_total > 0)%>% mutate(overall_adj_domain = as.character("All"))) %>%
+  summarise(
+    n_fname_total = n(),
+    all_fname_total = sum(alt_online_fname_all_total, na.rm = TRUE))
+
+online_mentions_combi <- merge(online_mentions,
+                               online_mentions_fname,
+                               by = c("inferred_gender", "overall_adj_domain"))
+
+online_mentions_combi %>%
+  arrange(overall_adj_domain)
+
+
+## Full names
+prop_all <- prop.test(c(23908, 5616), c(326089, 102903))
+
+# phys
+prop_phys <- prop.test(c(10799, 1407), c(95910, 14512))
+
+# life
+prop_life <- prop.test(c(5134, 1188), c(53437, 17693))
+
+# MEDICINE
+prop_med <- prop.test(c(4481, 1533), c(137559, 53085))
+
+# Soc. sci
+prop_soc <- prop.test(c(3424, 1442), c(38549, 17340))
+
+# A&H
+prop_art <- prop.test(c(70, 46), c(634, 273))
+
+options(scipen = 999)
+
+# populate a table
+prop_table_online_name <- data.frame(matrix(NA, nrow = 0, ncol = 4))
+prop_table_online_name[1, ] <- c("all", round(prop_all$estimate, 5), round(prop_all$p.value, 5))
+prop_table_online_name[2, ] <- c("phys", round(prop_phys$estimate, 5), round(prop_phys$p.value, 5))
+prop_table_online_name[3, ] <- c("life", round(prop_life$estimate, 5), round(prop_life$p.value, 5))
+prop_table_online_name[4, ] <- c("medicine", round(prop_med$estimate, 5), round(prop_med$p.value, 5))
+prop_table_online_name[5, ] <- c("soc_sci", round(prop_soc$estimate, 5), round(prop_soc$p.value, 5))
+prop_table_online_name[6, ] <- c("arts", round(prop_art$estimate, 5), round(prop_art$p.value, 5))
+
+prop_table_online_name$sig <-  ifelse(prop_table_online_name$X4 <= 0.001, 
+                                      "***",
+                                      ifelse(prop_table_online_name$X4 <= 0.01, 
+                                             "**",
+                                             ifelse(prop_table_online_name$X4 <= 0.05, 
+                                                    "*",
+                                                    ifelse(prop_table_online_name$X4 <= 0.1, 
+                                                           ".", ""))))
+
+colnames(prop_table_online_name) <- c("Field", "Men", "Women", "p", " ")
+
+
+(prop_table_online_save <- prop_table_online_name %>%
+  regulartable() %>%
+  set_caption("Share of mentions of men's and women's paper mentions containing professors' full names")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(prop_table_online_save) %>%
+    print(target = "results/supplement_tables/SI_Table_S11B.docx")
+```
+
+
+
+## Figure S3: Correlations
+
+Correlations between variables in our models:
+```{r fig.height=10, fig.width=10}
+labels_cor <-c("Publications",
+               "Share first-authored publications",
+               "Citations",
+               "Average SJR score of publications",
+               "News attention",
+               "Online news attention",
+               "Twitter/X attention",
+               "Coauthors' citations",
+               "Coauthors' online news and Twitter/X attention",
+               "Years since first publication")
+
+select_vars_cor <- c("count_pubs",
+                     "share_first_au",
+                     "cited_by",
+                     "avg_sjr",
+                     "news_all",
+                     "alt_online_all",
+                     "alt_twitter",
+                     "coa_tot_cited_by",
+                     "coa_online_combi",
+                     "years_since_first_pub")
+
+correlation_matrix <- cor(prof_panel_filter[,select_vars_cor],use="pairwise.complete.obs")
+
+
+colnames(correlation_matrix) <- labels_cor
+rownames(correlation_matrix) <- labels_cor
+
+
+
+png(height=10, width=10, 
+    unit = "in", 
+    res = 600,
+    file="results/supplement_figures/SI_Fig_S3.png")
+
+corrplot(correlation_matrix, 
+         method="number",
+         tl.col = "black",
+         mar=c(0,0,2,0),
+        col=colorRampPalette(c("white", "#6388b4"))(100))
+
+
+dev.off()
+
+corrplot(correlation_matrix, 
+         method="number",
+         tl.col = "black",
+         mar=c(0,0,2,0),
+        col=colorRampPalette(c("white", "#6388b4"))(100))
+```
+

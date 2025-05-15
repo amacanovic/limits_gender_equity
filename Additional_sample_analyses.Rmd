@@ -1,0 +1,507 @@
+---
+title: "Additional_analyses"
+author: "Ana Macanovic"
+date: "2025-05-06"
+output: html_document
+---
+
+# SI: Results of additinal analyses (SI Appendix S6)
+
+```{r warning = F, message = F}
+source("helper_functions.R")
+packages_to_load <- c("readr", "dplyr", "tidyr", 
+                      "ggplot2", "cowplot", "ggpubr",
+                      "tidyverse", "flextable", 
+                      "officer", "psych",
+                      "DescTools", "stevemisc")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+
+Load the additional panel first:
+```{r message = F, warning = F}
+prof_panel_filter_additional <- read_csv("panel_datasets/additional_dataset/prof_panel_additional_anonymised.csv")
+```
+
+## Table S13
+
+Obtained by manual checking of the data sources.
+
+## Table S14
+
+Get the numbers of men and women professors in the additional dataset. 
+Combined with Table S5, this gives table S14.
+
+First, get the totals for the last observation for each professor:
+```{r}
+prof_totals <- prof_panel_filter_additional %>%
+  group_by(profile_id)%>%
+  filter(year == max(year) & !is.na(overall_adj_domain))
+
+prof_totals$inferred_gender <- as.factor(prof_totals$inferred_gender)
+```
+
+Number of profs per field and gender:
+```{r}
+profs_gender_field <- prof_totals %>% 
+  group_by(overall_adj_domain, inferred_gender)%>%
+  summarise(n = n())%>%
+  pivot_wider(names_from = inferred_gender, values_from = n)
+
+profs_gender_field$overall_adj_domain <- ordered(profs_gender_field$overall_adj_domain,
+                                                levels = c( "Physical Sciences", 
+                                                            "Life Sciences",
+                                                            "Health Sciences",
+                                                            "Social Sciences",
+                                                            "Arts and Humanities"))
+
+
+profs_gender_field <- profs_gender_field %>%
+  arrange(overall_adj_domain)
+
+profs_gender_field$share_w <- round(profs_gender_field$w/(profs_gender_field$m+profs_gender_field$w)*100,3)
+
+
+(profs_gender_field_save <- profs_gender_field %>%
+  regulartable() %>%
+  set_caption("Professors per field and gender")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(profs_gender_field_save) %>%
+    print(target = "Results/supplement_tables/SI_Table_S14.docx")
+```
+
+
+## Table S15
+
+Get the additional panel descriptive statitics.
+Combined with Table S6, this gives Table S15.
+
+Describe groups by gender:
+```{r}
+prof_panel_filter_descriptives <- prof_panel_filter_additional %>%
+  filter(!is.na(overall_adj_domain) & year >= 2013 & year <= 2023 & years_since_first_pub >= 0)
+
+desc_by_gender <- describeBy(prof_panel_filter_descriptives[c("years_since_first_pub", "news_all", "alt_online_all", "alt_twitter",
+                                                              "count_pubs", "share_first_au", "cited_by", "avg_sjr",
+                                                              "count_pubs_total", "share_first_au_total", "cited_by_total_all",
+                                                              "avg_sjr_total", "coa_tot_cited_by",  "coa_tot_cited_by_total", 
+                                                              "coa_online_combi_total", "coa_online_combi",
+                                                              "news_all_total", "alt_online_all_total",
+                                                              "alt_twitter_total")], prof_panel_filter_descriptives$inferred_gender, mat = TRUE) 
+```
+
+Select columns of interest and tidy this up:
+```{r}
+desc_by_gender$variable <- rownames(desc_by_gender)
+desc_by_gender$variable <- str_sub(desc_by_gender$variable, end = -2)
+
+desc_by_gender_tidy <- desc_by_gender %>%
+  dplyr::select(group1, variable, n, mean, sd, median, min, max)%>%
+  pivot_wider(names_from = group1,
+              values_from = c(n, mean, sd, median, min, max))%>%
+ mutate_if(is.numeric, round, 3)
+  
+```
+
+Test the means:
+```{r}
+cols <- c("years_since_first_pub", "news_all", "alt_online_all", "alt_twitter",
+          "count_pubs", "share_first_au", "cited_by", "avg_sjr",
+          "count_pubs_total", "share_first_au_total", "cited_by_total_all",
+          "avg_sjr_total", "coa_tot_cited_by",  "coa_tot_cited_by_total", 
+          "coa_online_combi_total", "coa_online_combi",
+          "news_all_total", "alt_online_all_total",
+          "alt_twitter_total")
+
+p_values <- c()
+
+for (col in cols){
+  
+  men_values <- prof_panel_filter_additional[which(prof_panel_filter_additional$inferred_gender == "m"), col]
+  women_values <- prof_panel_filter_additional[which(prof_panel_filter_additional$inferred_gender == "w"), col]
+  p_values <- c(p_values, round(t.test(men_values,women_values, data=data, paired=FALSE)$p.value, 5))
+}
+
+p_val_differences <- data.frame(variable = cols, 
+                                p_value = p_values)
+```
+
+
+Merge the two tables:
+```{r}
+desc_by_gender_tidy <- merge(desc_by_gender_tidy,
+                             p_val_differences,
+                             by = "variable")
+
+desc_by_gender_tidy$stars <- ifelse(desc_by_gender_tidy$p_value <= 0.001, "***",
+                             ifelse(desc_by_gender_tidy$p_value <= 0.001, "**",
+                                    ifelse(desc_by_gender_tidy$p_value <= 0.05, "*",
+                                           ifelse(desc_by_gender_tidy$p_value <= 0.1, ".", ""))))
+
+# order the factors
+desc_by_gender_tidy$variable <- factor(desc_by_gender_tidy$variable,
+                                       levels = c("news_all",
+                                                  "news_all_total",
+                                                  "alt_online_all",
+                                                  "alt_online_all_total",
+                                                  "alt_twitter",
+                                                  "alt_twitter_total",
+                                                  "count_pubs",
+                                                  "count_pubs_total",
+                                                  "share_first_au",
+                                                  "share_first_au_total", 
+                                                  "cited_by",
+                                                  "cited_by_total_all",
+                                                  "avg_sjr",
+                                                  "avg_sjr_total",  
+                                                  "coa_tot_cited_by",
+                                                  "coa_tot_cited_by_total", 
+                                                  "coa_online_combi",
+                                                  "coa_online_combi_total",
+                                                  "years_since_first_pub"))
+
+
+# select the variables
+desc_by_gender_tidy <- desc_by_gender_tidy %>%
+  arrange(variable)%>%
+  dplyr::select(variable, n_m, n_w, mean_m, mean_w, stars, sd_m, sd_w, median_m, median_w, min_m, min_w, max_m, max_w)
+
+(desc_by_gender_tidy_save <- desc_by_gender_tidy %>%
+  regulartable() %>%
+  set_caption("Descriptive statistics")%>%
+  autofit())
+
+word_document_name <-
+    read_docx() %>%
+    body_add_flextable(desc_by_gender_tidy_save) %>%
+    print(target = "Results/supplement_tables/SI_Table_S15.docx")
+```
+## Fig S12
+
+Within-field comparison:
+```{r}
+fields <- c("Physical Sciences",
+            "Life Sciences",
+            "Health Sciences",
+            "Social Sciences",
+            "Arts and Humanities")
+field_comparisons <- data.frame(matrix(NA, ncol = 5, nrow = length(fields)))
+
+for (i in 1:length(fields)){
+  field <- fields[i]
+  data <- filter(prof_totals, 
+                 overall_adj_domain == field)
+  field_comparisons[i, 1] <- field
+  field_comparisons[i, 2] <- nrow(data)
+  field_comparisons[i, 3] <- round(t.test(news_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 4] <- round(t.test(alt_online_all_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+  field_comparisons[i, 5] <- round(t.test(alt_twitter_total ~ inferred_gender, data=data, paired=FALSE)$p.value, 5)
+}
+
+colnames(field_comparisons) <- c("field", "profs",
+                                 "total", "online_total", "twitter_total")
+field_comparisons$comparison <-  "ttest"
+
+
+mean_values_field <- prof_totals %>%
+  filter(!is.na(overall_adj_domain))%>%
+  group_by(inferred_gender, overall_adj_domain)%>%
+  summarise(total = mean(news_all_total, na.rm = TRUE),
+            online_total = mean(alt_online_all_total, na.rm = TRUE),
+            twitter_total =  mean(alt_twitter_total, na.rm = TRUE),
+            total_sd = sd(news_all_total, na.rm = TRUE),
+            online_total_sd = sd(alt_online_all_total, na.rm = TRUE),
+            twitter_total_sd =  sd(alt_twitter_total, na.rm = TRUE),
+            all_n = n())%>%
+  mutate(
+            
+            total_se = total_sd / sqrt(all_n),
+            online_total_se = online_total_sd / sqrt(all_n),
+            twitter_total_se =  twitter_total_sd / sqrt(all_n),
+            
+            total_lci = total - qt(1 - (0.05 / 2), all_n - 1) * total_se,
+            online_total_lci = online_total - qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+            twitter_total_lci =  twitter_total - qt(1 - (0.05 / 2), all_n - 1) * twitter_total_se,
+            
+            total_uci = total + qt(1 - (0.05 / 2), all_n - 1) * total_se,
+            online_total_uci = online_total + qt(1 - (0.05 / 2), all_n - 1) * online_total_se,
+            twitter_total_uci =  twitter_total + qt(1 - (0.05 / 2), all_n - 1) * twitter_total_se)%>%
+  mutate(across(2:17, \(x) round(x, 3)))
+
+colnames(mean_values_field)[1] <- "comparison"
+colnames(mean_values_field)[2] <- "field"
+```
+
+Plot the means comparison:
+```{r}
+mean_values_field$field <- factor(mean_values_field$field,
+                                   levels = c("Physical Sciences",
+                                              "Life Sciences",
+                                              "Health Sciences",
+                                              "Social Sciences",
+                                              "Arts and Humanities"))
+mean_values_field$comparison <- ordered(mean_values_field$comparison,
+                                   levels = c("m", "w"))
+
+significance_testing <-  field_comparisons
+
+significance_testing <-  significance_testing %>%
+  filter(comparison == "ttest")%>%
+  mutate_at(vars(`online_total`, `total`, `twitter_total`), .funs = list(
+    ~case_when(
+      . <= 0.001 ~ '***',
+      . <= 0.01 ~ '**',
+      . <= 0.05 ~ '*',
+      . <= 0.1 ~ '',
+      . > 0.1 ~ ''
+    )))
+
+significance_testing$field <- factor(significance_testing$field,
+                                   levels = c("Arts and Humanities",
+                                              "Social Sciences",
+                                              "Health Sciences",
+                                               "Life Sciences",
+                                              "Physical Sciences"
+                                              ))
+significance_testing <- significance_testing %>%
+  arrange(field)
+
+significance_testing$group1 <- "m"
+significance_testing$group2 <- "w"
+significance_testing$x <- c(1,2,3,4, 5)
+significance_testing$xmin <- c(0.75,1.75,2.75,3.75, 4.75)
+significance_testing$xmax <- c(1.25,2.25, 3.25,4.25, 5.25)
+significance_testing$comparison <- "m"
+
+
+average_news <- mean_values_field %>%
+  ggplot(aes(x=fct_rev(field), y=total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat="identity", alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = total_lci, 
+        ymax = total_uci
+    ),
+    width = 0.2,
+    stat="identity",
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = "Inferred gender"))+
+  scale_fill_manual(values =  c("#F5C710", "#61D04F")  , labels = c("Women", "Men"))+
+  scale_color_manual(values =  c("#997b06", "#338a25")  , labels = c("Women", "Men"), guide="none")+
+  ggtitle("Printed news attention")+
+  stat_pvalue_manual(
+    rev(significance_testing),
+    y.position = rep(150, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = "{total}",
+    remove.bracket = FALSE,
+    hide.ns = TRUE
+  )+
+  scale_y_continuous(limits = c(-30, 150), breaks = seq(-30, 150, by = 30))+
+  ylab("Average mentions over lifetime")+
+  xlab("Field")+
+  labs(color = "Inferred gender")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+      coord_flip()
+    
+average_online <- mean_values_field %>%
+  ggplot(aes(x=fct_rev(field), y=online_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat="identity", alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = online_total_lci, 
+        ymax = online_total_uci
+    ),
+    width = 0.2,
+    stat="identity",
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = "Inferred gender"))+
+  scale_fill_manual(values =  c("#F5C710", "#61D04F")  , labels = c("Women", "Men"))+
+  scale_color_manual(values =  c("#997b06", "#338a25")  , labels = c("Women", "Men"), guide="none")+
+  ggtitle("Online news attention")+
+  scale_y_continuous(limits = c(-10, 86), breaks = seq(-10, 86, by = 16))+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = rep(84, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = "{online_total}",
+  )+
+  ylab("Average mentions over lifetime")+
+  labs(color = "Inferred gender")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab("Field")
+
+
+average_twitter <- mean_values_field %>%
+  ggplot(aes(x=fct_rev(field), y=twitter_total, fill = fct_rev(comparison), color = fct_rev(comparison))) + 
+  geom_bar(position=position_dodge(.5),stat="identity", alpha=1, width = 0.5)+
+  geom_errorbar(
+    aes(y=total, 
+        x = fct_rev(field),
+        group = fct_rev(comparison),
+        ymin = twitter_total_lci, 
+        ymax = twitter_total_uci
+    ),
+    width = 0.2,
+    stat="identity",
+    position=position_dodge(.5),)+
+  guides(fill = guide_legend(reverse = TRUE, title = "Inferred gender"))+
+  scale_fill_manual(values =  c("#F5C710", "#61D04F")  , labels = c("Women", "Men"))+
+  scale_color_manual(values =  c("#997b06", "#338a25")  , labels = c("Women", "Men"), guide="none")+
+  ggtitle("Twitter/X attention")+
+  stat_pvalue_manual(
+    significance_testing,
+    y.position = rep(184, 5),
+    label.size = 3,
+    coord.flip = TRUE,
+    tip.length = 0.005,
+    label = "{twitter_total}",
+    remove.bracket = FALSE,
+  )+
+  scale_y_continuous(limits = c(-25, 185), breaks = seq(-25, 185, by = 35))+
+  ylab("Average mentions over lifetime")+
+  labs(color = "Inferred gender")+
+  theme_minimal_vgrid()+
+  theme(plot.title = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 11),
+        axis.text.x = element_text(size = 10) ,
+        axis.title.x = element_text(size = 11),
+        legend.title=element_text(size=11), 
+        legend.text=element_text(size=10))+
+  coord_flip()+
+  xlab("Field")
+```
+
+Combine these plots into one (Figure 1, panel A):
+```{r fig.width=10, fig.height=3}
+legend_average <- get_legend(
+  # create some space to the left of the legend
+  average_news
+)
+
+combi_plot_averages <- plot_grid(average_news + 
+                                   theme(legend.position="none", 
+                                         axis.title.x = element_blank(),
+                                         axis.title.y=element_blank())
+                                 + panel_border(), 
+                                 average_online + theme(legend.position="none",
+                                                        axis.title.x = element_blank(),
+                                                        axis.title.y=element_blank(),
+                                                        axis.text.y = element_blank())
+                                 + panel_border(), 
+                                 average_twitter + theme(legend.position="none",
+                                                         axis.title.y=element_blank(),
+                                                         axis.title.x = element_blank(),
+                                                         axis.text.y = element_blank())
+                                 + panel_border(), 
+                                 legend_average,
+                                 ncol = 4,
+                                 rel_widths = c(1.3, 0.9, 0.9, 0.4))
+
+combi_plot_averages
+
+
+ggsave2(
+  filename = "Results/supplement_figures/SI_Fig_S12.png",
+  plot = combi_plot_averages,
+  width = 11,
+  height = 3.5,
+  units = c("in"),
+  dpi = 1200,
+  bg = "white"
+)
+```
+
+## Table S16
+Using the main dataset, get Table S16.
+
+Load the panel:
+```{r warning = F, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+```
+
+
+Get yearly attention totals:
+```{r}
+(yearly_prof_totals <- prof_panel_filter %>%
+  group_by(year)%>%
+  summarise(printed_news_total = sum(news_all, na.rm = TRUE),
+            online_news_total = sum(alt_online_all),
+            twitter_total = sum(alt_twitter)))
+  
+```
+
+Write the result out:
+```{r}
+write_csv(yearly_prof_totals, "Results/supplement_tables/SI_Table_S16.csv")
+```
+
+
+## Table S17
+Get the averages and CIs:
+```{r}
+(yearly_add_averages <- prof_panel_filter_additional %>%
+  group_by(year)%>%
+  summarise(printed = mean(news_all, na.rm = TRUE),
+            online = mean(alt_online_all, na.rm = TRUE),
+            twitter =  mean(alt_twitter, na.rm = TRUE),
+            printed_sd = sd(news_all, na.rm = TRUE),
+            online_sd = sd(alt_online_all, na.rm = TRUE),
+            twitter_sd =  sd(alt_twitter, na.rm = TRUE),
+            all_n = n())%>%
+  mutate(
+    printed_se = printed / sqrt(all_n),
+    online_se = online_sd / sqrt(all_n),
+    twitter_se =  twitter_sd / sqrt(all_n),
+    
+    printed_lci = printed - qt(1 - (0.05 / 2), all_n - 1) * printed_se,
+    online_lci = online - qt(1 - (0.05 / 2), all_n - 1) * online_se,
+    twitter_lci =  twitter - qt(1 - (0.05 / 2), all_n - 1) * twitter_se,
+    
+    printed_uci = printed + qt(1 - (0.05 / 2), all_n - 1) * printed_se,
+    online_uci = online + qt(1 - (0.05 / 2), all_n - 1) * online_se,
+    twitter_uci =  twitter + qt(1 - (0.05 / 2), all_n - 1) * twitter_se)%>%
+  mutate(across(2:17, \(x) round(x, 2)))%>%
+  dplyr::select(year, printed, printed_lci, printed_uci, online, online_lci, online_uci, twitter, twitter_lci, twitter_uci))
+```
+
+Write this out:
+```{r}
+write_csv(yearly_add_averages, "Results/supplement_tables/SI_Table_S17.csv")
+```
+

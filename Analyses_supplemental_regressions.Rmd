@@ -1,0 +1,432 @@
+---
+title: "SI: Supplemental regression analyses"
+author: "Ana Macanovic"
+date: "2025-05-12"
+---
+
+# SI: Supplemental regression analyses
+
+This script produces supplemental regression analyses referred to in the main text and presented
+in the Online SI.
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "MASS",
+                      "dplyr", "tidyr", 
+                      "ggplot2", "cowplot",
+                      "tidyverse", "RPostgres", 
+                      "lubridate", "lmtest", 
+                      "sandwich", "ggpubr", "plm",
+                      "knitr", "scales", 
+                      "ggeffects", "flextable", 
+                      "officer", "DescTools",
+                      "gglorenz", "corrplot")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2024-4-23")
+```
+
+```{r include=FALSE}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+Load the panel dataset:
+```{r warning = F, message = F}
+prof_panel_filter <- read_csv("panel_datasets/prof_panel_anonymised.csv")
+```
+
+## Figure S4
+
+### S4A: various dependent variable specifications
+
+Plot Figure 2, panel A, but with various dependent variables:
+```{r}
+# list of various dependent variable combinations:
+covariate_list_news <- c(
+  "log(news_all+1)",
+  "log(news_strict_all+1)",
+  "log(news_off_all+1)",
+  "log(news_online_all+1)",
+  "log(news_ded_all+1)")
+
+
+# the rest of the formula
+news_formula_rest <- "~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + share_first_au_total_l + log(cited_by_total_all_l+1) + avg_sjr_total_l + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + institution_dutch_total_narcis"
+# combine the formulas
+news_formula_list <- paste(covariate_list_news, news_formula_rest)
+
+news_dep_spec_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                  lm_formula_list = news_formula_list,
+                                                  year_cutoff_upper = 2023,
+                                                  year_cutoff_lower = 2012)
+```
+
+A faceted plot of gender differences with various dependent variables:
+```{r fig.width = 12, fig.height=4}
+# get the exponentiated model estimates for gender
+gender_estimates <- news_dep_spec_model[[1]]%>%
+  filter(term == "inferred_genderw")
+
+gender_estimates$Estimate_exp <- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp <- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp <- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate <- factor(gender_estimates$covariate,
+                                     levels = c("log(news_all+1)",
+                                                "log(news_off_all+1)",
+                                                "log(news_online_all+1)",
+                                                "log(news_ded_all+1)",
+                                                "log(news_strict_all+1)"))
+covariate_names <- c(
+  'log(news_all+1)' = "All\n news",
+  'log(news_strict_all+1)' = "News with\n strict keyword\n criterion",
+  'log(news_off_all+1)' = "Offline\n news",
+  'log(news_online_all+1)' = "Online\n news",
+  'log(news_ded_all+1)'="Dedupl.\n news"
+)
+
+
+news_gender_plot_spec <- gender_estimates %>%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.50, 1.20), breaks = seq(0.50, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype="dashed")+
+    scale_x_discrete(labels=c("arts" = "Arts and Humanities",
+                              "health" = "Health sciences",
+                              "soc_sci" = "Social sciences",
+                              "life" = "Life sciences",
+                              "phys" = "Physical sciences"))+
+    ylab("Ratio of mean mentions for women compared to men")+
+    scale_color_manual(values =  c("#1F78B4", "#33A02C", "#FF7F00", "#6A3D9A", "#B15928"))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales="free_y", 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position="none")+
+    ggtitle("A Different variable specifications")+
+    panel_border()
+```
+
+
+### S4B: various printed news sources
+
+Run the models with various printed news sources:
+```{r}
+# list of various dependent variable combinations:
+covariate_list_news <- c(
+  "log(news_all+1)",
+  "log(news_national+1)",
+  "log(news_regional+1)",
+  "log(news_intl+1)",
+  "log(news_intl_other_sources+1)"
+)
+
+# the rest of the formula
+news_formula_rest <- "~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1) + share_first_au_total_l + log(cited_by_total_all_l+1) + avg_sjr_total_l + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(alt_online_all_total_l+1) + log(alt_twitter_total_l+1) + institution_dutch_total_narcis"
+
+# combine the formulas
+news_formula_list <- paste(covariate_list_news, news_formula_rest)
+
+news_dep_var_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                 lm_formula_list = news_formula_list,
+                                                 year_cutoff_upper = 2023,
+                                                 year_cutoff_lower = 2012)
+```
+
+A faceted plot of gender differences with various dependent variables:
+```{r fig.width=12, fig.height=4}
+# get the exponentiated model estimates for gender
+gender_estimates <- news_dep_var_model[[1]]%>%
+  filter(term == "inferred_genderw")
+
+gender_estimates$Estimate_exp <- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp <- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp <- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate <- factor(gender_estimates$covariate,
+                                     levels = c("log(news_all+1)",
+                                                "log(news_national+1)",
+                                                "log(news_regional+1)",
+                                                "log(news_intl+1)",
+                                                "log(news_intl_other_sources+1)"))
+
+
+covariate_names <- c(
+  'log(news_all+1)'= "All\n news",
+  'log(news_national+1)'="National\n news (NL)",
+  'log(news_regional+1)'= "Local\n news (NL)",
+  'log(news_intl+1)'= "International\n high-profile news",
+  'log(news_intl_other_sources+1)'= "Other news sources"
+)
+
+news_gender_plot_source <- gender_estimates %>%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.50, 1.20), breaks = seq(0.50, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype="dashed")+
+    scale_x_discrete(labels=c("arts" = "Arts and Humanities",
+                              "health" = "Health sciences",
+                              "soc_sci" = "Social sciences",
+                              "life" = "Life sciences",
+                              "phys" = "Physical sciences"))+
+    ylab("Ratio of mean mentions for women compared to men")+
+    scale_color_manual(values =  c("#1F78B4", "#33A02C", "#FF7F00", "#6A3D9A", "#B15928"))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               scales="free_x", 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position="none")+
+    ggtitle("B Different printed news sources")+
+    panel_border()
+```
+
+
+Combine the plots:
+```{r fig.width=10, fig.height=7}
+printed_combi_plot <- plot_grid(news_gender_plot_spec + theme(axis.text.x = element_blank() ,
+                                                              axis.title.x = element_blank()),
+                                news_gender_plot_source,
+                                ncol = 1,
+                                align = 'h',
+                                axis = 'tb',
+                                rel_heights = c(1, 1))
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S4.png",
+  plot = printed_combi_plot,
+  width = 10,
+  height = 7,
+  units = c("in"),
+  dpi = 600,
+  bg = "white"
+)
+
+printed_combi_plot
+```
+
+
+## Figure S5
+
+### S5A: various dependent variable specifications
+
+Plot Figure 2, panel A, but with various dependent variables:
+```{r}
+# list of various dependent variable combinations:
+covariate_list_online_news <- c(
+  "log(alt_online_all+1)",
+  "log(alt_online_single_all+1)",
+  "log(alt_online_fname_all+1)",
+  "log(alt_online_dutch_all+1)"
+)
+
+# the rest of the formula
+online_news_formula_rest <- "~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1)  + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+# combine the formulas
+online_news_formula_list <- paste(covariate_list_online_news, online_news_formula_rest)
+
+online_news_dep_spec_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                         lm_formula_list = online_news_formula_list,
+                                                         year_cutoff_upper = 2023,
+                                                         year_cutoff_lower = 2012)
+```
+
+A faceted plot of gender differences with various dependent variables:
+```{r fig.width=10, fig.height=4}
+# get the exponentiated model estimates for gender
+gender_estimates <- online_news_dep_spec_model[[1]]%>%
+  filter(term == "inferred_genderw")
+
+gender_estimates$Estimate_exp <- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp <- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp <- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate <- factor(gender_estimates$covariate,
+                                     levels = c("log(alt_online_all+1)",
+                                                "log(alt_online_single_all+1)",
+                                                "log(alt_online_fname_all+1)",
+                                                "log(alt_online_dutch_all+1)"))
+covariate_names <- c(
+  'log(alt_online_all+1)' = "All\n online news",
+  'log(alt_online_single_all+1)' = "Online news - \nsingle-authored \npublications",
+  'log(alt_online_fname_all+1)' = "Online news - \nincluding full name",
+  'log(alt_online_dutch_all+1)' = "Online news - \nonly in Dutch"
+)
+
+online_news_gender_plot_spec <- gender_estimates %>%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.80, 1.2), breaks = seq(0.80, 1.2, by = 0.10))+
+    geom_hline(yintercept = 1, linetype="dashed")+
+    scale_x_discrete(labels=c("arts" = "Arts and Humanities",
+                              "health" = "Health sciences",
+                              "soc_sci" = "Social sciences",
+                              "life" = "Life sciences",
+                              "phys" = "Physical sciences"))+
+    ylab("Ratio of mean mentions for women compared to men")+
+    scale_color_manual(values =  c("#1F78B4", "#33A02C", "#FF7F00", "#6A3D9A", "#B15928"))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales="free_x", 
+               ncol = 5,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position="none")+   
+    ggtitle("A Different variable specifications")+
+    panel_border()
+
+```
+
+
+### S5B: various online news sources
+
+Plot Figure 2, panel A, but with dependent variables capturing various online sources:
+```{r}
+# list of various dependent variable combinations:
+covariate_list_online_news <- c(
+  "log(alt_online_all+1)",
+  "log(alt_general_interest_combi_news+1)",
+  "log(alt_science_combi_news+1)",
+  "log(alt_other_combi_news+1)"
+)
+
+# the rest of the formula
+online_news_formula_rest <- "~ inferred_gender + years_since_first_pub + as.factor(year) + log(count_pubs_total_l+1)  + log(cited_by_total_all_l+1) + log(coa_tot_cited_by_total_l+1) + log(coa_online_combi_total_l+1) + log(news_all_total_l+1) + log(alt_twitter_total_l+1) + avg_sjr_total_l + share_first_au_total_l + institution_dutch_total_narcis"
+
+# combine the formulas
+online_news_formula_list <- paste(covariate_list_online_news, online_news_formula_rest)
+
+online_news_dep_var_model <- lm_fitter_cl_robust_scopus(panel_dataset = prof_panel_filter,
+                                                        lm_formula_list = online_news_formula_list,
+                                                        year_cutoff_upper = 2023,
+                                                        year_cutoff_lower = 2012)
+```
+
+
+A faceted plot of gender differences with various dependent variables:
+```{r fig.width=8, fig.height=4}
+# get the exponentiated model estimates for gender
+gender_estimates <- online_news_dep_var_model[[1]]%>%
+  filter(term == "inferred_genderw")
+
+gender_estimates$Estimate_exp <- exp(gender_estimates$Estimate)
+gender_estimates$upper_ci_exp <- exp(gender_estimates$upper_ci)
+gender_estimates$lower_ci_exp <- exp(gender_estimates$lower_ci)
+
+gender_estimates$covariate <- factor(gender_estimates$covariate,
+                                     levels = c("log(alt_online_all+1)",
+                                                "log(alt_general_interest_combi_news+1)",
+                                                "log(alt_science_combi_news+1)",
+                                                "log(alt_other_combi_news+1)"))
+covariate_names <- c(
+  'log(alt_online_all+1)' = "All\n online news",
+  'log(alt_general_interest_combi_news+1)' = "General interest\n online news",
+  'log(alt_science_combi_news+1)'="Science\n online news",
+  'log(alt_other_combi_news+1)' = "Other\n online news"
+)
+
+online_news_gender_plot_var <- gender_estimates %>%
+    ggplot(aes(x = fct_rev(field),
+               y = Estimate_exp,
+               ymin = upper_ci_exp,
+               ymax = lower_ci_exp,
+               color = field)) +
+    geom_pointrange(position = position_dodge(width = 0.5),
+                    size = 0.5) +
+    geom_text(data = gender_estimates, aes(x = fct_rev(field), y = Estimate_exp, label = stars), hjust = -0.8, vjust = 0.3)+
+    scale_y_continuous(limits = c(0.80, 1.20), breaks = seq(0.80, 1.20, by = 0.10))+
+    geom_hline(yintercept = 1, linetype="dashed")+
+    scale_x_discrete(labels=c("arts" = "Arts and Humanities",
+                              "health" = "Health sciences",
+                              "soc_sci" = "Social sciences",
+                              "life" = "Life sciences",
+                              "phys" = "Physical sciences"))+
+    ylab("Ratio of mean mentions for women compared to men")+
+    scale_color_manual(values =  c("#1F78B4", "#33A02C", "#FF7F00", "#6A3D9A", "#B15928"))+
+    theme_minimal_hgrid()+
+    coord_flip()+
+    facet_wrap(.~as.factor(covariate), 
+               #scales="free_y", 
+               ncol = 4,
+               labeller = as_labeller(covariate_names))+
+    theme(plot.title = element_text(size = 11),
+          axis.text.y = element_text(size = 10),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(size = 10, angle = 30, hjust = 0.9) ,
+          axis.title.x = element_text(size = 11),
+          legend.position="none")+
+    ggtitle("B Different online news sources")+
+    panel_border()
+```
+
+Print the plot out:
+```{r fig.width=10, fig.height=8}
+online_combi_plot <- plot_grid(online_news_gender_plot_spec + theme(axis.text.x = element_blank() ,
+                                                                    axis.title.x = element_blank()),
+                               online_news_gender_plot_var,
+                               ncol = 1,
+                               align = 'h',
+                               axis = 'tb',
+                               rel_heights = c(1, 1))
+
+ggsave2(
+  filename = "results/supplement_figures/SI_Fig_S5.png",
+  plot = online_combi_plot,
+  width = 10,
+  height = 8,
+  units = c("in"),
+  dpi = 600,
+  bg = "white"
+)
+
+online_combi_plot
+```
+

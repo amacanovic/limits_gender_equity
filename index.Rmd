@@ -82,7 +82,9 @@ menu under the section *"DPM Panel dataset"*.
 This section of the website contains scripts that produce results found in the 
 main text and the Online SI of the following paper:
 
-**Macanovic, A., Hofstra, B. (2024). "Limits to Gender Equity in Science Communication".**
+**Macanovic, A., Hofstra, B. (2025). "The Limit to Gender Equity in Science Communication".**
+
+In addition, we provide full tables for all the regression models in our main text and the Online SI.
 
 Companion website can be accessed [here](https://amacanovic.github.io/limits_gender_equity/).
 
@@ -92,6 +94,8 @@ menu under the section *"Analyses and Results"*.
 Additional robustness checks can be found in the top
 menu under the section *"Robustness checks"*.
 
+
+Content in S6 of the Online SI can be found in the top menu under the section *Analyses of the additional sample (N = 980)*.
 
 
 ----

@@ -51,12 +51,16 @@ po/*~
 # data files DONT FORGET TO PUT IN EXCLUDE OF _site.yml
 /narcis_screenshots/
 /data/
-#/resources/
+/resources/
 /panel_datasets/
 /results/
 #/docs/ 
 
 # .csv files
+results/logit_models.RDS
+results/main_models.RDS
+results/main_models_fe.RDS
+results/ols_models.RDS
 
 name_data/temp_name_webpages/origin_df.rda
 

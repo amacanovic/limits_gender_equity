@@ -1,0 +1,116 @@
+---
+title: "SJR_comparison"
+author: "Ana Macanovic"
+date: "2025-04-01"
+output: html_document
+---
+
+# SJR and CiteScore Rating Comparison
+
+This script compares journal prestige scores from Scimago and Scopus rankings.
+We do not distribute the rankings themselves; readers should consult the original
+data sources to replicate this analysis.
+
+
+Load the packages:
+```{r message=  F, warning = F, eval = T}
+source("helper_functions.R")
+
+packages_to_load <- c("readr", "dplyr", "tidyr")
+
+fpackage_check(packages_to_load)
+
+
+# For full reproducibility, load the packages with groundhog using the code below instead
+# of the fpackage_check function
+
+# library(groundhog)
+# groundhog.library(packages_to_load, date = "2025-4-1")
+```
+
+
+```{r}
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = FALSE)
+opts_chunk$set(warning = FALSE)
+opts_chunk$set(message = FALSE)
+```
+
+
+Load Scimago and Scopus files for overlapping years we have access to. These are years
+between 2011 and 2019:
+```{r}
+scimago_files <- list.files("resources/scimago_journal_rankings",
+                            full.names = TRUE)
+
+scimago_files <- scimago_files[13:21]
+
+scopus_files <- list.files("resources/scopus_source_rankings",
+                            full.names = TRUE)
+
+scopus_files <- scopus_files[1:9]
+```
+
+For each year, load in both files, merge the scores, and check the correlation:
+```{r warning = F, message = F}
+years <- c(2011:2019)
+correlations <- c()
+
+for (i in 1:length(years)){
+  
+  scimago <- read_delim(scimago_files[i], delim = ";")
+  
+  scimago_scores <- scimago %>% 
+    dplyr::select(Sourceid, Title, Issn, SJR, `H index`, `SJR Best Quartile`)%>%
+    filter(Issn != "-")%>%
+    mutate(Issn = strsplit(Issn, ",")) %>%
+          unnest(Issn) %>%
+          group_by(Title) %>%
+          mutate(row = row_number()) %>%
+          spread(row, Issn)%>%
+    pivot_longer(cols = -c(Sourceid, Title, SJR, `H index`,  `SJR Best Quartile`), values_to = "issn", names_to = "issn_order")%>%
+    filter(!is.na(issn))%>%
+    dplyr::select(-issn_order)
+  
+  # remove redundant whitespace
+  scimago_scores$issn <- str_remove_all(scimago_scores$issn, " ")
+  # replace commas in SJR with dots
+  scimago_scores$SJR <- str_replace_all(scimago_scores$SJR, ",", ".")
+  
+  scopus_scores <- read_csv(scopus_files[i])
+  
+  scopus_scores <- scopus_scores %>%
+    distinct(`Scopus Source ID`, `Print ISSN`, `E-ISSN`, .keep_all = TRUE)%>%
+    dplyr::select(CiteScore, SJR, SNIP, `Percent Cited`, Quartile, `Top 10% (CiteScore Percentile)`, `Print ISSN`, `E-ISSN`, Title, `Scopus Source ID`)
+  
+  scopus_scores <- scopus_scores %>%
+    pivot_longer(cols = c(`Print ISSN`, `E-ISSN`), values_to = "issn")%>%
+    filter(!is.na(issn))%>%
+    dplyr::select(-name)
+  
+  # pad issn numbers
+  scopus_scores$issn <-  str_pad(scopus_scores$issn, 8, pad = "0")
+  
+  merge_scores <- merge(scimago_scores,
+                        scopus_scores,
+                        by = "issn")
+  
+  correlations <- c(correlations,
+                    cor(as.numeric(merge_scores$SJR.x), merge_scores$CiteScore, use = "complete.obs"))
+  
+  print(i)
+  
+}
+
+```
+
+Prepare the output and write it out:
+```{r}
+scimago_scopus_correlation <- data.frame(year = years,
+                                            correlation = correlations)
+
+scimago_scopus_correlation$correlation <- round(scimago_scopus_correlation$correlation, 2)
+
+write_csv(scimago_scopus_correlation, "Results/supplement_tables/SI_additional_scimago_scopus_correlation.csv")
+```
+
