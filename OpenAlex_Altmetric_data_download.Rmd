@@ -265,7 +265,8 @@ Define the function that helps us seek identifiers from:
 3. Professor's name + NL as the country of their last known institution
 
 This diagram describes how we do it:
-![Figure 1](images/professor_identifier_retriever_diagram.png)
+![Figure 1](./images/professor_identifier_retriever_diagram.png)
+
 
 Loop through professors and find their identifiers:
 ```{r}
